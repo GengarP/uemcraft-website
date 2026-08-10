@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://uemcraft.cn/sitemap.xml

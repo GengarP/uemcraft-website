@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#C88A15"/>
+  <rect x="60" y="60" width="60" height="60" rx="3" fill="#E0A622"/>
+  <rect x="140" y="60" width="60" height="60" rx="3" fill="#A87210"/>
+  <rect x="220" y="60" width="60" height="60" rx="3" fill="#E0A622"/>
+  <rect x="300" y="60" width="60" height="60" rx="3" fill="#A87210"/>
+  <rect x="60" y="140" width="60" height="60" rx="3" fill="#A87210"/>
+  <rect x="140" y="140" width="60" height="60" rx="3" fill="#E0A622"/>
+  <rect x="220" y="140" width="60" height="60" rx="3" fill="#A87210"/>
+  <rect x="300" y="140" width="60" height="60" rx="3" fill="#E0A622"/>
+  <rect x="100" y="220" width="60" height="60" rx="3" fill="#E0A622"/>
+  <rect x="180" y="220" width="60" height="60" rx="3" fill="#A87210"/>
+  <rect x="260" y="220" width="60" height="60" rx="3" fill="#E0A622"/>
+  <text x="200" y="340" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="bold" fill="rgba(255,255,255,.7)">截图作品征集中</text>
+</svg>

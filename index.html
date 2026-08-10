@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="description" content="应急管理大学 Minecraft 同好会（UEMCraft）——以 Minecraft 为平台，开展校园数字复原、建筑创作与技术交流。MUA 成员组织。">
+  <meta name="theme-color" content="#213d87">
+  <meta name="color-scheme" content="light dark">
+  <title>UEMCraft — 应急管理大学 Minecraft 同好会</title>
+  <link rel="icon" href="favicon.ico" type="images/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <script>
+    (function(){
+      var t = localStorage.getItem('uemcraft-theme');
+      if(!t) t = window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+      document.documentElement.style.colorScheme = t;
+    })();
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+<!-- Page Loader -->
+<div class="page-loader" id="pageLoader" aria-hidden="true">
+  <div class="loader-curtain loader-curtain-l"></div>
+  <div class="loader-curtain loader-curtain-r"></div>
+  <div class="loader-center" id="loaderCenter">
+    <img src="assets/img/logo-256.webp" alt="" class="loader-logo" id="loaderLogo" width="80" height="80">
+    <div class="loader-title">UEMCraft</div>
+    <div class="loader-sub">正在生成区块…</div>
+  </div>
+  <div class="loader-blocks" id="loaderBlocks"></div>
+</div>
+
+<a href="#main" class="skip-link">跳转到主内容</a>
+
+<!-- ====== Header ====== -->
+<header class="site-header" role="banner">
+  <div class="header-inner">
+    <a href="index.html" class="header-logo" aria-label="UEMCraft 首页">
+      <img src="assets/img/logo-256.webp" alt="UEMCraft Logo" width="40" height="40">
+      <span class="logo-text">
+        <span class="logo-cn">应大MC同好会</span>
+        <span class="logo-en">UEMCraft</span>
+      </span>
+    </a>
+    <nav class="header-nav" aria-label="主导航">
+      <a href="index.html" class="is-active">首页</a>
+      <a href="about.html">关于我们</a>
+      <a href="news/">资讯动态</a>
+      <a href="events.html">活动中心</a>
+      <a href="gallery/">作品展示</a>
+    </nav>
+    <div class="header-actions">
+      <button class="theme-toggle" aria-label="切换深色/亮色模式" title="切换主题">
+        <span class="iconfont-theme icon-sun" aria-hidden="true"></span>
+        <span class="iconfont-theme icon-moon" aria-hidden="true"></span>
+      </button>
+      <a href="join.html" class="btn btn-primary btn-sm">加入我们</a>
+      <button class="hamburger" aria-label="菜单" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile nav drawer -->
+<nav class="mobile-nav" aria-label="移动端导航">
+  <a href="index.html" class="is-active">首页</a>
+  <a href="about.html">关于我们</a>
+  <a href="events.html">活动中心</a>
+  <a href="news/">资讯动态</a>
+  <a href="gallery/">作品展示</a>
+  <a href="join.html" class="btn btn-primary btn-block mobile-cta">加入我们</a>
+</nav>
+
+<!-- ====== Main ====== -->
+<main id="main">
+
+<!-- Hero -->
+<section class="hero-index">
+  <img class="hero-bg-img" src="assets/img/bg.jpg" alt="" aria-hidden="true">
+  <div class="container hero-index-content">
+    <a href="#serverSection" class="hero-badge reveal" id="heroBadge" title="查看服务器详情">
+      <span class="server-indicator" id="heroIndicator"></span>
+      <span id="heroStatus">加载中…</span>
+    </a>
+    <h1 class="reveal reveal-delay-1">
+      <img src="assets/img/minecraft_title.png" alt="UEMCraft" class="hero-title-img" width="560" height="80">
+      <span class="hero-title-cn">应急管理大学<br>Minecraft 同好会</span>
+    </h1>
+    <p class="hero-desc reveal reveal-delay-2">
+      以 Minecraft 为平台，开展校园数字复原、建筑创作与技术交流活动<br>
+      培养创造力、团队协作能力与跨学科实践能力
+    </p>
+    <div class="hero-cta reveal reveal-delay-3">
+      <a href="join.html" class="btn btn-gold btn-lg">加入我们</a>
+      <a href="gallery/" class="btn btn-outline btn-lg">查看作品</a>
+    </div>
+  </div>
+  <!-- Floating decorations -->
+  <div class="hero-float hero-float-1" aria-hidden="true"></div>
+  <div class="hero-float hero-float-2" aria-hidden="true"></div>
+  <div class="hero-float hero-float-3" aria-hidden="true"></div>
+</section>
+
+<!-- Stats Strip -->
+<section class="section-sm section-alt">
+  <div class="container">
+    <div class="hero-stats reveal">
+      <div class="hero-stat">
+        <div class="hs-num"><span data-count="200">0</span>+</div>
+        <div class="hs-lbl">注册成员</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hs-num"><span data-count="1">0</span>+</div>
+        <div class="hs-lbl">建筑作品</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hs-num"><span data-count="5">0</span>+</div>
+        <div class="hs-lbl">已办活动</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Club Intro -->
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-label">ABOUT US</span>
+      <h2>关于同好会</h2>
+      <p class="text-muted">UEMCraft · University of Emergency Management Minecraft Club</p>
+    </div>
+    <div class="grid-2 reveal">
+      <div class="panel">
+        <p style="font-size:var(--fs-lg);line-height:1.9;">
+          应急管理大学 Minecraft 同好会（简称"<strong>应大MC同好会</strong>"，英文名 <strong class="text-mono">UEMCraft</strong>）
+          是以 Minecraft 为平台，开展 <strong>校园数字复原</strong>、<strong>建筑创作</strong>、<strong>技术交流</strong>
+          等活动的学生社群。我们致力于培养成员的创造力、团队协作能力与跨学科实践能力。
+        </p>
+        <p class="text-muted" style="margin-top:var(--space-md);">
+          同好会是 <strong>MUA 高校联盟 </strong>的成员组织，秉承"理事会统筹、部门分工、项目驱动、成员自治"的组织原则。
+        </p>
+        <a href="about.html" class="btn btn-outline" style="margin-top:var(--space-md);">
+          了解更多 →
+        </a>
+      </div>
+      <div class="panel" style="display:flex;align-items:center;justify-content:center;background:var(--c-bg-2);min-height:240px;">
+        <img src="assets/img/logo-512.webp" alt="UEMCraft" style="max-width:220px;border-radius:var(--radius);">
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider-line">
+
+<!-- Latest News -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-label">NEWS</span>
+      <h2>最新动态</h2>
+    </div>
+    <div class="grid-3 reveal" id="newsGrid">
+      <div class="news-card news-card-empty" aria-hidden="true">
+        <div class="news-date">·····</div>
+        <div class="news-title">敬请期待</div>
+        <div class="news-excerpt">更多动态即将发布</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Server Status -->
+<section class="section" id="serverSection">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-label">SERVER</span>
+      <h2>服务器状态</h2>
+    </div>
+    <div id="serverPanel" class="server-panel reveal">
+      <div class="server-indicator" id="serverIndicator"></div>
+      <div class="server-info">
+        <div class="server-header">
+          <span class="server-title">UEMCraft 官方服务器</span>
+          <button id="refreshServer" class="btn btn-ghost btn-sm">↻ 刷新</button>
+        </div>
+        <div class="server-addr-row">
+          <code class="server-address" id="serverAddr">play.uemcraft.cn</code>
+          <button id="copyAddr" class="btn btn-ghost btn-sm btn-copy" title="复制地址">复制</button>
+          <div class="server-stats">
+            <div class="server-stat player-stat-wrap">
+              <span class="sval" id="serverPlayers">--</span>
+              <span class="slbl">在线 / 最大</span>
+              <div class="player-tooltip" id="playerTooltip">
+                <ul class="player-list" id="playerList"></ul>
+              </div>
+            </div>
+            <div class="server-stat">
+              <span class="sval" id="serverVer">--</span>
+              <span class="slbl">版本</span>
+            </div>
+          </div>
+        </div>
+        <div class="server-motd" id="serverMotd"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Feature Entries -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-label">DEPARTMENTS</span>
+      <h2>三大部门</h2>
+    </div>
+    <div class="grid-3 reveal">
+      <a href="about.html#tech" class="entry-card">
+        <div class="entry-icon icon-block">技</div>
+        <div>
+          <div class="entry-title">技术部</div>
+          <div class="entry-desc">服务器运维、插件开发、红石电路与命令方块培训，为社群提供技术支撑。</div>
+        </div>
+      </a>
+      <a href="about.html#create" class="entry-card">
+        <div class="entry-icon icon-block icon-block-teal">创</div>
+        <div>
+          <div class="entry-title">创作部</div>
+          <div class="entry-desc">建筑创作、校园数字复原工程、作品存档与展示，用方块重建校园之美。</div>
+        </div>
+      </a>
+      <a href="about.html#media" class="entry-card">
+        <div class="entry-icon icon-block icon-block-purple">宣</div>
+        <div>
+          <div class="entry-title">宣传部</div>
+          <div class="entry-desc">宣传推广、新媒体运营、跨校联络，运营 B站 / 抖音 等社群账号。</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Works Preview -->
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-label">GALLERY</span>
+      <h2>精选作品</h2>
+    </div>
+    <div class="gallery-grid reveal">
+    </div>
+    <div class="text-center" style="margin-top:var(--space-xl);">
+      <a href="gallery/" class="btn btn-outline">查看全部作品 →</a>
+    </div>
+  </div>
+</section>
+
+<!-- Upcoming Events -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-label">EVENTS</span>
+      <h2>近期活动</h2>
+    </div>
+    <div class="grid-2 reveal" id="eventsGrid">
+    </div>
+    <div class="text-center" style="margin-top:var(--space-xl);">
+      <a href="events.html" class="btn btn-outline">查看全部活动 →</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Banner -->
+<section class="section">
+  <div class="container">
+    <div class="highlight-banner reveal">
+      <h2>加入 UEMCraft</h2>
+      <p>无论你是建筑大师、红石极客，还是刚刚踏入 Minecraft 世界的新人，这里都有你的一席之地。</p>
+      <div class="cta-row">
+        <a href="join.html" class="btn btn-gold btn-lg">立即报名</a>
+        <a href="assets/docs/章程.pdf" class="btn btn-ghost btn-lg" style="color:#fff;border-color:rgba(255,255,255,.3);">阅读章程</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ====== Footer ====== -->
+<footer class="site-footer" role="contentinfo">
+  <div class="footer-grid">
+    <div class="footer-col">
+      <div class="footer-logo">
+        <img src="assets/img/logo-256.webp" alt="UEMCraft" width="32" height="32">
+        <span>应急管理大学 Minecraft 同好会</span>
+      </div>
+      <p>以 Minecraft 为平台，建设校园数字复原与创作社区。<br>MUA 成员组织。</p>
+      <div class="footer-badges">
+        <a href="index.html" class="footer-badge">UEMCraft</a>
+        <a href="https://www.mualliance.cn/" target="_blank" rel="noopener" class="footer-badge">MUA</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>快速链接</h4>
+      <ul>
+        <li><a href="index.html">首页</a></li>
+        <li><a href="about.html">关于我们</a></li>
+        <li><a href="news/">资讯动态</a></li>
+        <li><a href="events.html">活动中心</a></li>
+        <li><a href="gallery/">作品展示</a></li>
+        <li><a href="join.html">加入我们</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>联系方式</h4>
+      <ul>
+        <li><a href="https://qm.qq.com/q/VYDnv3ZJwC" target="_blank" class="footer-contact-link"><span class="iconfont icon-QQ" aria-hidden="true"></span> QQ</a></li>
+        <li><a href="https://pd.qq.com/s/94uyddngr" target="_blank" class="footer-contact-link"><span class="iconfont icon-qqchannel" aria-hidden="true"></span> QQ 频道</a></li>
+        <li><a href="https://space.bilibili.com/3546888496221012" target="_blank" class="footer-contact-link"><span class="iconfont icon-bilibili-fill" aria-hidden="true"></span> Bilibili</a></li>
+        <li><a href="https://v.douyin.com/Q44xZngm3ls/" target="_blank" class="footer-contact-link"><span class="iconfont icon-douyin" aria-hidden="true"></span> 抖音</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>相关链接</h4>
+      <ul>
+        <li><a href="http://mc.yitacm.cn/" target="_blank" rel="noopener">燕理MC玩家创作协会</a></li>
+        <li><a href="https://skin.mualliance.ltd/" target="_blank" rel="noopener">MUA皮肤站</a></li>
+        <li><a href="https://www.ncist.edu.cn/" target="_blank" rel="noopener">应急管理大学</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; <span id="year"></span> 应急管理大学 Minecraft 同好会 · UEMCraft</span>
+    <span>Minecraft 是 Mojang AB 的商标 · 本站为社群非商业用途</span>
+  </div>
+</footer>
+
+<!-- Back to top -->
+<button class="back-to-top" aria-label="回到顶部" title="回到顶部">↑</button>
+
+<script defer src="js/main.js"></script>
+<script defer src="js/server.js"></script>
+</body>
+</html>

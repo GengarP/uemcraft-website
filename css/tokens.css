@@ -1,0 +1,206 @@
+/* ============================================================
+   tokens.css — 设计令牌 (Design Tokens)
+   应急管理大学 Minecraft 同好会 UEMCraft 官方网站
+   "像素现代 Pixel-Modern" 风格
+   ============================================================ */
+
+/* ---- Iconfont (QQ / Bilibili / 抖音) ---- */
+@font-face {
+  font-family:"iconfont";
+  src:url('../assets/fonts/iconfont.ttf?t=2') format('truetype');
+}
+.iconfont {
+  font-family:"iconfont" !important;
+  font-size:16px; font-style:normal;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+.icon-QQ:before           { content:"\e882"; }
+.icon-douyin:before       { content:"\e7f6"; }
+.icon-bilibili-fill:before { content:"\ea95"; }
+.icon-qqchannel:before    { content:"\e614"; }
+
+/* ---- Iconfont Theme (浅色/深色模式切换) ---- */
+@font-face {
+  font-family:"iconfont-theme";
+  src:url('../assets/fonts/iconfont-theme.woff2?t=1785841271381') format('woff2'),
+      url('../assets/fonts/iconfont-theme.woff?t=1785841271381') format('woff'),
+      url('../assets/fonts/iconfont-theme.ttf?t=1785841271381') format('truetype');
+}
+.iconfont-theme {
+  font-family:"iconfont-theme" !important;
+  font-size:16px; font-style:normal;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+.icon-sun:before   { content:"\e6ee"; }  /* 浅色模式 */
+.icon-moon:before  { content:"\e792"; }  /* 深色模式 */
+
+/* ---- Fusion Pixel 像素字体（自托管） ---- */
+@font-face {
+  font-family: "Fusion Pixel";
+  src: url("../assets/fonts/fusion-pixel-12px-proportional-latin.otf.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---- Minecraft AE 像素字体（MOTD 展示） ---- */
+@font-face {
+  font-family: "Minecraft AE";
+  src: url("../assets/fonts/minecraft-ae.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---- 亮色模式（默认） ---- */
+:root {
+  /* 背景层级 */
+  --c-bg:        #F0F2F7;
+  --c-bg-2:      #E4E8F0;
+  --c-bg-section-alt: #EBEDF3;
+  --c-surface:   #FFFFFF;
+  --c-surface-2: #F5F7FA;
+  --c-border:    #D5DAE5;
+
+  /* 主题色系（蓝） */
+  --c-primary:      #2B5BD9;
+  --c-primary-hi:   #4A7CF0;
+  --c-primary-dark: #1E45B0;
+  --c-accent-1:     #217087;
+  --c-accent-2:     #214d87;
+  --c-accent-3:     #212b87;
+  --c-accent-4:     #392187;
+
+  /* 文字 */
+  --c-text:       #1A1D28;
+  --c-text-muted: #6A7185;
+  --c-heading:    #0F1420;
+
+  /* 功能色 */
+  --c-gold:  #C88A15;
+  --c-red:   #C0392B;
+  --c-ok:    #27AE60;
+  --c-warn:  #E67E22;
+  --c-info:  #2980B9;
+
+  /* 像素/方块特质 */
+  --radius:       4px;
+  --radius-lg:    10px;
+  --shadow-hard:  4px 4px 0 rgba(0,0,0,.18);
+  --shadow-hard-sm: 2px 2px 0 rgba(0,0,0,.14);
+  --shadow-hover: 6px 6px 0 rgba(0,0,0,.22);
+  --shadow-card:  0 2px 12px rgba(0,0,0,.06);
+  --shadow-nav:   0 2px 16px rgba(0,0,0,.10);
+
+  /* 像素网格纹理 */
+  --pixel-grid: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(0,0,0,.03) 3px,
+      rgba(0,0,0,.03) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 3px,
+      rgba(0,0,0,.03) 3px,
+      rgba(0,0,0,.03) 4px
+    );
+
+
+  /* 字体 */
+  --font-body:  "Noto Sans SC","Source Han Sans SC","PingFang SC","Microsoft YaHei","思源黑体",system-ui,-apple-system,sans-serif;
+  --font-mono:  "Fusion Pixel","Tiny5","Cascadia Code","Cascadia Mono",Consolas,"Courier New",monospace;
+
+  /* 字号 */
+  --fs-base: 16px;
+  --fs-sm:   .875rem;
+  --fs-xs:   .75rem;
+  --fs-lg:   1.125rem;
+  --fs-h1:   clamp(2rem, 5vw, 3.5rem);
+  --fs-h2:   clamp(1.5rem, 3vw, 2.2rem);
+  --fs-h3:   1.35rem;
+  --fs-h4:   1.15rem;
+  --lh:      1.7;
+  --lh-heading: 1.25;
+
+  /* 间距 */
+  --space-xs: .25rem;
+  --space-sm: .5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 5rem;
+  --space-4xl: 8rem;
+
+  /* 布局 */
+  --max-width: 1200px;
+  --header-h:  68px;
+  --header-h-scrolled: 56px;
+
+  /* 过渡 */
+  --ease:     cubic-bezier(.4,0,.2,1);
+  --duration: .25s;
+}
+
+/* ---- 深色模式 ---- */
+[data-theme="dark"] {
+  --c-bg:        #0F1320;
+  --c-bg-2:      #171D30;
+  --c-bg-section-alt: #121624;
+  --c-surface:   #1C2338;
+  --c-surface-2: #222B42;
+  --c-border:    #2D354F;
+
+  --c-primary:      #5B8AF0;
+  --c-primary-hi:   #7BA3F7;
+  --c-primary-dark: #426BD4;
+
+  --c-accent-1:     #4DB8D4;
+  --c-accent-2:     #5B8AF0;
+  --c-accent-3:     #6370F0;
+  --c-accent-4:     #785EF0;
+
+  --c-text:       #E2E5ED;
+  --c-text-muted: #929AB5;
+  --c-heading:    #F0F2F8;
+
+  --c-gold:  #F5C842;
+  --c-red:   #E74C3C;
+  --c-ok:    #2ECC71;
+  --c-warn:  #F0A030;
+  --c-info:  #5DADE2;
+
+  --shadow-hard:    4px 4px 0 rgba(0,0,0,.50);
+  --shadow-hard-sm: 2px 2px 0 rgba(0,0,0,.40);
+  --shadow-hover:   6px 6px 0 rgba(0,0,0,.55);
+  --shadow-card:    0 2px 16px rgba(0,0,0,.25);
+  --shadow-nav:     0 2px 20px rgba(0,0,0,.40);
+
+  --pixel-grid: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(255,255,255,.015) 3px,
+      rgba(255,255,255,.015) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 3px,
+      rgba(255,255,255,.015) 3px,
+      rgba(255,255,255,.015) 4px
+    );
+}
+
+/* ---- 响应式断点（文档参考） ----
+   >= 1200px  桌面大屏
+   >= 992px   桌面
+   >= 768px   平板
+   >= 480px   大手机
+   < 480px    小手机
+   ---- */
