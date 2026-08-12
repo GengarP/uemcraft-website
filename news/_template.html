@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <meta name="description" content="[文章摘要]">
+  <!-- TODO: 修改标题和描述 -->
+  <meta name="description" content="UEMCraft 资讯动态——文章摘要或简介（40字以内）。">
   <meta name="theme-color" content="#213d87">
-  <title>[标题] — UEMCraft</title>
+  <title>文章标题 — 资讯动态 — UEMCraft</title>
   <link rel="icon" href="../favicon.ico" type="images/x-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +29,7 @@
 
 <a href="#main" class="skip-link">跳转到主内容</a>
 
-<!-- ══════ Header ══════ -->
+<!-- ====== Header ====== -->
 <header class="site-header" role="banner">
   <div class="header-inner">
     <a href="../index.html" class="header-logo" aria-label="UEMCraft 首页">
@@ -41,7 +42,7 @@
     <nav class="header-nav" aria-label="主导航">
       <a href="../index.html">首页</a>
       <a href="../about.html">关于我们</a>
-      <a href="index.html">资讯动态</a>
+      <a href="../news/" class="is-active">资讯动态</a>
       <a href="../events.html">活动中心</a>
       <a href="../gallery/">作品展示</a>
     </nav>
@@ -61,77 +62,77 @@
 <nav class="mobile-nav" aria-label="移动端导航">
   <a href="../index.html">首页</a>
   <a href="../about.html">关于我们</a>
-  <a href="index.html">资讯动态</a>
   <a href="../events.html">活动中心</a>
+  <a href="../news/" class="is-active">资讯动态</a>
   <a href="../gallery/">作品展示</a>
   <a href="../join.html" class="btn btn-primary btn-block mobile-cta">加入我们</a>
 </nav>
 
-<!-- ══════ Main ══════ -->
+<!-- ====== Main ====== -->
 <main id="main">
 
-<!-- 页面标题区 -->
+<!-- Page Hero -->
 <section class="page-hero">
   <div class="container">
-    <h1>[标题]</h1>
-    <p class="hero-sub">[日期] · [分类]</p>
+    <h1>文章标题</h1>
+    <p class="hero-sub">一句话副标题或文章摘要</p>
     <nav class="breadcrumb" aria-label="面包屑">
-      <a href="../index.html">首页</a> <span>/</span>
-      <a href="index.html">资讯动态</a> <span>/</span>
-      <span>[标题]</span>
+      <a href="../index.html">首页</a> <span>/</span> <a href="../news/">资讯动态</a> <span>/</span> <span>文章标题</span>
     </nav>
   </div>
 </section>
 
-<!-- 正文 -->
+<!-- Article -->
 <section class="section">
-  <div class="container" style="max-width:880px;">
+  <div class="container" style="max-width:800px;">
 
-    <!-- 头图（不需要则删除整个 figure） -->
-    <figure class="article-hero">
-      <img src="[图片路径]" alt="[图片描述]">
-      <figcaption>[图片说明]</figcaption>
+    <!-- 文章头图（可选） -->
+    <!-- TODO: 替换 src 为实际头图路径；若不需要头图，删除整个 figure 标签 -->
+    <figure class="article-hero reveal">
+      <img src="../assets/img/placeholder.jpg" alt="头图描述" loading="eager">
+      <figcaption>头图说明文字（可选）</figcaption>
     </figure>
 
-    <article class="panel article-body">
-      <p>[正文段落]</p>
+    <!-- 文章元信息 -->
+    <div class="article-meta reveal">
+      <div class="article-meta-item">
+        <span class="article-meta-label">发布日期</span>
+        <span class="article-meta-value">2026 年 8 月 12 日</span>
+      </div>
+      <!-- TODO: 可选字段，不需要可删除整行（含分隔符） -->
+      <span class="article-meta-sep" aria-hidden="true">·</span>
+      <div class="article-meta-item">
+        <span class="article-meta-label">作者</span>
+        <span class="article-meta-value">UEMCraft 宣传部</span>
+      </div>
+      <div class="article-meta-tags">
+        <!-- TODO: 修改或增减标签；不需要可删除整个 .article-meta-tags 容器 -->
+        <span class="badge badge-blue">标签</span>
+        <span class="badge badge-gray">标签</span>
+      </div>
+    </div>
 
-      <h2>[小标题]</h2>
-      <p>[内容]</p>
-
-      <ul>
-        <li>[条目]</li>
-        <li>[条目]</li>
-      </ul>
-
-      <blockquote>[引用内容]</blockquote>
-
-      <p>正文内容<sup class="fn-ref"><a href="#fn1" id="fnr1">[1]</a></sup>继续正文。</p>
-
-      <p>了解更多请访问 <a href="[URL]">[链接文字]</a>。</p>
-
-      <p>服务器地址：<code>play.uemcraft.cn</code></p>
-
-      <hr>
+    <!-- Markdown 渲染目标容器 -->
+    <article class="article-body reveal" id="articleContent">
+      <!-- 内容将由下方 script 注入 -->
     </article>
 
-    <!-- 注释 -->
-    <div class="article-footnotes">
-      <ol>
-        <li id="fn1"><a href="#fnr1">↑</a> [注释内容]</li>
-      </ol>
+    <!-- 文章底部导航 -->
+    <div class="reveal" style="margin-top:var(--space-3xl); padding-top:var(--space-xl); border-top:2px solid var(--c-border); display:flex; justify-content:space-between; flex-wrap:wrap; gap:var(--space-md);">
+      <a href="../news/" class="btn btn-outline">← 返回资讯列表</a>
+      <!-- TODO: 若有上一篇/下一篇，取消注释并修改链接 -->
+      <!-- <div style="display:flex; gap:var(--space-md);">
+        <a href="上一篇.html" class="btn btn-ghost">← 上一篇</a>
+        <a href="下一篇.html" class="btn btn-ghost">下一篇 →</a>
+      </div> -->
     </div>
 
-    <!-- 返回按钮 -->
-    <div style="margin-top:var(--space-xl);text-align:center;">
-      <a href="index.html" class="btn btn-outline">← 返回资讯动态</a>
-    </div>
   </div>
 </section>
 
 </main>
 
-<!-- ══════ Footer ══════ -->
+<!-- ====== Footer ====== -->
 <footer class="site-footer" role="contentinfo">
   <div class="footer-grid">
     <div class="footer-col">
@@ -150,7 +151,7 @@
       <ul>
         <li><a href="../index.html">首页</a></li>
         <li><a href="../about.html">关于我们</a></li>
-        <li><a href="index.html">资讯动态</a></li>
+        <li><a href="../news/">资讯动态</a></li>
         <li><a href="../events.html">活动中心</a></li>
         <li><a href="../gallery/">作品展示</a></li>
         <li><a href="../join.html">加入我们</a></li>
@@ -182,6 +183,90 @@
 
 <button class="back-to-top" aria-label="回到顶部" title="回到顶部">↑</button>
 
+<!-- Markdown 引擎：marked.js（~40KB，零依赖） -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<!-- 全局交互脚本 -->
 <script defer src="../js/main.js"></script>
+
+<!--
+============================================================
+  在此标签内使用 Markdown 格式写作。
+  支持的语法：标题、段落、加粗、斜体、链接、图片、列表、
+  引用、代码块、表格、任务列表（GFM）等。
+  也可直接插入 HTML（如 <iframe>、<video>）。
+============================================================
+-->
+<script id="mdSource" type="text/markdown">
+## 写作示例
+
+这是一段正文。**加粗**、*斜体*、~~删除线~~ 均可正常使用。
+
+### 列表演示
+
+- 无序列表项一
+- 无序列表项二
+  - 嵌套子项（需要缩进两个空格）
+- 无序列表项三
+
+1. 有序列表项一
+2. 有序列表项二
+3. 有序列表项三
+
+### 引用与代码
+
+> 这是一段引用文字。引用块会自动带有左侧主题色边框和浅色背景。
+
+行内代码使用反引号包裹：`/gamemode creative`
+
+```javascript
+// 代码块使用三个反引号包裹
+function hello() {
+  console.log("Hello UEMCraft!");
+}
+```
+
+### 链接与图片
+
+[跳转到 UEMCraft 首页](../index.html)
+
+![图片说明](../assets/img/logo-256.webp)
+
+### 表格
+
+| 项目 | 说明 | 状态 |
+|------|------|------|
+| 服务器 | play.uemcraft.cn | 在线 |
+| 版本 | 1.20.1 | 稳定 |
+
+### 任务列表
+
+- [x] 完成模板设计
+- [ ] 填充实际新闻内容
+- [ ] 发布文章
+
+---
+
+**提示**：完成写作后，记得删除上方的示例内容，替换为实际文章。
+</script>
+
+<script>
+  (function(){
+    var mdScript = document.getElementById('mdSource');
+    var target = document.getElementById('articleContent');
+    if (!mdScript || !target) return;
+    if (typeof marked !== 'undefined') {
+      marked.setOptions({
+        gfm: true,
+        breaks: false,
+        headerIds: true,
+        mangle: false,
+        sanitize: false
+      });
+      target.innerHTML = marked.parse(mdScript.textContent.trim());
+    }
+  })();
+</script>
+
 </body>
 </html>
