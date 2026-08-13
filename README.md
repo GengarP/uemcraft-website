@@ -16,10 +16,7 @@
 │   └── index.html          画廊
 ├── news/
 │   ├── index.html          新闻列表
-│   ├── _template.html      新闻模板
-│   ├── autumn-recruitment.html
-│   ├── club-charter.html
-│   └── immersive-fight.html
+│   └── article.html        通用文章详情（?slug= 加载）
 ├── css/
 │   ├── tokens.css          设计令牌（配色/间距/字体）
 │   ├── base.css            重置与基础样式
@@ -28,6 +25,9 @@
 │   └── pages.css           页面专属样式
 ├── js/
 │   ├── main.js             全局（导航/主题/滚动）
+│   ├── data.js             内容数据源（新闻/活动）
+│   ├── content.js          内容渲染（列表/详情/预览）
+│   ├── hero-gallery.js     首页背景画廊（左右滑动）
 │   ├── server.js           服务器面板
 │   ├── events.js           活动页
 │   ├── gallery.js          画廊页
@@ -39,8 +39,19 @@
 │   └── fonts/              自托管字体（像素字体 / iconfont）
 ├── favicon.ico
 ├── robots.txt
+├── sitemap.xml
 └── LICENSE                 MIT
 ```
+
+## 内容管理
+
+新闻与活动集中在 `js/data.js`（`window.UEMCRAFT_DATA`）：
+
+- **新增新闻**：在 `news` 数组加一个对象（含 `markdown`），详情页统一为 `news/article.html?slug=<slug>`，列表 / 首页预览自动渲染。
+- **新增活动**：在 `events.upcoming` / `events.past` 加一个对象。
+- 新增新闻后需在 `sitemap.xml` 手动补一条 `<url>`。
+
+详见 `CLAUDE.md`。
 
 ## 设计系统
 

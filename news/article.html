@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <!-- TODO: 修改标题和描述 -->
-  <meta name="description" content="UEMCraft 资讯动态——文章摘要或简介（40字以内）。">
+  <meta name="description" content="UEMCraft 资讯动态——应急管理大学 Minecraft 同好会的最新消息与公告。">
   <meta name="theme-color" content="#213d87">
-  <title>沉浸战斗整合包服务器开设 — 资讯动态 — UEMCraft</title>
+  <title>资讯动态 — UEMCraft</title>
   <link rel="icon" href="../favicon.ico" type="images/x-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -74,10 +73,10 @@
 <!-- Page Hero -->
 <section class="page-hero">
   <div class="container">
-    <h1>沉浸战斗整合包服务器开设</h1>
-    <p class="hero-sub">全新沉浸战斗整合包服务器正式上线！包含丰富的技能树、精英怪物与战斗机制，带来全新的 PvE 体验。</p>
+    <h1 id="articleTitle">文章标题</h1>
+    <p class="hero-sub" id="articleSub">加载中…</p>
     <nav class="breadcrumb" aria-label="面包屑">
-      <a href="../index.html">首页</a> <span>/</span> <a href="../news/">资讯动态</a> <span>/</span> <span>沉浸战斗整合包服务器开设</span>
+      <a href="../index.html">首页</a> <span>/</span> <a href="../news/">资讯动态</a> <span>/</span> <span id="articleCrumb">文章标题</span>
     </nav>
   </div>
 </section>
@@ -86,42 +85,18 @@
 <section class="section">
   <div class="container" style="max-width:800px;">
 
-    <!-- 文章头图（可选） -->
-    <!-- TODO: 替换 src 为实际头图路径；若不需要头图，删除整个 figure 标签 -->
-    <figure class="article-hero reveal">
-      <img src="../assets/img/events/26-8-6-immersive-fight.png" alt="immersive-fight" loading="eager">
-      <figcaption>沉浸战斗整合包官方宣传图</figcaption>
-    </figure>
+    <!-- 文章头图（由 content.js 按数据填充；无头图时自动隐藏） -->
+    <figure class="article-hero reveal" id="articleCover" style="display:none;"></figure>
 
-    <!-- 文章元信息 -->
-    <div class="article-meta reveal">
-      <div class="article-meta-item">
-        <span class="article-meta-label">发布日期</span>
-        <span class="article-meta-value">2026 年 8 月 6 日</span>
-      </div>
-      <span class="article-meta-sep" aria-hidden="true">·</span>
-      <div class="article-meta-item">
-        <span class="article-meta-label">作者</span>
-        <span class="article-meta-value">UEMCraft 理事会</span>
-      </div>
-      <div class="article-meta-tags">
-        <span class="badge badge-blue">服务器</span>
-      </div>
-    </div>
+    <!-- 文章元信息（由 content.js 按数据填充） -->
+    <div class="article-meta reveal" id="articleMeta" style="display:none;"></div>
 
     <!-- Markdown 渲染目标容器 -->
-    <article class="article-body reveal" id="articleContent">
-      <!-- 内容将由下方 script 注入 -->
-    </article>
+    <article class="article-body reveal" id="articleContent"></article>
 
     <!-- 文章底部导航 -->
     <div class="reveal" style="margin-top:var(--space-3xl); padding-top:var(--space-xl); border-top:2px solid var(--c-border); display:flex; justify-content:space-between; flex-wrap:wrap; gap:var(--space-md);">
       <a href="../news/" class="btn btn-outline">← 返回资讯列表</a>
-      <!-- TODO: 若有上一篇/下一篇，取消注释并修改链接 -->
-      <!-- <div style="display:flex; gap:var(--space-md);">
-        <a href="上一篇.html" class="btn btn-ghost">← 上一篇</a>
-        <a href="下一篇.html" class="btn btn-ghost">下一篇 →</a>
-      </div> -->
     </div>
 
   </div>
@@ -185,62 +160,12 @@
 <!-- Markdown 引擎：marked.js（~40KB，零依赖） -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
+<!-- 内容数据与渲染 -->
+<script defer src="../js/data.js"></script>
+<script defer src="../js/content.js"></script>
+
 <!-- 全局交互脚本 -->
 <script defer src="../js/main.js"></script>
-
-<script id="mdSource" type="text/markdown">
-## 整合包简介
-
-> 沉浸战斗（Immersive Fight）是一款以 **史诗战斗** 为核心战斗系统的冒险多人整合包。  
-> 它在舍弃多余繁杂要素的同时，加入了大量细节体验优化，致力于带来最沉浸的冒险战斗体验。
-
-| 项目 | 详情 |
-|------|------|
-| 整合包名称 | 沉浸战斗（Immersive Fight）|
-| 整合包版本 | V4.2.2 |
-| 我的世界版本 | 1.20.1 |
-| 模组平台 | Forge |
-| 运行环境 | 客户端 + 服务端 |
-| 分类 | 冒险 / 多人游戏 / 战斗 |
-| 作者 | 辣某人 |
-
----
-
-## 服务器信息
-
-- **服务器 IP：** `play.uemcraft.cn`
-- **整合包下载：** 前往 [UEMCraft 官方 QQ 群](https://qm.qq.com/q/VYDnv3ZJwC)下载
-
----
-
-## 如何加入
-
-1. 在官方 QQ 群下载 **沉浸战斗 V4.2.2** 整合包并完成安装；
-2. 启动游戏，在多人服务器中添加服务器地址 `play.uemcraft.cn`；
-3. 进入服务器，开启你的沉浸冒险之旅！
-
----
-
-> 本服务器由 UEMCraft 运营维护，欢迎各位冒险家前来体验！
-</script>
-
-<script>
-  (function(){
-    var mdScript = document.getElementById('mdSource');
-    var target = document.getElementById('articleContent');
-    if (!mdScript || !target) return;
-    if (typeof marked !== 'undefined') {
-      marked.setOptions({
-        gfm: true,
-        breaks: false,
-        headerIds: true,
-        mangle: false,
-        sanitize: false
-      });
-      target.innerHTML = marked.parse(mdScript.textContent.trim());
-    }
-  })();
-</script>
 
 </body>
 </html>

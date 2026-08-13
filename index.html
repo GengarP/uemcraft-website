@@ -86,7 +86,15 @@
 
 <!-- Hero -->
 <section class="hero-index">
-  <img class="hero-bg-img" src="assets/img/bg.jpg" alt="" aria-hidden="true">
+  <!-- 背景画廊：可左右滑动切换背景图。在下方 slide 的 src 填入图片路径；不需要的整行删除 -->
+  <div class="hero-gallery" id="heroGallery" aria-hidden="true">
+    <div class="hero-gallery-track">
+      <div class="hero-slide"><img src="assets/img/bg-1.jpg" alt=""></div>
+      <div class="hero-slide"><img src="assets/img/bg-2.png" alt=""></div>
+      <div class="hero-slide"><img src="assets/img/bg-3.png" alt=""></div>
+      <div class="hero-slide"><img src="assets/img/bg-4.png" alt=""></div>
+    </div>
+  </div>
   <div class="container hero-index-content">
     <a href="#serverSection" class="hero-badge reveal" id="heroBadge" title="查看服务器详情">
       <span class="server-indicator" id="heroIndicator"></span>
@@ -105,6 +113,10 @@
       <a href="gallery/" class="btn btn-outline btn-lg">查看作品</a>
     </div>
   </div>
+  <!-- 画廊控制：左右箭头 / 指示点 -->
+  <button class="hero-gallery-arrow hero-gallery-prev" type="button" aria-label="上一张背景">‹</button>
+  <button class="hero-gallery-arrow hero-gallery-next" type="button" aria-label="下一张背景">›</button>
+  <div class="hero-gallery-dots" id="heroGalleryDots"></div>
   <!-- Floating decorations -->
   <div class="hero-float hero-float-1" aria-hidden="true"></div>
   <div class="hero-float hero-float-2" aria-hidden="true"></div>
@@ -349,7 +361,10 @@
 <!-- Back to top -->
 <button class="back-to-top" aria-label="回到顶部" title="回到顶部">↑</button>
 
+<script defer src="js/data.js"></script>
+<script defer src="js/content.js"></script>
 <script defer src="js/main.js"></script>
 <script defer src="js/server.js"></script>
+<script defer src="js/hero-gallery.js"></script>
 </body>
 </html>

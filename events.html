@@ -41,7 +41,7 @@
     <nav class="header-nav" aria-label="主导航">
       <a href="index.html">首页</a>
       <a href="about.html">关于我们</a>
-      <a href="news/"">资讯动态</a>
+      <a href="news/">资讯动态</a>
       <a href="events.html" class="is-active">活动中心</a>
       <a href="gallery/">作品展示</a>
     </nav>
@@ -62,7 +62,7 @@
   <a href="index.html">首页</a>
   <a href="about.html">关于我们</a>
   <a href="events.html" class="is-active">活动中心</a>
-  <a href="news/"">资讯动态</a>
+  <a href="news/">资讯动态</a>
   <a href="gallery/">作品展示</a>
   <a href="join.html" class="btn btn-primary btn-block mobile-cta">加入我们</a>
 </nav>
@@ -88,34 +88,7 @@
       <span class="section-label">UPCOMING</span>
       <h2>近期活动</h2>
     </div>
-    <div class="grid-2 reveal" style="max-width:900px;margin-inline:auto;">
-      <a href="news/autumn-recruitment.html">
-        <div class="event-card">
-          <div class="event-card-img">
-            <img src="assets/img/events/26-8-12-autumn-recruitment.png" alt="">
-            <div class="event-date-badge">2026.10</div>
-            <div class="event-status status-upcoming">即将到来</div>
-          </div>
-          <div class="event-card-body">
-            <div class="news-title">秋季招新</div>
-            <div class="news-excerpt">新学年，新气象！UEMCraft 秋季招新即将开启，欢迎各位新同学加入我们，一起用方块创造世界。</div>
-          </div>
-        </div>
-      </a>
-      <a href="news/immersive-fight.html">
-        <div class="event-card">
-          <div class="event-card-img">
-            <img src="assets/img/events/26-8-6-immersive-fight.png" alt="">
-            <div class="event-date-badge">2026.7.24</div>
-            <div class="event-status status-ongoing">进行中</div>
-          </div>
-          <div class="event-card-body">
-            <div class="news-title">沉浸战斗整合包服务器开设</div>
-            <div class="news-excerpt">全新沉浸战斗整合包服务器正式上线！包含丰富的技能树、精英怪物与战斗机制，带来全新的 PvE 体验。</div>
-          </div>
-        </div>
-      </a>
-    </div>
+    <div class="grid-2 reveal" id="eventUpcoming" style="max-width:900px;margin-inline:auto;"></div>
   </div>
 </section>
 
@@ -130,8 +103,7 @@
       <span class="section-label">REVIEW</span>
       <h2>往期回顾</h2>
     </div>
-    <div class="grid-3 reveal">
-    </div>
+    <div class="grid-3 reveal" id="eventPast"></div>
   </div>
 </section>
 
@@ -156,7 +128,7 @@
       <ul>
         <li><a href="index.html">首页</a></li>
         <li><a href="about.html">关于我们</a></li>
-        <li><a href="news/"">资讯动态</a></li>
+        <li><a href="news/">资讯动态</a></li>
         <li><a href="events.html">活动中心</a></li>
         <li><a href="gallery/">作品展示</a></li>
         <li><a href="join.html">加入我们</a></li>
@@ -190,6 +162,8 @@
 
 <button class="back-to-top" aria-label="回到顶部" title="回到顶部">↑</button>
 
+<script defer src="js/data.js"></script>
+<script defer src="js/content.js"></script>
 <script defer src="js/main.js"></script>
 <script defer src="js/events.js"></script>
 </body>
