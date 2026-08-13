@@ -1,6 +1,6 @@
 /* ============================================================
    server.js — 服务器状态
-   API: http://43.143.245.143:3000/api/java
+   API: https://api.uemcraft.cn/api/java
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!playersEl && !heroStatus) return; // No server elements on this page
 
-  const API = 'https://43.143.245.143:3000/api/java/2667v2sq5.mc5173.cn?port=50018';
+  const API = 'https://api.uemcraft.cn/api/java/play.uemcraft.cn';
 
   function updateUI(data) {
     const online = !!(data.online);
