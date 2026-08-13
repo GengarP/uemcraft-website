@@ -1,6 +1,7 @@
 /* ============================================================
-   hero-gallery.js — 首页背景画廊（左右滑动）
-   slide 的 img 若 src 为空会被忽略；至少两张有效图才会启用切换。
+   hero-gallery.js — 首页背景画廊（左右滑动 + 无缝循环）
+   slide 的 img 若 src 为空会被忽略；至少两张有效图才会启用。
+   首尾各克隆一张，实现「最后一张向右滑能无缝回到第一张」。
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -26,7 +27,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // 不足两张：无需切换，隐藏控制
   if (slides.length < 2) {
     if (prevBtn) prevBtn.style.display = 'none';
     if (nextBtn) nextBtn.style.display = 'none';
@@ -34,48 +34,80 @@ document.addEventListener('DOMContentLoaded', function () {
     return;
   }
 
-  // 初次载入随机选一张，本次会话内刷新保持该图不变
-  var INDEX_KEY = 'uemcraft-hero-index';
-  var index = parseInt(sessionStorage.getItem(INDEX_KEY), 10);
-  if (!(index >= 0 && index < slides.length)) {
-    index = Math.floor(Math.random() * slides.length);
-    sessionStorage.setItem(INDEX_KEY, String(index));
-  }
-  var timer = null;
+  // 无缝循环：开头克隆最后一张、末尾克隆第一张
+  track.insertBefore(slides[slides.length - 1].cloneNode(true), track.firstChild);
+  track.appendChild(slides[0].cloneNode(true));
+
+  var count = slides.length; // 真实张数；DOM 索引 1..count 为真实 slide
+  var current = 1;           // 当前 DOM 索引
   var AUTO_MS = 5000;
+  var timer = null;
+
+  // 初次载入随机选一张，本次会话内刷新保持不变
+  var INDEX_KEY = 'uemcraft-hero-index';
+  var saved = parseInt(sessionStorage.getItem(INDEX_KEY), 10);
+  var start = (saved >= 0 && saved < count) ? saved : Math.floor(Math.random() * count);
+  if (!(saved >= 0 && saved < count)) {
+    sessionStorage.setItem(INDEX_KEY, String(start));
+  }
+  current = start + 1;
 
   // 指示点
-  slides.forEach(function (_, i) {
-    var dot = document.createElement('button');
-    dot.type = 'button';
-    dot.className = 'hero-gallery-dot' + (i === index ? ' is-active' : '');
-    dot.setAttribute('aria-label', '切换到第 ' + (i + 1) + ' 张背景');
-    dot.addEventListener('click', function () { goTo(i); restart(); });
-    dotsWrap.appendChild(dot);
-  });
+  for (var i = 0; i < count; i++) {
+    (function (realIdx) {
+      var dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'hero-gallery-dot' + (realIdx === start ? ' is-active' : '');
+      dot.setAttribute('aria-label', '切换到第 ' + (realIdx + 1) + ' 张背景');
+      dot.addEventListener('click', function () { goTo(realIdx + 1); restart(); });
+      dotsWrap.appendChild(dot);
+    })(i);
+  }
 
-  function update() {
-    track.style.transform = 'translateX(-' + (index * 100) + '%)';
+  // DOM 索引 -> 真实索引
+  function realIndex(domIdx) {
+    return (domIdx - 1 + count) % count;
+  }
+
+  function updateDots() {
+    var r = realIndex(current);
     var dots = dotsWrap.children;
-    for (var i = 0; i < dots.length; i++) {
-      dots[i].classList.toggle('is-active', i === index);
+    for (var j = 0; j < dots.length; j++) {
+      dots[j].classList.toggle('is-active', j === r);
     }
   }
 
-  function goTo(i) {
-    index = (i + slides.length) % slides.length;
-    update();
+  function setTransform(domIdx, animate) {
+    if (!animate) track.style.transition = 'none';
+    track.style.transform = 'translateX(-' + (domIdx * 100) + '%)';
+    if (!animate) {
+      void track.offsetWidth; // 强制回流，让无过渡定位立即生效
+      track.style.transition = '';
+    }
   }
-  function next() { goTo(index + 1); }
-  function prev() { goTo(index - 1); }
 
-  function stop() {
-    if (timer) { clearInterval(timer); timer = null; }
+  function goTo(domIdx) {
+    current = domIdx;
+    setTransform(current, true);
+    updateDots();
   }
-  function start() {
-    stop();
-    timer = setInterval(next, AUTO_MS);
+
+  // 落在克隆位上时，无缝瞬移回对应真实 slide
+  function normalize() {
+    if (current === 0) { current = count; setTransform(current, false); updateDots(); }
+    else if (current === count + 1) { current = 1; setTransform(current, false); updateDots(); }
   }
+
+  function next() { normalize(); goTo(current + 1); }
+  function prev() { normalize(); goTo(current - 1); }
+
+  track.addEventListener('transitionend', function (e) {
+    if (e.target !== track || e.propertyName !== 'transform') return;
+    normalize();
+  });
+
+  function stop() { if (timer) { clearInterval(timer); timer = null; } }
+  function start() { stop(); timer = setInterval(next, AUTO_MS); }
   function restart() { start(); }
 
   if (prevBtn) prevBtn.addEventListener('click', function () { prev(); restart(); });
@@ -84,9 +116,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // 触摸滑动
   var startX = 0, deltaX = 0, tracking = false;
   gallery.addEventListener('touchstart', function (e) {
-    startX = e.touches[0].clientX;
-    tracking = true;
-    stop();
+    startX = e.touches[0].clientX; tracking = true; stop();
   }, { passive: true });
   gallery.addEventListener('touchmove', function (e) {
     if (!tracking) return;
@@ -102,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function () {
     restart();
   });
 
-  // 键盘左右键
+  // 键盘左右
   document.addEventListener('keydown', function (e) {
     if (e.key === 'ArrowLeft') { prev(); restart(); }
     else if (e.key === 'ArrowRight') { next(); restart(); }
@@ -112,11 +142,8 @@ document.addEventListener('DOMContentLoaded', function () {
   gallery.addEventListener('mouseenter', stop);
   gallery.addEventListener('mouseleave', start);
 
-  // 初次定位不播放过渡动画，避免刷新时从第一张滚动到随机图
-  track.style.transition = 'none';
-  update();
-  void track.offsetWidth; // 强制回流，让无过渡定位立即生效
-  track.style.transition = '';
-
+  // 初次定位不播放过渡，避免刷新时滚动动画
+  setTransform(current, false);
+  updateDots();
   start();
 });

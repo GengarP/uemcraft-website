@@ -100,9 +100,10 @@
   overflow:hidden;
   z-index:0;
   opacity:0;
-  transition:opacity .8s ease;
+  transform:scale(1.08);
+  transition:opacity .8s ease, transform .8s cubic-bezier(.7,0,.3,1);
 }
-.hero-index.is-loaded .hero-gallery { opacity:1; }
+.hero-index.is-loaded .hero-gallery { opacity:1; transform:scale(1); }
 .hero-gallery-track {
   display:flex;
   height:100%;
@@ -119,10 +120,7 @@
   object-position:center;
   display:block;
   pointer-events:none;
-  transform:scale(1.08);
-  transition:transform .8s cubic-bezier(.7,0,.3,1);
 }
-.hero-index.is-loaded .hero-slide img { transform:scale(1); }
 /* 控制：左右箭头 */
 .hero-gallery-arrow {
   position:absolute;

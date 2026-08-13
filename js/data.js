@@ -13,12 +13,12 @@ window.UEMCRAFT_DATA = {
     {
       slug: 'skin-uemcraft-cn',
       title: '皮肤站上线',
-      excerpt: 'YIT & UEM 联合皮肤站现已正式接入 MUA Union 联合验证系统',
+      excerpt: 'YIT & UEM 联合皮肤站现已正式接入 MUA Union 联合验证系统。',
       date: '2026-8-13',
       author: 'UEMCraft 理事会',
       tags: ['网站'],
       cover: '/assets/img/events/26-8-13-skin-uemcraft-cn.jpg',
-      markdown: `YIT & UEM 联合皮肤站（[https://skin.uemcraft.cn/](https://skin.uemcraft.cn/)）现已正式接入 **MUA Union 联合验证系统**。即日起，燕京理工学院与应急管理大学的Minecraft玩家可使用联合认证账号在更多高校服务器间畅游，皮肤与披风数据互联互通。
+      markdown: `YIT & UEM 联合皮肤站（[https://skin.uemcraft.cn/](https://skin.uemcraft.cn/)）现已正式接入 **MUA Union 联合验证系统**。即日起，燕京理工学院与应急管理大学的 Minecraft 玩家可使用联合认证账号在更多高校服务器间畅游，皮肤与披风数据互联互通。
 
 ## 什么是 MUA Union 联合验证？
 
@@ -33,13 +33,12 @@ YIT & UEM 联合皮肤站基于 Blessing Skin Server（v6.0.2，Laravel 10）构
 - **多角色管理**：一个账户可绑定多个游戏角色
 - **皮肤库与分享**：浏览皮肤库，添加喜爱的皮肤并与好友分享
 - **皮肤与披风托管**：配合 CustomSkinLoader 等换肤 Mod，为游戏角色设置皮肤与披风，其他玩家在游戏中可见
-- **永久免费**：承诺永不收取任何费用
 
 ## 学生身份真实验证
 
 与其他皮肤站不同，YIT & UEM 联合皮肤站要求用户在创建角色、上传皮肤前必须通过学校系统验证在校生身份。验证并非手动填写，而是真实调用学校系统：
 
-- **燕京理工学院（YIT）**：调用教务系统 'jw.yit.edu.cn' 登录并核对学籍信息（姓名 + 学号）
+- **燕京理工学院（YIT）**：调用教务系统 \`jw.yit.edu.cn\` 登录并核对学籍信息（姓名 + 学号）
 - **应急管理大学（UEM）**：扫码验证（学校 App 扫码确认，无需密码，自动获取姓名 + 学号）
 
 ## 隐私与安全保障
@@ -50,7 +49,7 @@ YIT & UEM 联合皮肤站基于 Blessing Skin Server（v6.0.2，Laravel 10）构
 - 数据库仅保存学校、学号、验证时间，不保存姓名
 - 网页上仅显示验证所属学校，不显示学号、姓名等个人信息
 - 不获取、不保存任何成绩、课表等学业信息
-- 提供独立隐私协议页（'/privacy'）
+- 提供独立隐私协议页（\`/privacy\`）
 
 ## 接入 MUA Union 的意义
 
