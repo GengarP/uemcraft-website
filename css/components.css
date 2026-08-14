@@ -70,11 +70,11 @@
   font-family:var(--font-mono);
   letter-spacing:0;
 }
-.badge-green  { background:#27AE6020; color:var(--c-ok); }
-.badge-gold   { background:#F0B42920; color:var(--c-gold); }
-.badge-red    { background:#C0392B20; color:var(--c-red); }
-.badge-blue   { background:var(--c-primary); color:#fff; }
-.badge-gray   { background:var(--c-surface-2); color:var(--c-text-muted); }
+.badge-green,
+.badge-gold,
+.badge-red,
+.badge-blue,
+.badge-gray { background:var(--c-primary); color:#fff; }
 
 /* ---- Cards ---- */
 .card {
@@ -497,6 +497,75 @@
   border-radius:2px;
   font-size:.9em;
 }
+.article-body .code-block {
+  margin:var(--space-lg) 0;
+  background:var(--c-bg-2);
+  border:2px solid var(--c-border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-hard-sm);
+  overflow:hidden;
+}
+.article-body .code-header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:var(--space-sm);
+  padding:var(--space-xs) var(--space-md);
+  background:var(--c-surface-2);
+  border-bottom:1px solid var(--c-border);
+  font-family:var(--font-mono);
+  font-size:var(--fs-xs);
+}
+.article-body .code-lang {
+  color:var(--c-text-muted);
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  font-weight:700;
+}
+.article-body .code-copy {
+  display:inline-flex;
+  align-items:center;
+  padding:.15em .6em;
+  background:transparent;
+  border:1px solid var(--c-border);
+  border-radius:3px;
+  color:var(--c-text-muted);
+  font-family:var(--font-mono);
+  font-size:var(--fs-xs);
+  line-height:1.5;
+  cursor:pointer;
+  transition:color var(--duration) var(--ease), border-color var(--duration) var(--ease);
+}
+.article-body .code-copy:hover {
+  color:var(--c-primary);
+  border-color:var(--c-primary);
+}
+.article-body .code-block pre {
+  margin:0;
+  padding:var(--space-lg) var(--space-md);
+  background:transparent;
+  border:none;
+  border-radius:0;
+  box-shadow:none;
+  overflow-x:auto;
+  line-height:1.7;
+  white-space:pre;
+}
+.article-body pre code {
+  display:block;
+  background:none;
+  padding:0;
+  border-radius:0;
+  font-size:var(--fs-sm);
+  color:var(--c-text);
+}
+/* 代码高亮 token 配色（随 --c-* 主题变量自适应明暗） */
+.article-body .tok-key     { color:var(--c-accent-1); }
+.article-body .tok-string  { color:var(--c-ok); }
+.article-body .tok-number  { color:var(--c-gold); }
+.article-body .tok-keyword { color:var(--c-accent-4); }
+.article-body .tok-punct   { color:var(--c-text-muted); }
+.article-body .tok-comment { color:var(--c-text-muted); font-style:italic; }
 .article-body hr {
   border:none;
   border-top:1px solid var(--c-border);
