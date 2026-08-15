@@ -69,12 +69,9 @@
   line-height:1.6;
   font-family:var(--font-mono);
   letter-spacing:0;
+  background:var(--c-primary);
+  color:#fff;
 }
-.badge-green,
-.badge-gold,
-.badge-red,
-.badge-blue,
-.badge-gray { background:var(--c-primary); color:#fff; }
 
 /* ---- Cards ---- */
 .card {
@@ -830,10 +827,17 @@ img.member-avatar { object-fit:cover; }
   color:var(--c-primary);
   opacity:.35;
 }
-.event-date-badge {
+.event-img-meta {
   position:absolute;
-  top:var(--space-sm);
   left:var(--space-sm);
+  bottom:var(--space-sm);
+  display:flex;
+  align-items:center;
+  gap:var(--space-sm);
+  flex-wrap:wrap;
+  z-index:1;
+}
+.event-date-badge {
   background:var(--c-primary);
   color:#fff;
   border-radius:var(--radius);
@@ -844,13 +848,10 @@ img.member-avatar { object-fit:cover; }
 }
 .event-date-badge.past { background:var(--c-text-muted); }
 .event-status {
-  position:absolute;
-  top:var(--space-sm);
-  right:var(--space-sm);
   font-size:var(--fs-xs);
   font-weight:700;
   padding:.2em .55em;
-  border-radius:999px;
+  border-radius:var(--radius);
   font-family:var(--font-mono);
 }
 .event-status.status-upcoming { background:var(--c-accent-4); color:#fff; }
@@ -1249,11 +1250,14 @@ a.contact-card:hover .cc-title {
     gap:var(--space-md);
     padding:var(--space-lg);
   }
+  .server-indicator { align-self:center; }
   .server-header {
-    flex-direction:column;
+    flex-direction:row;
     align-items:center;
-    gap:var(--space-xs);
+    justify-content:center;
+    gap:var(--space-md);
   }
+  .server-title { text-align:center; }
   .server-addr-row {
     flex-wrap:wrap;
     justify-content:center;
@@ -1263,7 +1267,14 @@ a.contact-card:hover .cc-title {
     font-size:var(--fs-xs);
     padding:.3rem .6rem;
   }
-  .server-stats { margin-left:0; justify-content:center; }
+  .server-stats {
+    margin-left:0;
+    justify-content:center;
+    width:100%;
+    margin-top:var(--space-xs);
+    padding-top:var(--space-sm);
+    border-top:1px dashed var(--c-border);
+  }
   .server-stat .sval { font-size:.9rem; }
   .server-motd {
     text-align:center;

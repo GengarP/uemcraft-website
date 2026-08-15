@@ -96,9 +96,13 @@ php -S localhost:8080
 |------|------|
 | UEMCraft 官网 | https://uemcraft.cn |
 | MUA | https://www.mualliance.cn/ |
+| MUA 皮肤站 | https://skin.mualliance.ltd/ |
+| YIT & UEM 联合皮肤站 | https://skin.uemcraft.cn/ |
 | 应急管理大学 | https://www.ncist.edu.cn/ |
+| 燕理MC玩家创作协会 | https://www.yitmc.cn |
 | QQ 群 | https://qm.qq.com/q/VYDnv3ZJwC |
 | B 站 | https://space.bilibili.com/3546888496221012 |
+| 抖音 | https://v.douyin.com/Q44xZngm3ls/ |
 
 ## 许可证
 

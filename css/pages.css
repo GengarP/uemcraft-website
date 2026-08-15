@@ -299,16 +299,256 @@
 }
 
 @media (max-width:768px) {
-  .hero-index { min-height:70vh; }
+  .hero-index { min-height:60vh; }
   .hero-float { display:none; }
+  .hero-index-content {
+    padding: var(--space-xl) var(--space-md);
+  }
+  .hero-title-img {
+    max-width: 280px;
+  }
+  .hero-title-cn {
+    font-size: clamp(1.3rem, 5vw, 1.6rem);
+  }
+  .hero-desc {
+    font-size: var(--fs-sm);
+    max-width: 100%;
+    margin-top: var(--space-md);
+  }
+  .hero-cta {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-top: var(--space-lg);
+  }
+  .hero-cta .btn-lg {
+    width: 100%;
+    max-width: 260px;
+    padding: .6rem 1.2rem;
+    font-size: var(--fs-sm);
+  }
+  .hero-badge {
+    margin-bottom: var(--space-lg);
+    font-size: var(--fs-xs);
+    padding: .25rem .8rem;
+  }
+  .hero-gallery-arrow {
+    display: none;
+  }
+  .hero-gallery-dots {
+    bottom: var(--space-md);
+  }
 }
 
 [data-theme="dark"] .hero-index {
   background:linear-gradient(135deg,var(--c-bg) 0%,color-mix(in srgb,var(--c-primary) 40%,var(--c-bg)) 50%,color-mix(in srgb,var(--c-accent-4) 35%,var(--c-bg)) 100%);
 }
 
+/* ========== 关于我们页（about.html）：扁平杂志式布局 ========== */
+
+.about-body {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: var(--space-2xl);
+  align-items: start;
+  margin-bottom: var(--space-3xl);
+}
+
+.about-visual img {
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+  border-radius: var(--radius);
+}
+
+.about-content {
+  padding-top: var(--space-sm);
+}
+
+.about-lead {
+  font-size: var(--fs-lg);
+  line-height: 1.8;
+  color: var(--c-heading);
+  margin-bottom: var(--space-lg);
+}
+
+.about-desc {
+  font-size: var(--fs-base);
+  line-height: 1.9;
+  color: var(--c-text-muted);
+  margin-bottom: var(--space-xl);
+}
+
+.about-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--c-border);
+}
+
+.about-meta-item {
+  font-size: var(--fs-sm);
+  color: var(--c-text-muted);
+}
+
+.about-meta-item .text-mono {
+  color: var(--c-primary);
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.about-meta-sep {
+  width: 4px;
+  height: 4px;
+  background: var(--c-border);
+  border-radius: 1px;
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+/* 三大特色 — 无卡片，仅用色条锚点 */
+.about-pillars {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-xl);
+  margin-bottom: var(--space-xl);
+  padding-top: var(--space-xl);
+  border-top: 1px solid var(--c-border);
+}
+
+.about-pillar {
+  position: relative;
+  padding-top: var(--space-lg);
+}
+
+.about-pillar-mark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.about-pillar h4 {
+  font-size: var(--fs-base);
+  margin-bottom: var(--space-xs);
+  color: var(--c-heading);
+}
+
+.about-pillar p {
+  font-size: var(--fs-sm);
+  color: var(--c-text-muted);
+  line-height: 1.7;
+}
+
+/* 首页：关于同好会（精简居中介绍，与 about.html 详细版区分） */
+.club-intro-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 720px;
+  margin-inline: auto;
+}
+.club-intro-logo {
+  width: 128px;
+  height: auto;
+  image-rendering: pixelated;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hard-sm);
+  margin-bottom: var(--space-xl);
+}
+.club-intro-lead {
+  font-size: var(--fs-lg);
+  line-height: 1.9;
+  color: var(--c-text);
+  margin-bottom: var(--space-xl);
+}
+.club-intro-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-2xl);
+}
+.club-intro-stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  font-size: var(--fs-sm);
+  color: var(--c-text-muted);
+}
+.club-intro-num {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: var(--c-primary);
+}
+.club-intro-sep {
+  width: 4px;
+  height: 4px;
+  background: var(--c-border);
+  border-radius: 1px;
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+@media (max-width: 480px) {
+  .club-intro-logo { width: 104px; }
+  .club-intro-lead { font-size: var(--fs-base); }
+}
+
+/* 响应式 */
+@media (max-width: 991px) {
+  .about-body {
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+    margin-bottom: var(--space-2xl);
+  }
+  .about-visual {
+    position: static;
+    max-width: 160px;
+    margin: 0 auto;
+  }
+  .about-content {
+    text-align: left;
+  }
+  .about-meta {
+    justify-content: flex-start;
+    gap: var(--space-sm) var(--space-lg);
+  }
+  .about-pillars {
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+    text-align: left;
+  }
+  .about-pillar {
+    text-align: left;
+    padding-left: var(--space-lg);
+    border-left: 3px solid var(--c-border);
+    padding-top: 0;
+  }
+  .about-pillar-mark {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .about-lead {
+    font-size: var(--fs-base);
+  }
+  .about-meta {
+    gap: var(--space-sm) var(--space-md);
+  }
+  .about-meta-item .text-mono {
+    font-size: 1rem;
+  }
+}
+
 /* ========== About page ========== */
-.about-intro .panel { height:100%; }
 
 /* Org tree spacing */
 .org-section { padding:var(--space-xl) 0; }

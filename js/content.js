@@ -75,8 +75,10 @@ function renderEventCard(item) {
     '<div class="event-card">' +
       '<div class="event-card-img">' +
         '<img src="' + escapeHtml(item.cover || '') + '" alt="">' +
-        '<div class="event-date-badge">' + escapeHtml(item.dateLabel || '') + '</div>' +
-        '<div class="event-status ' + st.cls + '">' + st.label + '</div>' +
+        '<div class="event-img-meta">' +
+          '<div class="event-date-badge">' + escapeHtml(item.dateLabel || '') + '</div>' +
+          '<div class="event-status ' + st.cls + '">' + st.label + '</div>' +
+        '</div>' +
       '</div>' +
       '<div class="event-card-body">' +
         '<div class="news-title">' + escapeHtml(item.title) + '</div>' +
