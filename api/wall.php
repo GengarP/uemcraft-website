@@ -12,9 +12,9 @@
  *   POST ?action=edit                      （JSON {id, name?, content?}）
  *   POST ?action=delete                    （JSON {id}）
  *
- * 审核模式：先审后发——新留言调用智谱 GLM-4.7-Flash 审核，
+ * 审核模式：先审后发——新留言调用硅基流动 Qwen3.5-4B 审核，
  * 仅判定合规才 status=approved 公开；不合规或服务不可用（未配置
- * ZHIPU_API_KEY / 无 cURL / 超时 / 报错 / 解析失败）均入库为
+ * MODERATION_API_KEY / 无 cURL / 超时 / 报错 / 解析失败）均入库为
  * status=hidden 待人工复核。管理员可在后台恢复 approved 或删除。
  *
  * 数据库：默认 SQLite（零配置，库文件 api/wall.db，自动建表）；
@@ -38,9 +38,9 @@ define('MAX_CONTENT_LENGTH', 500);
 define('MAX_NAME_LENGTH', 20);
 define('MIN_NAME_LENGTH', 2);
 define('STATUS_ALLOWED', ['approved', 'hidden']);
-define('ZHIPU_API_URL', 'https://open.bigmodel.cn/api/paas/v4/chat/completions');
-define('ZHIPU_MODEL', getenv('ZHIPU_MODEL') ?: 'glm-4.7-flash');
-define('ZHIPU_TIMEOUT', 8);
+define('MODERATION_API_URL', 'https://api.siliconflow.cn/v1/chat/completions');
+define('MODERATION_MODEL', getenv('MODERATION_MODEL') ?: 'Qwen/Qwen3.5-4B');
+define('MODERATION_TIMEOUT', 8);
 
 function json($data, $code = 200) {
     http_response_code($code);
@@ -149,11 +149,11 @@ function checkRateLimit($db, $ip) {
 }
 
 /**
- * 调用智谱 GLM-4.7-Flash 审核留言是否合规。
+ * 调用硅基流动 Qwen3.5-4B 审核留言是否合规。
  * 返回 'approved'（合规）| 'hidden'（不合规）| null（服务不可用/未配置/解析失败）。
  */
 function moderateContent($name, $content) {
-    $apiKey = getenv('ZHIPU_API_KEY');
+    $apiKey = getenv('MODERATION_API_KEY');
     if (!$apiKey || !function_exists('curl_init')) {
         return null; // 未配置 API Key 或不支持 cURL → 视为不可用
     }
@@ -166,10 +166,10 @@ function moderateContent($name, $content) {
     $user = "昵称：{$name}\n内容：{$content}";
 
     $payload = json_encode([
-        'model' => ZHIPU_MODEL,
-        // glm-4.7-flash 默认开启推理，会把 max_tokens 耗在思考上导致正文为空；
-        // 审核任务无需推理，显式关闭以获得快速、确定的 JSON 判定
-        'thinking' => ['type' => 'disabled'],
+        'model' => MODERATION_MODEL,
+        // Qwen3.5 默认开启思考模式，会把 max_tokens 耗在推理上导致正文为空；
+        // 审核任务无需思考，显式关闭以获得快速、确定的 JSON 判定
+        'enable_thinking' => false,
         'messages' => [
             ['role' => 'system', 'content' => $system],
             ['role' => 'user', 'content' => $user],
@@ -178,7 +178,7 @@ function moderateContent($name, $content) {
         'max_tokens' => 128,
     ], JSON_UNESCAPED_UNICODE);
 
-    $ch = curl_init(ZHIPU_API_URL);
+    $ch = curl_init(MODERATION_API_URL);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST => true,
@@ -188,7 +188,7 @@ function moderateContent($name, $content) {
             'Authorization: Bearer ' . $apiKey,
         ],
         CURLOPT_CONNECTTIMEOUT => 3,
-        CURLOPT_TIMEOUT => ZHIPU_TIMEOUT,
+        CURLOPT_TIMEOUT => MODERATION_TIMEOUT,
     ]);
     $resp = curl_exec($ch);
     $err = curl_error($ch);

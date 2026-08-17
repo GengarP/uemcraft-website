@@ -64,19 +64,19 @@
 
 - **前端**：`wall/index.html` + `js/wall.js`；管理端 `wall/admin.html` + `js/wall-admin.js`（需 token）
 - **后端**：`api/wall.php`，PDO + SQLite（默认），可用环境变量切换 MySQL
-- **AI 审核**：发布前调用智谱 GLM-4.7-Flash 审核，仅判定合规才公开；不合规或服务不可用均入库为 `hidden` 待人工复核
+- **AI 审核**：发布前调用硅基流动 Qwen3.5-4B 审核，仅判定合规才公开；不合规或服务不可用均入库为 `hidden` 待人工复核
 
 ### 环境变量
 
 | 变量 | 必填 | 说明 |
 |------|------|------|
 | `WALL_ADMIN_TOKEN` | 是 | 管理端鉴权 token |
-| `ZHIPU_API_KEY` | 是 | 智谱开放平台 API Key，启用 AI 审核 |
-| `ZHIPU_MODEL` | 否 | 默认 `glm-4.7-flash` |
+| `MODERATION_API_KEY` | 是 | 硅基流动 API Key，启用 AI 审核 |
+| `MODERATION_MODEL` | 否 | 默认 `Qwen/Qwen3.5-4B` |
 | `WALL_DB_DRIVER` | 否 | `sqlite`（默认）/ `mysql` |
 | `WALL_DB_HOST/PORT/NAME/USER/PASS` | 否 | 切 MySQL 时填写 |
 
-> 未配置 `ZHIPU_API_KEY` 时，所有新留言默认进入待审核（`hidden`）状态，需在后台人工复核。
+> 未配置 `MODERATION_API_KEY` 时，所有新留言默认进入待审核（`hidden`）状态，需在后台人工复核。
 
 ## 设计系统
 
