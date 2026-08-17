@@ -182,7 +182,12 @@
         try {
           var res = JSON.parse(xhr.responseText);
           if (res.success) {
-            showFormMessage('留言发表成功！', 'success');
+            var status = res.data && res.data.status;
+            if (status === 'hidden') {
+              showFormMessage('留言已提交，审核通过后将展示', 'info');
+            } else {
+              showFormMessage('留言发表成功！', 'success');
+            }
             form.reset();
             charCount.textContent = '0';
             loadMessages(1);

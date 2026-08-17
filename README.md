@@ -2,7 +2,7 @@
 
 > 应急管理大学 Minecraft 同好会官方网站 — [uemcraft.cn](https://uemcraft.cn)
 
-纯静态网站，HTML5 + CSS3 + Vanilla JS，零框架零依赖，可直接部署到任意静态托管服务。
+以纯静态为主，HTML5 + CSS3 + Vanilla JS，零框架零依赖。留言墙（`wall/`）例外，带 PHP + SQLite 后端，需部署到支持 PHP 的服务器。
 
 ## 项目结构
 
@@ -17,6 +17,11 @@
 ├── news/
 │   ├── index.html          新闻列表
 │   └── article.html        通用文章详情（?slug= 加载）
+├── wall/
+│   ├── index.html          留言墙（需 PHP 后端）
+│   └── admin.html          留言墙管理端
+├── api/
+│   └── wall.php            留言墙后端（PHP + SQLite，AI 审核）
 ├── css/
 │   ├── tokens.css          设计令牌（配色/间距/字体）
 │   ├── base.css            重置与基础样式
@@ -53,6 +58,26 @@
 
 详见 `CLAUDE.md`。
 
+## 留言墙
+
+站内唯一带后端的功能，其余页面仍为纯静态。
+
+- **前端**：`wall/index.html` + `js/wall.js`；管理端 `wall/admin.html` + `js/wall-admin.js`（需 token）
+- **后端**：`api/wall.php`，PDO + SQLite（默认），可用环境变量切换 MySQL
+- **AI 审核**：发布前调用智谱 GLM-4.7-Flash 审核，仅判定合规才公开；不合规或服务不可用均入库为 `hidden` 待人工复核
+
+### 环境变量
+
+| 变量 | 必填 | 说明 |
+|------|------|------|
+| `WALL_ADMIN_TOKEN` | 是 | 管理端鉴权 token |
+| `ZHIPU_API_KEY` | 是 | 智谱开放平台 API Key，启用 AI 审核 |
+| `ZHIPU_MODEL` | 否 | 默认 `glm-4.7-flash` |
+| `WALL_DB_DRIVER` | 否 | `sqlite`（默认）/ `mysql` |
+| `WALL_DB_HOST/PORT/NAME/USER/PASS` | 否 | 切 MySQL 时填写 |
+
+> 未配置 `ZHIPU_API_KEY` 时，所有新留言默认进入待审核（`hidden`）状态，需在后台人工复核。
+
 ## 设计系统
 
 - **风格**："像素现代" — 低圆角 (4px)、硬阴影、像素网格纹理
@@ -82,13 +107,15 @@ php -S localhost:8080
 
 ## 部署
 
-由于是纯静态站点，可直接部署到：
+除留言墙外均为纯静态，可直接部署到：
 
 - **GitHub Pages** — 推送到 `gh-pages` 分支
 - **Vercel / Netlify / Cloudflare Pages** — 连接仓库后自动部署
 - **任意虚拟主机** — 上传全部文件即可
 
 无需构建、编译或打包。
+
+> **留言墙例外**：`wall/` 依赖 PHP + PDO（SQLite 或 MySQL），纯静态托管无法运行，须部署到支持 PHP 的服务器（如宝塔、Nginx + PHP-FPM）。SQLite 的 `api/wall.db` 为运行期自动生成，勿提交。
 
 ## 相关链接
 

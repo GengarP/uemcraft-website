@@ -12,8 +12,10 @@
  *   POST ?action=edit                      （JSON {id, name?, content?}）
  *   POST ?action=delete                    （JSON {id}）
  *
- * 审核模式：先发后审——新留言默认 status=approved 直接公开，
- * 管理员可将不合规留言置为 hidden 屏蔽，或恢复为 approved。
+ * 审核模式：先审后发——新留言调用智谱 GLM-4.7-Flash 审核，
+ * 仅判定合规才 status=approved 公开；不合规或服务不可用（未配置
+ * ZHIPU_API_KEY / 无 cURL / 超时 / 报错 / 解析失败）均入库为
+ * status=hidden 待人工复核。管理员可在后台恢复 approved 或删除。
  *
  * 数据库：默认 SQLite（零配置，库文件 api/wall.db，自动建表）；
  * 切换 MySQL 只需设置环境变量 WALL_DB_DRIVER=mysql，
@@ -36,6 +38,9 @@ define('MAX_CONTENT_LENGTH', 500);
 define('MAX_NAME_LENGTH', 20);
 define('MIN_NAME_LENGTH', 2);
 define('STATUS_ALLOWED', ['approved', 'hidden']);
+define('ZHIPU_API_URL', 'https://open.bigmodel.cn/api/paas/v4/chat/completions');
+define('ZHIPU_MODEL', getenv('ZHIPU_MODEL') ?: 'glm-4.7-flash');
+define('ZHIPU_TIMEOUT', 8);
 
 function json($data, $code = 200) {
     http_response_code($code);
@@ -143,6 +148,79 @@ function checkRateLimit($db, $ip) {
     return 0;
 }
 
+/**
+ * 调用智谱 GLM-4.7-Flash 审核留言是否合规。
+ * 返回 'approved'（合规）| 'hidden'（不合规）| null（服务不可用/未配置/解析失败）。
+ */
+function moderateContent($name, $content) {
+    $apiKey = getenv('ZHIPU_API_KEY');
+    if (!$apiKey || !function_exists('curl_init')) {
+        return null; // 未配置 API Key 或不支持 cURL → 视为不可用
+    }
+
+    $system = "你是留言墙内容审核员，判断用户留言是否合规、是否适合公开发布。"
+        . "违规类型包括但不限于：辱骂、人身攻击、色情低俗、政治敏感、违法违规、"
+        . "广告垃圾信息、恶意引流、泄露他人隐私等。"
+        . "只输出一个 JSON 对象，不要输出任何解释或多余文字，格式：{\"allowed\":true,\"reason\":\"简短理由\"}";
+
+    $user = "昵称：{$name}\n内容：{$content}";
+
+    $payload = json_encode([
+        'model' => ZHIPU_MODEL,
+        // glm-4.7-flash 默认开启推理，会把 max_tokens 耗在思考上导致正文为空；
+        // 审核任务无需推理，显式关闭以获得快速、确定的 JSON 判定
+        'thinking' => ['type' => 'disabled'],
+        'messages' => [
+            ['role' => 'system', 'content' => $system],
+            ['role' => 'user', 'content' => $user],
+        ],
+        'temperature' => 0.1,
+        'max_tokens' => 128,
+    ], JSON_UNESCAPED_UNICODE);
+
+    $ch = curl_init(ZHIPU_API_URL);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $payload,
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $apiKey,
+        ],
+        CURLOPT_CONNECTTIMEOUT => 3,
+        CURLOPT_TIMEOUT => ZHIPU_TIMEOUT,
+    ]);
+    $resp = curl_exec($ch);
+    $err = curl_error($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($resp === false || $err !== '' || $httpCode !== 200) {
+        error_log('[wall.php] 审核请求失败: ' . $err . ' http=' . $httpCode);
+        return null;
+    }
+
+    $json = json_decode($resp, true);
+    $text = $json['choices'][0]['message']['content'] ?? '';
+    if ($text === '') {
+        return null;
+    }
+
+    // 期望模型输出 JSON {"allowed": bool}
+    $result = json_decode(trim($text), true);
+    if (is_array($result) && array_key_exists('allowed', $result)) {
+        return $result['allowed'] ? 'approved' : 'hidden';
+    }
+
+    // 容错：正则匹配 allowed 的布尔值
+    if (preg_match('/"allowed"\s*:\s*(true|false)/i', $text, $m)) {
+        return strtolower($m[1]) === 'true' ? 'approved' : 'hidden';
+    }
+
+    error_log('[wall.php] 审核结果解析失败: ' . $text);
+    return null;
+}
+
 /** 读取 JSON 请求体，回退到表单 POST */
 function readInput() {
     $input = json_decode(file_get_contents('php://input'), true);
@@ -231,8 +309,11 @@ try {
             json(['success' => false, 'error' => '操作太频繁，请 ' . $wait . ' 秒后再试'], 429);
         }
 
-        $stmt = $db->prepare("INSERT INTO messages (name, content, ip, created_at) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$name, $content, $ip, time()]);
+        // AI 审核：仅明确判定合规才公开；不合规或服务不可用均待人工复核
+        $status = moderateContent($name, $content) === 'approved' ? 'approved' : 'hidden';
+
+        $stmt = $db->prepare("INSERT INTO messages (name, content, ip, status, created_at) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$name, $content, $ip, $status, time()]);
 
         json([
             'success' => true,
@@ -240,7 +321,7 @@ try {
                 'id' => (int) $db->lastInsertId(),
                 'name' => $name,
                 'content' => $content,
-                'status' => 'approved',
+                'status' => $status,
                 'created_at' => time()
             ]
         ]);

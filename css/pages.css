@@ -650,6 +650,7 @@
 }
 .wall-form-message.is-success { color: var(--c-ok); }
 .wall-form-message.is-error { color: var(--c-red); }
+.wall-form-message.is-info { color: var(--c-primary); }
 
 .wall-list {
   display: flex;
