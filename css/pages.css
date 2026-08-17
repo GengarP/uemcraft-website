@@ -458,7 +458,6 @@
   height: auto;
   image-rendering: pixelated;
   border-radius: var(--radius);
-  box-shadow: var(--shadow-hard-sm);
   margin-bottom: var(--space-xl);
 }
 .club-intro-lead {
