@@ -1021,7 +1021,8 @@ img.member-avatar { object-fit:cover; }
 }
 .form-input.is-error, .form-textarea.is-error { border-color:var(--c-red); }
 .form-error { font-size:var(--fs-xs); color:var(--c-red); margin-top:4px; display:none; }
-.form-input.is-error ~ .form-error { display:block; }
+.form-input.is-error ~ .form-error,
+.form-textarea.is-error ~ .form-error { display:block; }
 .form-textarea { min-height:100px; resize:vertical; }
 .form-select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236A7185' d='M6 8 1 3h10z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right .75rem center; padding-right:2rem; }
 

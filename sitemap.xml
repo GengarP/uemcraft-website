@@ -31,6 +31,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://uemcraft.cn/wall/</loc>
+    <lastmod>2026-08-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://uemcraft.cn/news/</loc>
     <lastmod>2026-08-12</lastmod>
     <changefreq>weekly</changefreq>

@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <meta name="description" content="UEMCraft 资讯动态——应急管理大学 Minecraft 同好会的最新消息与公告。">
+  <meta name="description" content="UEMCraft 留言墙——留下你的足迹，与同好们分享想法与祝福。">
   <meta name="theme-color" content="#213d87">
-  <title>资讯动态 — UEMCraft</title>
+  <title>留言墙 — UEMCraft</title>
   <link rel="icon" href="../favicon.ico" type="images/x-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -41,10 +41,10 @@
     <nav class="header-nav" aria-label="主导航">
       <a href="../index.html">首页</a>
       <a href="../about.html">关于我们</a>
-      <a href="../news/" class="is-active">资讯动态</a>
+      <a href="../news/">资讯动态</a>
       <a href="../events.html">活动中心</a>
       <a href="../gallery/">作品展示</a>
-      <a href="../wall/">留言墙</a>
+      <a href="../wall/" class="is-active">留言墙</a>
     </nav>
     <div class="header-actions">
       <button class="theme-toggle" aria-label="切换深色/亮色模式" title="切换主题">
@@ -63,9 +63,9 @@
   <a href="../index.html">首页</a>
   <a href="../about.html">关于我们</a>
   <a href="../events.html">活动中心</a>
-  <a href="../news/" class="is-active">资讯动态</a>
+  <a href="../news/">资讯动态</a>
   <a href="../gallery/">作品展示</a>
-  <a href="../wall/">留言墙</a>
+  <a href="../wall/" class="is-active">留言墙</a>
   <a href="../join.html" class="btn btn-primary btn-block mobile-cta">加入我们</a>
 </nav>
 
@@ -75,32 +75,61 @@
 <!-- Page Hero -->
 <section class="page-hero">
   <div class="container">
-    <h1 id="articleTitle">文章标题</h1>
-    <p class="hero-sub" id="articleSub">加载中…</p>
+    <h1>留言墙</h1>
+    <p class="hero-sub">留下你的足迹，与同好们分享想法与祝福</p>
     <nav class="breadcrumb" aria-label="面包屑">
-      <a href="../index.html">首页</a> <span>/</span> <a href="../news/">资讯动态</a> <span>/</span> <span id="articleCrumb">文章标题</span>
+      <a href="../index.html">首页</a> <span>/</span> <span>留言墙</span>
     </nav>
   </div>
 </section>
 
-<!-- Article -->
+<!-- Post Form -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-label">WRITE</span>
+      <h2>写留言</h2>
+    </div>
+    <div class="wall-form-wrap reveal">
+      <form id="wallForm" class="wall-form" novalidate>
+        <div class="form-group">
+          <label for="wallName">昵称</label>
+          <input type="text" id="wallName" class="form-input" placeholder="怎么称呼你？" maxlength="20" required>
+          <div class="form-error">昵称长度需在 2–20 个字符之间</div>
+        </div>
+        <div class="form-group">
+          <label for="wallContent">留言内容</label>
+          <textarea id="wallContent" class="form-textarea" rows="4" placeholder="想对 UEMCraft 说点什么…" maxlength="500" required></textarea>
+          <div class="wall-char-count"><span id="charCount">0</span> / 500</div>
+          <div class="form-error">留言内容不能为空，且不能超过 500 个字符</div>
+        </div>
+        <div class="wall-form-actions">
+          <button type="submit" class="btn btn-primary" id="submitBtn">发表留言</button>
+          <span id="formMessage" class="wall-form-message" role="status" aria-live="polite"></span>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- Message List -->
 <section class="section">
-  <div class="container" style="max-width:800px;">
-
-    <!-- 文章头图（由 content.js 按数据填充；无头图时自动隐藏） -->
-    <figure class="article-hero reveal" id="articleCover" style="display:none;"></figure>
-
-    <!-- 文章元信息（由 content.js 按数据填充） -->
-    <div class="article-meta reveal" id="articleMeta" style="display:none;"></div>
-
-    <!-- Markdown 渲染目标容器 -->
-    <article class="article-body reveal" id="articleContent"></article>
-
-    <!-- 文章底部导航 -->
-    <div class="reveal" style="margin-top:var(--space-3xl); padding-top:var(--space-xl); border-top:2px solid var(--c-border); display:flex; justify-content:space-between; flex-wrap:wrap; gap:var(--space-md);">
-      <a href="../news/" class="btn btn-outline">← 返回资讯列表</a>
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-label">MESSAGES</span>
+      <h2>大家的留言</h2>
+      <p class="text-muted">已有 <strong id="totalCount">0</strong> 条留言</p>
     </div>
 
+    <div id="wallList" class="wall-list reveal">
+      <div class="wall-loading">正在加载留言…</div>
+    </div>
+
+    <div id="wallPagination" class="wall-pagination" style="display:none;">
+      <button class="btn btn-ghost btn-sm" id="prevPage" disabled>‹ 上一页</button>
+      <span id="pageInfo" class="wall-page-info"></span>
+      <button class="btn btn-ghost btn-sm" id="nextPage" disabled>下一页 ›</button>
+    </div>
   </div>
 </section>
 
@@ -161,15 +190,7 @@
 
 <button class="back-to-top" aria-label="回到顶部" title="回到顶部">↑</button>
 
-<!-- Markdown 引擎：marked.js（自托管，零依赖，避免 CDN 阻塞） -->
-<script defer src="../js/marked.umd.js"></script>
-
-<!-- 内容数据与渲染 -->
-<script defer src="../js/data.js"></script>
-<script defer src="../js/content.js"></script>
-
-<!-- 全局交互脚本 -->
 <script defer src="../js/main.js"></script>
-
+<script defer src="../js/wall.js"></script>
 </body>
 </html>

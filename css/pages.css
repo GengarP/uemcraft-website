@@ -615,6 +615,114 @@
 
 #serverSection { scroll-margin-top:80px; }
 
+/* ========== Wall page ========== */
+.wall-form-wrap {
+  max-width: 700px;
+  margin-inline: auto;
+}
+.wall-form {
+  background: var(--c-surface);
+  border: 2px solid var(--c-border);
+  border-radius: var(--radius);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-hard-sm);
+}
+.wall-char-count {
+  text-align: right;
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+  margin-top: 4px;
+}
+.wall-char-count .is-max {
+  color: var(--c-red);
+  font-weight: 700;
+}
+.wall-form-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+.wall-form-message {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  min-height: 1.5em;
+}
+.wall-form-message.is-success { color: var(--c-ok); }
+.wall-form-message.is-error { color: var(--c-red); }
+
+.wall-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  max-width: 800px;
+  margin-inline: auto;
+}
+.wall-loading,
+.wall-empty {
+  text-align: center;
+  padding: var(--space-2xl);
+  color: var(--c-text-muted);
+  font-size: var(--fs-sm);
+}
+.wall-card {
+  background: var(--c-surface);
+  border: 2px solid var(--c-border);
+  border-left: 3px solid var(--c-primary);
+  border-radius: var(--radius);
+  padding: var(--space-lg);
+  transition: box-shadow var(--duration), border-color var(--duration);
+}
+.wall-card:hover {
+  border-color: var(--c-primary);
+  box-shadow: var(--shadow-hover);
+}
+.wall-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+  flex-wrap: wrap;
+}
+.wall-card-name {
+  font-weight: 700;
+  color: var(--c-heading);
+  font-size: var(--fs-base);
+}
+.wall-card-time {
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+  font-family: var(--font-mono);
+}
+.wall-card-body {
+  font-size: var(--fs-sm);
+  color: var(--c-text);
+  line-height: 1.8;
+  word-break: break-word;
+}
+.wall-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  margin-top: var(--space-xl);
+}
+.wall-page-info {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-muted);
+  min-width: 4em;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .wall-form { padding: var(--space-lg); }
+  .wall-form-actions { flex-direction: column; align-items: stretch; }
+  .wall-form-actions .btn { width: 100%; }
+  .wall-card-header { flex-direction: column; align-items: flex-start; gap: 2px; }
+}
+
 /* ========== Responsive page tweaks ========== */
 @media (max-width:480px) {
   .hero-title-cn { font-size:clamp(1.2rem,5vw,1.6rem); }
