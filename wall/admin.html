@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#213d87">
+  <title>留言墙管理 — UEMCraft</title>
+  <link rel="icon" href="../favicon.ico" type="images/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <script>
+    (function(){
+      var t = localStorage.getItem('uemcraft-theme');
+      if(!t) t = window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+      document.documentElement.style.colorScheme = t;
+    })();
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/pages.css">
+</head>
+<body>
+
+<a href="#main" class="skip-link">跳转到主内容</a>
+
+<!-- ====== Header ====== -->
+<header class="site-header" role="banner">
+  <div class="header-inner">
+    <a href="../index.html" class="header-logo" aria-label="UEMCraft 首页">
+      <img src="../assets/img/logo-256.webp" alt="UEMCraft Logo" width="40" height="40">
+      <span class="logo-text">
+        <span class="logo-cn">应大MC同好会</span>
+        <span class="logo-en">UEMCraft</span>
+      </span>
+    </a>
+    <nav class="header-nav" aria-label="主导航">
+      <a href="../index.html">首页</a>
+      <a href="../about.html">关于我们</a>
+      <a href="../news/">资讯动态</a>
+      <a href="../events.html">活动中心</a>
+      <a href="../gallery/">作品展示</a>
+      <a href="../wall/" class="is-active">留言墙</a>
+    </nav>
+    <div class="header-actions">
+      <button class="theme-toggle" aria-label="切换深色/亮色模式" title="切换主题">
+        <span class="iconfont-theme icon-sun" aria-hidden="true"></span>
+        <span class="iconfont-theme icon-moon" aria-hidden="true"></span>
+      </button>
+      <a href="../join.html" class="btn btn-primary btn-sm">加入我们</a>
+      <button class="hamburger" aria-label="菜单" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<nav class="mobile-nav" aria-label="移动端导航">
+  <a href="../index.html">首页</a>
+  <a href="../about.html">关于我们</a>
+  <a href="../events.html">活动中心</a>
+  <a href="../news/">资讯动态</a>
+  <a href="../gallery/">作品展示</a>
+  <a href="../wall/" class="is-active">留言墙</a>
+  <a href="../join.html" class="btn btn-primary btn-block mobile-cta">加入我们</a>
+</nav>
+
+<!-- ====== Main ====== -->
+<main id="main">
+
+<section class="page-hero">
+  <div class="container">
+    <h1>留言墙管理</h1>
+    <p class="hero-sub">审核 / 编辑 / 删除留言</p>
+    <nav class="breadcrumb" aria-label="面包屑">
+      <a href="../index.html">首页</a> <span>/</span> <a href="../wall/">留言墙</a> <span>/</span> <span>管理</span>
+    </nav>
+  </div>
+</section>
+
+<!-- Token Gate -->
+<section class="section section-alt" id="adminTokenSection">
+  <div class="container">
+    <div class="admin-token-wrap">
+      <h2 class="admin-title">管理员登录</h2>
+      <p class="text-muted">输入服务器上配置的 <code>WALL_ADMIN_TOKEN</code> 以进入管理。</p>
+      <form id="adminTokenForm" class="admin-token-form" novalidate>
+        <input type="password" id="adminTokenInput" class="form-input" placeholder="管理员令牌" autocomplete="off" required>
+        <button type="submit" class="btn btn-primary" id="adminConnectBtn">进入管理</button>
+      </form>
+      <span id="adminTokenMessage" class="wall-form-message" role="status" aria-live="polite"></span>
+    </div>
+  </div>
+</section>
+
+<!-- Admin Panel -->
+<section class="section" id="adminPanelSection" hidden>
+  <div class="container">
+
+    <div class="admin-toolbar">
+      <div class="admin-tabs" role="tablist" aria-label="状态筛选">
+        <button class="admin-tab is-active" data-status="all">全部</button>
+        <button class="admin-tab" data-status="approved">已通过</button>
+        <button class="admin-tab" data-status="hidden">已屏蔽</button>
+      </div>
+      <div class="admin-toolbar-right">
+        <span class="text-muted">共 <strong id="adminTotalCount">0</strong> 条</span>
+        <button class="btn btn-ghost btn-sm" id="adminLogoutBtn">退出</button>
+      </div>
+    </div>
+
+    <div id="adminList" class="admin-list">
+      <div class="wall-loading">正在加载留言…</div>
+    </div>
+
+    <div id="adminPagination" class="wall-pagination" style="display:none;">
+      <button class="btn btn-ghost btn-sm" id="adminPrevPage" disabled>‹ 上一页</button>
+      <span id="adminPageInfo" class="wall-page-info"></span>
+      <button class="btn btn-ghost btn-sm" id="adminNextPage" disabled>下一页 ›</button>
+    </div>
+
+  </div>
+</section>
+
+</main>
+
+<!-- ====== Footer ====== -->
+<footer class="site-footer" role="contentinfo">
+  <div class="footer-bottom">
+    <span>&copy; <span id="year"></span> 应急管理大学 Minecraft 同好会 · UEMCraft</span>
+    <span>Minecraft 是 Mojang AB 的商标 · 本站为社群非商业用途</span>
+    <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" style="color:var(--c-text-muted);text-decoration:none;">赣ICP备2026018930号</a>
+    <a href="https://beian.mps.gov.cn/" target="_blank" rel="noopener" style="color:var(--c-text-muted);text-decoration:none;display:inline-flex;align-items:center;gap:4px;"><img src="../assets/img/备案图标.png" alt="公安备案" style="height:14px;width:auto;">赣公网安备 36072102000273号</a>
+  </div>
+</footer>
+
+<button class="back-to-top" aria-label="回到顶部" title="回到顶部">↑</button>
+
+<script defer src="../js/main.js"></script>
+<script defer src="../js/wall-admin.js"></script>
+</body>
+</html>
