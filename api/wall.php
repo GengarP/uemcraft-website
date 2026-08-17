@@ -12,7 +12,7 @@
  *   POST ?action=edit                      （JSON {id, name?, content?}）
  *   POST ?action=delete                    （JSON {id}）
  *
- * 审核模式：先审后发——新留言调用硅基流动 Qwen3.5-4B 审核，
+ * 审核模式：先审后发——新留言调用硅基流动 GLM-4-9B-0414 审核，
  * 仅判定合规才 status=approved 公开；不合规或服务不可用（未配置
  * MODERATION_API_KEY / 无 cURL / 超时 / 报错 / 解析失败）均入库为
  * status=hidden 待人工复核。管理员可在后台恢复 approved 或删除。
@@ -39,7 +39,7 @@ define('MAX_NAME_LENGTH', 20);
 define('MIN_NAME_LENGTH', 2);
 define('STATUS_ALLOWED', ['approved', 'hidden']);
 define('MODERATION_API_URL', 'https://api.siliconflow.cn/v1/chat/completions');
-define('MODERATION_MODEL', getenv('MODERATION_MODEL') ?: 'Qwen/Qwen3.5-4B');
+define('MODERATION_MODEL', getenv('MODERATION_MODEL') ?: 'THUDM/GLM-4-9B-0414');
 define('MODERATION_TIMEOUT', 8);
 
 function json($data, $code = 200) {
@@ -149,7 +149,7 @@ function checkRateLimit($db, $ip) {
 }
 
 /**
- * 调用硅基流动 Qwen3.5-4B 审核留言是否合规。
+ * 调用硅基流动 GLM-4-9B-0414 审核留言是否合规。
  * 返回 'approved'（合规）| 'hidden'（不合规）| null（服务不可用/未配置/解析失败）。
  */
 function moderateContent($name, $content) {
