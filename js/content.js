@@ -1,6 +1,7 @@
 /* ============================================================
    content.js — 内容渲染
-   从 window.UEMCRAFT_DATA（js/data.js）读取新闻与活动，
+   新闻：通过 fetch 从 articles/index.json 和 articles-json/*.json 加载
+   活动：仍从 window.UEMCRAFT_DATA（js/data.js）读取
    在 DOM ready 时按容器 ID 自动渲染列表 / 详情 / 首页预览。
    ============================================================ */
 
@@ -32,17 +33,27 @@ function newsUrl(slug) {
   return '/news/article.html?slug=' + encodeURIComponent(slug);
 }
 
-function findNewsBySlug(slug) {
-  if (!slug) return null;
-  for (var i = 0; i < window.UEMCRAFT_DATA.news.length; i++) {
-    if (window.UEMCRAFT_DATA.news[i].slug === slug) return window.UEMCRAFT_DATA.news[i];
-  }
-  return null;
+/* ---- 异步数据加载 ---- */
+function fetchArticleIndex() {
+  return fetch('/articles/index.json')
+    .then(function (res) {
+      if (!res.ok) throw new Error('Failed to load article index');
+      return res.json();
+    });
 }
 
-// 按日期降序（Array.sort 在现代浏览器为稳定排序，日期相同保持插入顺序）
-function sortedNews() {
-  return window.UEMCRAFT_DATA.news.slice().sort(function (a, b) {
+function fetchArticleBySlug(slug) {
+  return fetch('/articles-json/' + encodeURIComponent(slug) + '.json')
+    .then(function (res) {
+      if (!res.ok) return null;
+      return res.json();
+    })
+    .catch(function () { return null; });
+}
+
+// 按日期降序排序（与旧 sortedNews 行为一致）
+function sortArticles(articles) {
+  return articles.slice().sort(function (a, b) {
     return String(b.date || '').localeCompare(String(a.date || ''));
   });
 }
@@ -199,7 +210,7 @@ function enhanceCodeBlocks(root) {
   }
 }
 
-/* ---- 文章详情渲染 ---- */
+/* ---- 文章详情渲染（异步） ---- */
 function buildMetaHtml(item) {
   var html = '';
   html += '<div class="article-meta-item">' +
@@ -222,25 +233,23 @@ function buildMetaHtml(item) {
   return html;
 }
 
-function renderArticle(slug) {
-  var item = findNewsBySlug(slug);
+function renderArticleError(titleEl, subEl, crumbEl, coverEl, metaEl, contentEl, msg) {
+  document.title = '文章不存在 — 资讯动态 — UEMCraft';
+  if (titleEl) titleEl.textContent = '文章不存在';
+  if (subEl) subEl.textContent = msg || '你访问的文章可能已被移动或删除。';
+  if (crumbEl) crumbEl.textContent = '文章不存在';
+  if (coverEl) coverEl.style.display = 'none';
+  if (metaEl) metaEl.style.display = 'none';
+  if (contentEl) contentEl.innerHTML = '<p>' + escapeHtml(msg || '没有找到对应的文章。') + '，<a href="/news/">返回资讯列表</a>。</p>';
+}
+
+function renderArticleData(item) {
   var titleEl = document.getElementById('articleTitle');
   var subEl = document.getElementById('articleSub');
   var crumbEl = document.getElementById('articleCrumb');
   var coverEl = document.getElementById('articleCover');
   var metaEl = document.getElementById('articleMeta');
   var contentEl = document.getElementById('articleContent');
-
-  if (!item) {
-    document.title = '文章不存在 — 资讯动态 — UEMCraft';
-    if (titleEl) titleEl.textContent = '文章不存在';
-    if (subEl) subEl.textContent = '你访问的文章可能已被移动或删除。';
-    if (crumbEl) crumbEl.textContent = '文章不存在';
-    if (coverEl) coverEl.style.display = 'none';
-    if (metaEl) metaEl.style.display = 'none';
-    if (contentEl) contentEl.innerHTML = '<p>没有找到对应的文章，<a href="/news/">返回资讯列表</a>。</p>';
-    return;
-  }
 
   document.title = item.title + ' — 资讯动态 — UEMCraft';
   var desc = document.querySelector('meta[name="description"]');
@@ -278,38 +287,70 @@ function renderArticle(slug) {
 
 /* ---- 初始化：按容器 ID 自动渲染 ---- */
 function initContent() {
-  var data = window.UEMCRAFT_DATA || { news: [], events: { upcoming: [], past: [] } };
+  var data = window.UEMCRAFT_DATA || { events: { upcoming: [], past: [] } };
 
-  // 文章详情页
+  // 文章详情页（异步）
   if (document.getElementById('articleContent')) {
     var slug = new URLSearchParams(window.location.search).get('slug');
-    renderArticle(slug);
+    var titleEl = document.getElementById('articleTitle');
+    var subEl = document.getElementById('articleSub');
+    var crumbEl = document.getElementById('articleCrumb');
+    var coverEl = document.getElementById('articleCover');
+    var metaEl = document.getElementById('articleMeta');
+    var contentEl = document.getElementById('articleContent');
+
+    if (!slug) {
+      renderArticleError(titleEl, subEl, crumbEl, coverEl, metaEl, contentEl, '未指定文章');
+      return;
+    }
+
+    fetchArticleBySlug(slug).then(function (item) {
+      if (!item) {
+        renderArticleError(titleEl, subEl, crumbEl, coverEl, metaEl, contentEl);
+        return;
+      }
+      renderArticleData(item);
+    }).catch(function () {
+      renderArticleError(titleEl, subEl, crumbEl, coverEl, metaEl, contentEl, '加载文章时发生错误');
+    });
     return;
   }
 
-  // 新闻列表页（news/index.html）
+  // 新闻列表页（异步）
   var newsList = document.getElementById('newsList');
   if (newsList) {
-    sortedNews().forEach(function (item) { newsList.appendChild(renderNewsCard(item)); });
+    fetchArticleIndex().then(function (articles) {
+      sortArticles(articles).forEach(function (item) {
+        newsList.appendChild(renderNewsCard(item));
+      });
+    }).catch(function () {
+      newsList.innerHTML = '<p style="color:var(--c-text-muted);">加载资讯列表失败，请刷新重试。</p>';
+    });
   }
 
-  // 首页最新动态：前 3 条
+  // 首页最新动态：前 3 条（异步）
   var newsGrid = document.getElementById('newsGrid');
   if (newsGrid) {
-    newsGrid.innerHTML = '';
-    sortedNews().slice(0, 3).forEach(function (item) { newsGrid.appendChild(renderNewsCard(item)); });
-    while (newsGrid.children.length < 3) {
-      newsGrid.appendChild(renderNewsEmptyCard());
-    }
+    fetchArticleIndex().then(function (articles) {
+      newsGrid.innerHTML = '';
+      sortArticles(articles).slice(0, 3).forEach(function (item) {
+        newsGrid.appendChild(renderNewsCard(item));
+      });
+      while (newsGrid.children.length < 3) {
+        newsGrid.appendChild(renderNewsEmptyCard());
+      }
+    }).catch(function () {
+      // 加载失败时保留占位卡片
+    });
   }
 
-  // 首页近期活动预览
+  // 首页近期活动预览（同步，来自 data.js）
   var eventsGrid = document.getElementById('eventsGrid');
   if (eventsGrid) {
     (data.events.upcoming || []).forEach(function (item) { eventsGrid.appendChild(renderEventCard(item)); });
   }
 
-  // 活动页：近期活动 / 往期回顾
+  // 活动页：近期活动 / 往期回顾（同步，来自 data.js）
   var eventUpcoming = document.getElementById('eventUpcoming');
   if (eventUpcoming) {
     (data.events.upcoming || []).forEach(function (item) { eventUpcoming.appendChild(renderEventCard(item)); });

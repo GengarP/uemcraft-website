@@ -20,6 +20,13 @@
 ├── wall/
 │   ├── index.html          留言墙（需 PHP 后端）
 │   └── admin.html          留言墙管理端
+├── articles/               新闻 Markdown 源文件
+│   ├── *.md                每篇文章（含 YAML front matter）
+│   └── index.json          [构建生成] 文章元数据列表
+├── articles-json/          [构建生成] 每篇文章的完整 JSON
+│   └── {slug}.json
+├── scripts/
+│   └── build-articles.js   构建脚本（扫描 .md → 生成 .json）
 ├── api/
 │   └── wall.php            留言墙后端（PHP + SQLite，AI 审核）
 ├── css/
@@ -30,8 +37,9 @@
 │   └── pages.css           页面专属样式
 ├── js/
 │   ├── main.js             全局（导航/主题/滚动）
-│   ├── data.js             内容数据源（新闻/活动）
-│   ├── content.js          内容渲染（列表/详情/预览）
+│   ├── data.js             活动数据源（events）
+│   ├── content.js          内容渲染（fetch 加载新闻 / 同步读取活动）
+│   ├── marked.umd.js       Markdown 解析库
 │   ├── hero-gallery.js     首页背景画廊（左右滑动）
 │   ├── server.js           服务器面板
 │   ├── events.js           活动页
@@ -42,6 +50,7 @@
 │   ├── svg/                SVG 占位图
 │   ├── docs/               章程 PDF
 │   └── fonts/              自托管字体（像素字体 / iconfont）
+├── package.json
 ├── favicon.ico
 ├── robots.txt
 ├── sitemap.xml
@@ -50,13 +59,35 @@
 
 ## 内容管理
 
-新闻与活动集中在 `js/data.js`（`window.UEMCRAFT_DATA`）：
+### 新闻
 
-- **新增新闻**：在 `news` 数组加一个对象（含 `markdown`），详情页统一为 `news/article.html?slug=<slug>`，列表 / 首页预览自动渲染。
+新闻文章独立存放在 `articles/` 目录，每篇一个 Markdown 文件，含 YAML front matter：
+
+```markdown
+---
+title: 文章标题
+slug: url-slug
+date: 2026-08-17
+author: 作者名
+tags:
+  - 标签1
+excerpt: 摘要文本
+cover: /assets/img/events/xxx.jpg    # 可选
+coverCaption: 图片说明               # 可选
+---
+
+正文 Markdown...
+```
+
+新增文章后运行 `npm run build:articles`，生成 `articles/index.json` 和 `articles-json/{slug}.json`，前端通过 `fetch` 异步加载。详情页统一为 `news/article.html?slug=<slug>`。
+
+### 活动
+
+活动数据仍在 `js/data.js`（`window.UEMCRAFT_DATA.events`）：
+
 - **新增活动**：在 `events.upcoming` / `events.past` 加一个对象。
-- 新增新闻后需在 `sitemap.xml` 手动补一条 `<url>`。
 
-详见 `CLAUDE.md`。
+新增新闻后需在 `sitemap.xml` 手动补一条 `<url>`。详见 `CLAUDE.md`。
 
 ## 留言墙
 
@@ -90,30 +121,28 @@
 
 ## 本地预览
 
-无需构建步骤，直接用任意静态服务器打开即可：
-
 ```bash
-# Python
-python -m http.server 8080
+# 1. 构建新闻 JSON（首次 / 新增文章后）
+npm run build:articles
 
-# Node.js（需安装 serve）
+# 2. 启动本地服务器
 npx serve .
-
-# PHP
-php -S localhost:8080
+# 或 python -m http.server 8080
+# 或 php -S localhost:8080
 ```
 
 然后访问 `http://localhost:8080`。
 
 ## 部署
 
-除留言墙外均为纯静态，可直接部署到：
+1. 运行 `npm run build:articles` 生成新闻 JSON（或确保 `articles/index.json` 和 `articles-json/` 已存在）
+2. 将全部文件部署到任意静态托管
+
+可选平台：
 
 - **GitHub Pages** — 推送到 `gh-pages` 分支
-- **Vercel / Netlify / Cloudflare Pages** — 连接仓库后自动部署
+- **Vercel / Netlify / Cloudflare Pages** — 连接仓库后可配置 `npm run build:articles` 为构建命令
 - **任意虚拟主机** — 上传全部文件即可
-
-无需构建、编译或打包。
 
 > **留言墙例外**：`wall/` 依赖 PHP + PDO（SQLite 或 MySQL），纯静态托管无法运行，须部署到支持 PHP 的服务器（如宝塔、Nginx + PHP-FPM）。SQLite 的 `api/wall.db` 为运行期自动生成，勿提交。
 

@@ -1,0 +1,57 @@
+[
+  {
+    "slug": "club-charter",
+    "title": "社群章程（修订版）发布",
+    "excerpt": "于2026年8月17日通过后生效",
+    "date": "2026-08-17",
+    "author": "UEMCraft 理事会",
+    "tags": [
+      "基建"
+    ]
+  },
+  {
+    "slug": "api-uemcraft-cn",
+    "title": "服务器信息查询API公开",
+    "excerpt": "实时查询Minecraft服务器状态，支持Java版与基岩版",
+    "date": "2026-08-14",
+    "author": "Gengar_Sama",
+    "tags": [
+      "功能"
+    ]
+  },
+  {
+    "slug": "skin-uemcraft-cn",
+    "title": "皮肤站上线",
+    "excerpt": "YIT & UEM 联合皮肤站现已正式接入 MUA Union 联合验证系统。",
+    "date": "2026-08-13",
+    "author": "UEMCraft 理事会",
+    "tags": [
+      "功能",
+      "基建"
+    ],
+    "cover": "/assets/img/events/26-8-13-skin-uemcraft-cn.jpg"
+  },
+  {
+    "slug": "autumn-recruitment",
+    "title": "秋季招新",
+    "excerpt": "新学年，新气象！UEMCraft 秋季招新即将开启，欢迎各位新同学加入我们，一起用方块创造世界。",
+    "date": "2026-08-06",
+    "author": "UEMCraft 理事会",
+    "tags": [
+      "活动"
+    ],
+    "cover": "/assets/img/events/26-8-12-autumn-recruitment.png"
+  },
+  {
+    "slug": "immersive-fight",
+    "title": "沉浸战斗整合包服务器开设",
+    "excerpt": "全新沉浸战斗整合包服务器正式上线！包含丰富的技能树、精英怪物与战斗机制，带来全新的 PvE 体验。",
+    "date": "2026-08-06",
+    "author": "UEMCraft 理事会",
+    "tags": [
+      "活动"
+    ],
+    "cover": "/assets/img/events/26-8-6-immersive-fight.png",
+    "coverCaption": "沉浸战斗整合包官方宣传图"
+  }
+]

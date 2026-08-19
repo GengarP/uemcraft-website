@@ -1,0 +1,7 @@
+{
+  "name": "uemcraft-website",
+  "private": true,
+  "scripts": {
+    "build:articles": "node scripts/build-articles.js"
+  }
+}

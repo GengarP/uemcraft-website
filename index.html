@@ -380,5 +380,12 @@
 <script defer src="js/main.js"></script>
 <script defer src="js/server.js"></script>
 <script defer src="js/hero-gallery.js"></script>
+<script>
+  // 首次访问弹窗提示
+  if (!localStorage.getItem('uemcraft-welcome-shown')) {
+    alert('您在网站运行时遇到的任何问题，请通过联系方式联系我们反馈，或可以发送到此邮箱 uemcraftcn@163.com');
+    localStorage.setItem('uemcraft-welcome-shown', '1');
+  }
+</script>
 </body>
 </html>
