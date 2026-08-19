@@ -6,6 +6,7 @@ author: UEMCraft 理事会
 tags:
   - 基建
 excerpt: 于2026年8月17日通过后生效
+cover: /assets/img/events/26-7-30-club-charter.png
 ---
 
 各位成员、同好：
@@ -42,4 +43,5 @@ excerpt: 于2026年8月17日通过后生效
 ---
 
 **应急管理大学 Minecraft 同好会**
+
 **2026 年 8 月 17 日**

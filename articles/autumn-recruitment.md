@@ -46,5 +46,6 @@ UEMCraft，全称应急管理大学 Minecraft 同好会（英文名 UEMCraft）�
 
 ## 联系我们
 
-- 同好会 QQ 群：626405485
+- 同好会邮箱：`uemcraftcn@163.com`
+- 同好会 QQ 群：`626405485`
 - 服务器地址：`play.uemcraft.cn`
