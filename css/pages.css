@@ -558,8 +558,9 @@
 /* ========== Gallery page ========== */
 /* (Most gallery styles are in components.css) */
 
-/* ========== 404 page ========== */
-.page-404 {
+/* ========== 404 / 403 page ========== */
+.page-404,
+.page-403 {
   min-height:70vh;
   display:flex;
   flex-direction:column;
@@ -570,18 +571,23 @@
   position:relative;
   overflow:hidden;
 }
-.page-404 .code-404 {
+.page-404 .code-404,
+.page-403 .code-403 {
   font-size:8rem;
   font-weight:800;
   font-family:var(--font-mono);
-  color:var(--c-primary);
   line-height:1;
   position:relative;
   z-index:1;
 }
+.page-404 .code-404 { color:var(--c-primary); }
+.page-403 .code-403 { color:var(--c-red); }
 .page-404 h2,
 .page-404 p,
-.page-404 > div:last-of-type { position:relative; z-index:1; }
+.page-404 > div:last-of-type,
+.page-403 h2,
+.page-403 p,
+.page-403 > div:last-of-type { position:relative; z-index:1; }
 
 /* Random floating pixel blocks */
 .d404-block {
@@ -853,5 +859,6 @@
 /* ========== Responsive page tweaks ========== */
 @media (max-width:480px) {
   .hero-title-cn { font-size:clamp(1.2rem,5vw,1.6rem); }
-  .page-404 .code-404 { font-size:5rem; }
+  .page-404 .code-404,
+  .page-403 .code-403 { font-size:5rem; }
 }
