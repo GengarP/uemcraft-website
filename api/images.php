@@ -3,19 +3,26 @@
  * images.php — UEMCraft 图片管理 API
  * ------------------------------------
  * 管理接口（需 X-Admin-Token 请求头）：
- *   GET  ?action=list                      （列出 assets/img/ 下所有图片）
- *   POST ?action=upload                    （上传图片）
- *   POST ?action=delete                    （删除图片）
+ *   GET  ?action=list                      （列出 assets/img/events/ 下所有图片）
+ *   POST ?action=upload                    （上传图片，自动重命名为 yy-mm-dd-title 格式）
  */
 
 require_once __DIR__ . '/common.php';
 
 $ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'ico'];
 $MAX_SIZE    = 10 * 1024 * 1024; // 10MB
-$IMG_DIR     = realpath(__DIR__ . '/../assets/img');
+$IMG_DIR     = realpath(__DIR__ . '/../assets/img/events');
 
 if (!$IMG_DIR || !is_dir($IMG_DIR)) {
-    json_response(['success' => false, 'error' => '图片目录不存在'], 500);
+    // 目录不存在则尝试创建
+    $target = __DIR__ . '/../assets/img/events';
+    if (!is_dir($target)) {
+        mkdir($target, 0755, true);
+    }
+    $IMG_DIR = realpath($target);
+    if (!$IMG_DIR) {
+        json_response(['success' => false, 'error' => '图片目录创建失败'], 500);
+    }
 }
 
 $action = $_GET['action'] ?? '';
@@ -39,7 +46,7 @@ try {
             $relativePath = str_replace('\\', '/', substr($file->getRealPath(), strlen($IMG_DIR) + 1));
             $files[] = [
                 'name'  => $relativePath,
-                'url'   => '../assets/img/' . $relativePath,
+                'url'   => '../assets/img/events/' . $relativePath,
                 'size'  => $file->getSize(),
                 'mtime' => $file->getMTime(),
             ];
@@ -102,18 +109,22 @@ try {
             json_response(['success' => false, 'error' => '文件 MIME 类型不合法：' . $mime], 400);
         }
 
-        // 生成安全文件名
+        // 生成文件名：yy-mm-dd-title
         $baseName = pathinfo($origName, PATHINFO_FILENAME);
-        $baseName = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $baseName);
+        // 清理标题部分：只保留字母数字中文和连字符
+        $baseName = preg_replace('/[^\w\-]/u', '_', $baseName);
+        $baseName = preg_replace('/_+/', '_', $baseName);
+        $baseName = trim($baseName, '_');
         if ($baseName === '') $baseName = 'image';
 
-        $targetName = $baseName . '.' . $ext;
+        $datePrefix = date('y-m-d');
+        $targetName = $datePrefix . '-' . $baseName . '.' . $ext;
         $targetPath = $IMG_DIR . '/' . $targetName;
 
         // 文件名冲突：加数字后缀
         $counter = 1;
         while (file_exists($targetPath)) {
-            $targetName = $baseName . '_' . $counter . '.' . $ext;
+            $targetName = $datePrefix . '-' . $baseName . '-' . $counter . '.' . $ext;
             $targetPath = $IMG_DIR . '/' . $targetName;
             $counter++;
         }
@@ -126,58 +137,10 @@ try {
             'success' => true,
             'data' => [
                 'name' => $targetName,
-                'url'  => '../assets/img/' . $targetName,
+                'url'  => '../assets/img/events/' . $targetName,
                 'size' => $file['size'],
             ],
         ]);
-    }
-
-    // ---- 删除图片 ----
-    if ($action === 'delete') {
-        requireAdmin();
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
-        }
-
-        $input = readInput();
-        $name = trim($input['name'] ?? '');
-
-        if ($name === '') {
-            json_response(['success' => false, 'error' => '缺少文件名'], 400);
-        }
-
-        // 安全检查：防止路径穿越
-        $name = str_replace('\\', '/', $name);
-        if (strpos($name, '..') !== false || strpos($name, '/') === 0) {
-            json_response(['success' => false, 'error' => '非法文件路径'], 400);
-        }
-
-        $targetPath = $IMG_DIR . '/' . $name;
-        $realPath = realpath($targetPath);
-
-        // 确保文件在 img 目录内
-        if (!$realPath || strpos($realPath, $IMG_DIR) !== 0) {
-            json_response(['success' => false, 'error' => '文件不在图片目录内'], 400);
-        }
-
-        if (!file_exists($realPath)) {
-            json_response(['success' => false, 'error' => '文件不存在'], 404);
-        }
-
-        if (!unlink($realPath)) {
-            json_response(['success' => false, 'error' => '删除失败'], 500);
-        }
-
-        // 清理空目录（仅一层）
-        $parentDir = dirname($realPath);
-        if ($parentDir !== $IMG_DIR && is_dir($parentDir)) {
-            $contents = scandir($parentDir);
-            if (count($contents) <= 2) { // only . and ..
-                rmdir($parentDir);
-            }
-        }
-
-        json_response(['success' => true, 'data' => ['name' => $name]]);
     }
 
     json_response(['success' => false, 'error' => '未知操作'], 400);

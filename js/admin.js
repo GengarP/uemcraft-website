@@ -554,7 +554,6 @@
         + '  </div>'
         + '  <div class="admin-image-actions">'
         + '    <button class="btn btn-ghost btn-sm" data-action="copy-path" data-path="' + escapeHtml(item.url) + '">复制路径</button>'
-        + '    <button class="btn btn-ghost btn-sm admin-btn-danger" data-action="delete-image" data-name="' + escapeHtml(item.name) + '">删除</button>'
         + '  </div>'
         + '</div>';
     }
@@ -584,19 +583,6 @@
             document.body.removeChild(ta);
             setTimeout(function () { btn.textContent = '复制路径'; }, 2000);
           }
-        }
-
-        if (action === 'delete-image') {
-          var name = btn.getAttribute('data-name');
-          if (!confirm('确定要删除图片 "' + name + '" 吗？此操作不可撤销。')) return;
-          Auth.api('../api/images.php?action=delete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name })
-          }).then(function (json) {
-            if (json.success) load();
-            else alert('删除失败：' + (json.error || '未知错误'));
-          });
         }
       });
     }

@@ -1,7 +1,15 @@
 CLAUDE.md
+#   Claude Code 记忆文件
+
 api/wall.db
 api/site.db
+#   数据库
+
 node_modules/
-scripts/events-data.json
-articles-json/
+#   Node 模块
+
 gitpush.bat
+#   上传脚本
+
+assets/img/events/
+#   图片管理
