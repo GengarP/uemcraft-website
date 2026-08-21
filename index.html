@@ -210,33 +210,7 @@
       <span class="section-label">SERVER</span>
       <h2>服务器状态</h2>
     </div>
-    <div id="serverPanel" class="server-panel reveal">
-      <div class="server-indicator" id="serverIndicator"></div>
-      <div class="server-info">
-        <div class="server-header">
-          <span class="server-title">UEMCraft 官方服务器</span>
-          <button id="refreshServer" class="btn btn-ghost btn-sm">↻ 刷新</button>
-        </div>
-        <div class="server-addr-row">
-          <code class="server-address" id="serverAddr">play.uemcraft.cn</code>
-          <button id="copyAddr" class="btn btn-ghost btn-sm btn-copy" title="复制地址">复制</button>
-          <div class="server-stats">
-            <div class="server-stat player-stat-wrap">
-              <span class="sval" id="serverPlayers">--</span>
-              <span class="slbl">在线 / 最大</span>
-              <div class="player-tooltip" id="playerTooltip">
-                <ul class="player-list" id="playerList"></ul>
-              </div>
-            </div>
-            <div class="server-stat">
-              <span class="sval" id="serverVer">--</span>
-              <span class="slbl">版本</span>
-            </div>
-          </div>
-        </div>
-        <div class="server-motd" id="serverMotd"></div>
-      </div>
-    </div>
+    <!-- 服务器面板由 server.js 动态渲染 -->
   </div>
 </section>
 

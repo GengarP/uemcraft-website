@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <meta name="robots" content="noindex,nofollow">
   <meta name="theme-color" content="#213d87">
-  <title>新闻管理 — UEMCraft</title>
+  <title>服务器管理 — UEMCraft</title>
   <link rel="icon" href="../favicon.ico" type="images/x-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -72,9 +72,9 @@
 <div class="admin-nav">
   <div class="container admin-nav-inner">
     <a href="index.html" class="admin-nav-link">仪表盘</a>
-    <a href="news.html" class="admin-nav-link is-active">新闻管理</a>
+    <a href="news.html" class="admin-nav-link">新闻管理</a>
     <a href="events.html" class="admin-nav-link">活动管理</a>
-    <a href="servers.html" class="admin-nav-link">服务器管理</a>
+    <a href="servers.html" class="admin-nav-link is-active">服务器管理</a>
     <a href="images.html" class="admin-nav-link">图片管理</a>
     <a href="../wall/admin.html" class="admin-nav-link">留言墙管理</a>
     <button class="btn btn-ghost btn-sm" id="logoutBtn">退出登录</button>
@@ -86,10 +86,10 @@
 
 <section class="page-hero">
   <div class="container">
-    <h1>新闻管理</h1>
-    <p class="hero-sub">创建、编辑、发布新闻文章</p>
+    <h1>服务器管理</h1>
+    <p class="hero-sub">管理首页展示的服务器信息</p>
     <nav class="breadcrumb" aria-label="面包屑">
-      <a href="../index.html">首页</a> <span>/</span> <a href="index.html">管理后台</a> <span>/</span> <span>新闻</span>
+      <a href="../index.html">首页</a> <span>/</span> <a href="index.html">管理后台</a> <span>/</span> <span>服务器</span>
     </nav>
   </div>
 </section>
@@ -98,20 +98,15 @@
   <div class="container">
 
     <div class="admin-toolbar">
-      <div class="admin-tabs" role="tablist" aria-label="状态筛选">
-        <button class="admin-tab is-active" data-status="all">全部</button>
-        <button class="admin-tab" data-status="published">已发布</button>
-        <button class="admin-tab" data-status="draft">草稿</button>
-      </div>
       <div class="admin-toolbar-right">
-        <span class="text-muted">共 <strong id="totalCount">0</strong> 条</span>
-        <a href="news-edit.html" class="btn btn-primary btn-sm">+ 新建新闻</a>
+        <span class="text-muted">共 <strong id="totalCount">0</strong> 台</span>
+        <a href="servers-edit.html" class="btn btn-primary btn-sm">+ 新增服务器</a>
         <button class="btn btn-ghost btn-sm" id="logoutBtn2">退出</button>
       </div>
     </div>
 
-    <div id="newsList" class="admin-list">
-      <div class="wall-loading">正在加载新闻…</div>
+    <div id="serversList" class="admin-list">
+      <div class="wall-loading">正在加载服务器…</div>
     </div>
 
     <div id="pagination" class="wall-pagination" style="display:none;">

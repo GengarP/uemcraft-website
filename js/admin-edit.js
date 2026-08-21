@@ -11,11 +11,13 @@
   if (!Auth) return;
 
   Auth.requireAuth().then(function () {
-    var path = window.location.pathname;
-    if (path.indexOf('news-edit') !== -1) {
+    // DOM 检测，兼容 URL 重写
+    if (document.getElementById('newsForm')) {
       initNewsEdit();
-    } else if (path.indexOf('events-edit') !== -1) {
+    } else if (document.getElementById('eventForm')) {
       initEventsEdit();
+    } else if (document.getElementById('serverForm')) {
+      initServersEdit();
     }
   }).catch(function () {});
 
@@ -234,6 +236,99 @@
         sort_order: parseInt(getVal('inputSortOrder')) || 0,
         excerpt: getVal('inputExcerpt'),
         content: getVal('inputContent')
+      };
+    }
+  }
+
+  // ============================================================
+  //  服务器编辑
+  // ============================================================
+  function initServersEdit() {
+    var params = new URLSearchParams(window.location.search);
+    var editId = params.get('id');
+    var isEdit = !!editId;
+    var apiBase = '../api/servers.php';
+
+    if (isEdit) {
+      setText('heroTitle', '编辑服务器');
+      setText('heroSub', '修改服务器信息');
+      setText('crumbAction', '编辑');
+      document.title = '编辑服务器 — UEMCraft';
+    }
+
+    var form = document.getElementById('serverForm');
+    var msg = document.getElementById('formMessage');
+    var btn = document.getElementById('saveBtn');
+
+    // 编辑模式：加载现有数据
+    if (isEdit) {
+      Auth.api(apiBase + '?action=admin_detail&id=' + editId).then(function (json) {
+        if (!json.success || !json.data) {
+          showMessage(msg, '服务器不存在', 'error');
+          return;
+        }
+        fillServerForm(json.data);
+      }).catch(function () {
+        showMessage(msg, '加载失败', 'error');
+      });
+    }
+
+    // 提交
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var data = getServerFormData();
+
+      if (!data.name) {
+        showMessage(msg, '服务器名称不能为空', 'error');
+        return;
+      }
+      if (!data.address) {
+        showMessage(msg, '服务器地址不能为空', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '保存中…';
+      showMessage(msg, '', '');
+
+      var action = isEdit ? 'update' : 'create';
+      var body = isEdit ? Object.assign({ id: parseInt(editId) }, data) : data;
+
+      Auth.api(apiBase + '?action=' + action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      }).then(function (json) {
+        if (json.success) {
+          showMessage(msg, '保存成功！', 'success');
+          setTimeout(function () { window.location.href = 'servers.html'; }, 800);
+        } else {
+          showMessage(msg, '保存失败：' + (json.error || '未知错误'), 'error');
+          btn.disabled = false;
+          btn.textContent = '保存';
+        }
+      }).catch(function () {
+        showMessage(msg, '请求失败', 'error');
+        btn.disabled = false;
+        btn.textContent = '保存';
+      });
+    });
+
+    function fillServerForm(item) {
+      setInput('inputName', item.name);
+      setInput('inputAddress', item.address);
+      setInput('inputNote', item.note);
+      setInput('inputFeatured', String(item.is_featured ? 1 : 0));
+      setInput('inputSortOrder', String(item.sort_order || 0));
+    }
+
+    function getServerFormData() {
+      return {
+        name: getVal('inputName'),
+        address: getVal('inputAddress'),
+        note: getVal('inputNote'),
+        is_featured: parseInt(getVal('inputFeatured')) || 0,
+        sort_order: parseInt(getVal('inputSortOrder')) || 0
       };
     }
   }

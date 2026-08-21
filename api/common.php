@@ -231,7 +231,38 @@ function createSiteTables($db, $driver) {
 }
 
 function migrateSiteTables($db, $driver) {
-    // 当前版本无需迁移，预留接口
+    // 迁移：新增 servers 表
+    if ($driver === 'mysql') {
+        $db->exec("CREATE TABLE IF NOT EXISTS servers (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            name VARCHAR(100) NOT NULL,
+            address VARCHAR(255) NOT NULL,
+            note VARCHAR(255) NOT NULL DEFAULT '',
+            is_featured TINYINT NOT NULL DEFAULT 0,
+            sort_order INT NOT NULL DEFAULT 0,
+            created_at INT NOT NULL,
+            updated_at INT NOT NULL,
+            PRIMARY KEY (id),
+            KEY idx_servers_sort (sort_order)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        return;
+    }
+
+    // SQLite
+    $tables = $db->query("SELECT name FROM sqlite_master WHERE type='table' AND name='servers'")->fetchAll();
+    if (empty($tables)) {
+        $db->exec("CREATE TABLE servers (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            name        TEXT NOT NULL,
+            address     TEXT NOT NULL,
+            note        TEXT NOT NULL DEFAULT '',
+            is_featured INTEGER NOT NULL DEFAULT 0,
+            sort_order  INTEGER NOT NULL DEFAULT 0,
+            created_at  INTEGER NOT NULL,
+            updated_at  INTEGER NOT NULL
+        )");
+        $db->exec("CREATE INDEX idx_servers_sort ON servers(sort_order)");
+    }
 }
 
 // ---- wall.db 建表（保持兼容） ----
