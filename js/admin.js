@@ -10,22 +10,20 @@
   var Auth = window.UEMAdminAuth;
   if (!Auth) return;
 
-  var path = window.location.pathname;
-
-  // ---- 登录页 ----
-  if (path.indexOf('login.html') !== -1) {
+  // ---- 登录页（通过 DOM 检测，兼容 URL 重写） ----
+  if (document.getElementById('loginForm')) {
     initLogin();
     return;
   }
 
   // ---- 其他后台页：检查认证 ----
   Auth.requireAuth().then(function () {
-    if (path.endsWith('/admin/') || path.endsWith('/admin/index.html') || path.endsWith('/admin/index')) {
-      initDashboard();
-    } else if (path.indexOf('news.html') !== -1 && path.indexOf('news-edit') === -1) {
+    if (document.getElementById('newsList')) {
       initNewsList();
-    } else if (path.indexOf('events.html') !== -1 && path.indexOf('events-edit') === -1) {
+    } else if (document.getElementById('eventsList')) {
       initEventsList();
+    } else if (document.querySelector('.admin-dashboard-grid')) {
+      initDashboard();
     }
   }).catch(function () {
     // 已跳转登录页
