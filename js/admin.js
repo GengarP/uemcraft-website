@@ -41,20 +41,19 @@
   //  登录页
   // ============================================================
   function initLogin() {
-    // 已登录则跳转
-    if (Auth.getToken()) {
-      Auth.verify(Auth.getToken()).then(function (valid) {
-        if (valid) window.location.href = 'index.html';
-      });
-      return;
-    }
-
     var form = document.getElementById('loginForm');
     var input = document.getElementById('tokenInput');
     var btn = document.getElementById('loginBtn');
     var msg = document.getElementById('loginMessage');
 
     if (!form) return;
+
+    // 已有有效 token 则跳转（表单事件仍正常绑定）
+    if (Auth.getToken()) {
+      Auth.verify(Auth.getToken()).then(function (valid) {
+        if (valid) window.location.href = 'index.html';
+      });
+    }
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();

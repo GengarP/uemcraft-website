@@ -3,3 +3,4 @@ api/wall.db
 api/site.db
 node_modules/
 scripts/events-data.json
+gitpush.bat
