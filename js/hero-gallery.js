@@ -46,18 +46,18 @@ document.addEventListener('DOMContentLoaded', function () {
   // 初次载入随机选一张，本次会话内刷新保持不变
   var INDEX_KEY = 'uemcraft-hero-index';
   var saved = parseInt(sessionStorage.getItem(INDEX_KEY), 10);
-  var start = (saved >= 0 && saved < count) ? saved : Math.floor(Math.random() * count);
+  var initialIdx = (saved >= 0 && saved < count) ? saved : Math.floor(Math.random() * count);
   if (!(saved >= 0 && saved < count)) {
-    sessionStorage.setItem(INDEX_KEY, String(start));
+    sessionStorage.setItem(INDEX_KEY, String(initialIdx));
   }
-  current = start + 1;
+  current = initialIdx + 1;
 
   // 指示点
   for (var i = 0; i < count; i++) {
     (function (realIdx) {
       var dot = document.createElement('button');
       dot.type = 'button';
-      dot.className = 'hero-gallery-dot' + (realIdx === start ? ' is-active' : '');
+      dot.className = 'hero-gallery-dot' + (realIdx === initialIdx ? ' is-active' : '');
       dot.setAttribute('aria-label', '切换到第 ' + (realIdx + 1) + ' 张背景');
       dot.addEventListener('click', function () { goTo(realIdx + 1); restart(); });
       dotsWrap.appendChild(dot);
