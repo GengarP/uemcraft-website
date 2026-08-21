@@ -6,15 +6,14 @@
  *   GET  ?action=list&page=1&limit=20      （仅返回 status=approved 的留言）
  *   POST ?action=post                      （JSON {name, content}）
  *
- * 管理接口（需环境变量 WALL_ADMIN_TOKEN，请求头 X-Admin-Token）：
+ * 管理接口（需环境变量 ADMIN_TOKEN，请求头 X-Admin-Token）：
  *   GET  ?action=admin_list&page=1&limit=20&status=all|approved|hidden
  *   POST ?action=audit                     （JSON {id, status: approved|hidden}）
  *   POST ?action=edit                      （JSON {id, name?, content?}）
  *   POST ?action=delete                    （JSON {id}）
  *
- * 审核模式：先审后发——新留言调用硅基流动 GLM-4-9B-0414 审核，
- * 仅判定合规才 status=approved 公开；不合规或服务不可用（未配置
- * MODERATION_API_KEY / 无 cURL / 超时 / 报错 / 解析失败）均入库为
+ * 审核模式：先审后发——新留言调用硅基流动 Qwen3.5-4B 审核，
+ * 仅判定合规才 status=approved 公开；不合规或服务不可用均入库为
  * status=hidden 待人工复核。管理员可在后台恢复 approved 或删除。
  *
  * 数据库：默认 SQLite（零配置，库文件 api/wall.db，自动建表）；
@@ -22,118 +21,19 @@
  * 以及 WALL_DB_HOST / WALL_DB_PORT / WALL_DB_NAME / WALL_DB_USER / WALL_DB_PASS。
  */
 
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, X-Admin-Token');
+require_once __DIR__ . '/common.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(204);
-    exit;
-}
-
-define('DB_PATH', __DIR__ . '/wall.db');
+// ---- wall.php 专属常量 ----
 define('RATE_LIMIT_SECONDS', 60);
 define('MAX_CONTENT_LENGTH', 500);
 define('MAX_NAME_LENGTH', 20);
 define('MIN_NAME_LENGTH', 2);
 define('STATUS_ALLOWED', ['approved', 'hidden']);
 define('MODERATION_API_URL', 'https://api.siliconflow.cn/v1/chat/completions');
-define('MODERATION_MODEL', getenv('MODERATION_MODEL') ?: 'THUDM/GLM-4-9B-0414');
+define('MODERATION_MODEL', getenv('MODERATION_MODEL') ?: 'Qwen/Qwen3.5-4B');
 define('MODERATION_TIMEOUT', 8);
 
-function json($data, $code = 200) {
-    http_response_code($code);
-    echo json_encode($data, JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-function getDb() {
-    $driver = getenv('WALL_DB_DRIVER') ?: 'sqlite';
-
-    if ($driver === 'mysql') {
-        $host = getenv('WALL_DB_HOST') ?: '127.0.0.1';
-        $port = getenv('WALL_DB_PORT') ?: '3306';
-        $name = getenv('WALL_DB_NAME');
-        $user = getenv('WALL_DB_USER');
-        $pass = getenv('WALL_DB_PASS') ?: '';
-
-        if (!$name || !$user) {
-            throw new Exception('MySQL 配置缺失：请设置 WALL_DB_NAME 与 WALL_DB_USER 环境变量');
-        }
-
-        $db = new PDO("mysql:host={$host};port={$port};dbname={$name};charset=utf8mb4", $user, $pass);
-        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-        $db->exec("CREATE TABLE IF NOT EXISTS messages (
-            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-            name VARCHAR(20) NOT NULL,
-            content VARCHAR(500) NOT NULL,
-            ip VARCHAR(45) NOT NULL,
-            status VARCHAR(16) NOT NULL DEFAULT 'approved',
-            created_at INT NOT NULL,
-            PRIMARY KEY (id),
-            KEY idx_created_at (created_at)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-        migrateMysql($db);
-        return $db;
-    }
-
-    // 默认 SQLite（零配置，无需环境变量）
-    $isNew = !file_exists(DB_PATH);
-    $db = new PDO('sqlite:' . DB_PATH);
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-    if ($isNew) {
-        $db->exec("CREATE TABLE messages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            content TEXT NOT NULL,
-            ip TEXT NOT NULL,
-            status TEXT NOT NULL DEFAULT 'approved',
-            created_at INTEGER NOT NULL
-        )");
-        $db->exec("CREATE INDEX idx_created_at ON messages(created_at DESC)");
-    }
-    migrateSqlite($db);
-    return $db;
-}
-
-/** 旧库补 status 字段（SQLite） */
-function migrateSqlite($db) {
-    $cols = $db->query('PRAGMA table_info(messages)')->fetchAll(PDO::FETCH_ASSOC);
-    foreach ($cols as $col) {
-        if ($col['name'] === 'status') return;
-    }
-    $db->exec("ALTER TABLE messages ADD COLUMN status TEXT NOT NULL DEFAULT 'approved'");
-}
-
-/** 旧库补 status 字段（MySQL） */
-function migrateMysql($db) {
-    $stmt = $db->prepare(
-        "SELECT COUNT(*) FROM information_schema.COLUMNS
-         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'messages' AND COLUMN_NAME = 'status'"
-    );
-    $stmt->execute();
-    if ((int)$stmt->fetchColumn() === 0) {
-        $db->exec("ALTER TABLE messages ADD COLUMN status VARCHAR(16) NOT NULL DEFAULT 'approved'");
-    }
-}
-
-function charCount($str) {
-    if (function_exists('mb_strlen')) {
-        return mb_strlen($str, 'UTF-8');
-    }
-    return preg_match_all('/./us', $str);
-}
-
-function getClientIp() {
-    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-        return substr(trim($ips[0]), 0, 45);
-    }
-    return substr($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0', 0, 45);
-}
+// ---- wall.php 专属函数 ----
 
 function checkRateLimit($db, $ip) {
     $stmt = $db->prepare("SELECT created_at FROM messages WHERE ip = ? ORDER BY created_at DESC LIMIT 1");
@@ -149,13 +49,13 @@ function checkRateLimit($db, $ip) {
 }
 
 /**
- * 调用硅基流动 GLM-4-9B-0414 审核留言是否合规。
+ * 调用硅基流动 Qwen3.5-4B 审核留言是否合规。
  * 返回 'approved'（合规）| 'hidden'（不合规）| null（服务不可用/未配置/解析失败）。
  */
 function moderateContent($name, $content) {
     $apiKey = getenv('MODERATION_API_KEY');
     if (!$apiKey || !function_exists('curl_init')) {
-        return null; // 未配置 API Key 或不支持 cURL → 视为不可用
+        return null;
     }
 
     $system = "你是留言墙内容审核员，判断用户昵称及留言是否合规、是否适合公开发布。"
@@ -168,8 +68,6 @@ function moderateContent($name, $content) {
 
     $payload = json_encode([
         'model' => MODERATION_MODEL,
-        // Qwen3.5 默认开启思考模式，会把 max_tokens 耗在推理上导致正文为空；
-        // 审核任务无需思考，显式关闭以获得快速、确定的 JSON 判定
         'enable_thinking' => false,
         'messages' => [
             ['role' => 'system', 'content' => $system],
@@ -207,13 +105,11 @@ function moderateContent($name, $content) {
         return null;
     }
 
-    // 期望模型输出 JSON {"allowed": bool}
     $result = json_decode(trim($text), true);
     if (is_array($result) && array_key_exists('allowed', $result)) {
         return $result['allowed'] ? 'approved' : 'hidden';
     }
 
-    // 容错：正则匹配 allowed 的布尔值
     if (preg_match('/"allowed"\s*:\s*(true|false)/i', $text, $m)) {
         return strtolower($m[1]) === 'true' ? 'approved' : 'hidden';
     }
@@ -222,40 +118,12 @@ function moderateContent($name, $content) {
     return null;
 }
 
-/** 读取 JSON 请求体，回退到表单 POST */
-function readInput() {
-    $input = json_decode(file_get_contents('php://input'), true);
-    if (!$input) {
-        $input = $_POST;
-    }
-    return $input ?: [];
-}
-
-/** 管理员鉴权：未配置 token 或令牌无效时直接 403 */
-function requireAdmin() {
-    $token = getenv('WALL_ADMIN_TOKEN');
-    if (!$token) {
-        json(['success' => false, 'error' => '管理员功能未启用：请设置 WALL_ADMIN_TOKEN 环境变量'], 403);
-    }
-    $provided = $_SERVER['HTTP_X_ADMIN_TOKEN'] ?? '';
-    if ($provided === '' || !hash_equals($token, $provided)) {
-        json(['success' => false, 'error' => '管理员令牌无效'], 403);
-    }
-}
-
-/** 从请求中取合法 id，非法则 400 */
-function requireId($input) {
-    $id = intval($input['id'] ?? 0);
-    if ($id <= 0) {
-        json(['success' => false, 'error' => '缺少合法的留言 id'], 400);
-    }
-    return $id;
-}
+// ---- 路由 ----
 
 $action = $_GET['action'] ?? '';
 
 try {
-    $db = getDb();
+    $db = getWallDb();
 
     // ---- 公开：留言列表（仅已通过） ----
     if ($action === 'list') {
@@ -277,7 +145,7 @@ try {
         }
         unset($row);
 
-        json([
+        json_response([
             'success' => true,
             'data' => $rows,
             'page' => $page,
@@ -290,7 +158,7 @@ try {
     // ---- 公开：发表留言 ----
     if ($action === 'post') {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            json(['success' => false, 'error' => '请使用 POST 请求'], 405);
+            json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }
 
         $input = readInput();
@@ -298,25 +166,24 @@ try {
         $content = trim($input['content'] ?? '');
 
         if (charCount($name) < MIN_NAME_LENGTH || charCount($name) > MAX_NAME_LENGTH) {
-            json(['success' => false, 'error' => '昵称长度需在 2–20 个字符之间'], 400);
+            json_response(['success' => false, 'error' => '昵称长度需在 2–20 个字符之间'], 400);
         }
         if ($content === '' || charCount($content) > MAX_CONTENT_LENGTH) {
-            json(['success' => false, 'error' => '留言内容不能为空，且不能超过 500 个字符'], 400);
+            json_response(['success' => false, 'error' => '留言内容不能为空，且不能超过 500 个字符'], 400);
         }
 
         $ip = getClientIp();
         $wait = checkRateLimit($db, $ip);
         if ($wait > 0) {
-            json(['success' => false, 'error' => '操作太频繁，请 ' . $wait . ' 秒后再试'], 429);
+            json_response(['success' => false, 'error' => '操作太频繁，请 ' . $wait . ' 秒后再试'], 429);
         }
 
-        // AI 审核：仅明确判定合规才公开；不合规或服务不可用均待人工复核
         $status = moderateContent($name, $content) === 'approved' ? 'approved' : 'hidden';
 
         $stmt = $db->prepare("INSERT INTO messages (name, content, ip, status, created_at) VALUES (?, ?, ?, ?, ?)");
         $stmt->execute([$name, $content, $ip, $status, time()]);
 
-        json([
+        json_response([
             'success' => true,
             'data' => [
                 'id' => (int) $db->lastInsertId(),
@@ -330,7 +197,7 @@ try {
 
     // ---- 管理：列表（含屏蔽项，可按状态筛选） ----
     if ($action === 'admin_list') {
-        requireAdmin();
+        requireAdmin('WALL_ADMIN_TOKEN');
         $page = max(1, intval($_GET['page'] ?? 1));
         $limit = min(50, max(1, intval($_GET['limit'] ?? 20)));
         $offset = ($page - 1) * $limit;
@@ -361,7 +228,7 @@ try {
         }
         unset($row);
 
-        json([
+        json_response([
             'success' => true,
             'data' => $rows,
             'page' => $page,
@@ -373,30 +240,30 @@ try {
 
     // ---- 管理：审核（通过/屏蔽） ----
     if ($action === 'audit') {
-        requireAdmin();
+        requireAdmin('WALL_ADMIN_TOKEN');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            json(['success' => false, 'error' => '请使用 POST 请求'], 405);
+            json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }
         $input = readInput();
         $id = requireId($input);
         $status = $input['status'] ?? '';
         if (!in_array($status, STATUS_ALLOWED, true)) {
-            json(['success' => false, 'error' => 'status 仅支持 approved 或 hidden'], 400);
+            json_response(['success' => false, 'error' => 'status 仅支持 approved 或 hidden'], 400);
         }
 
         $stmt = $db->prepare('UPDATE messages SET status = ? WHERE id = ?');
         $stmt->execute([$status, $id]);
         if ($stmt->rowCount() === 0) {
-            json(['success' => false, 'error' => '留言不存在'], 404);
+            json_response(['success' => false, 'error' => '留言不存在'], 404);
         }
-        json(['success' => true, 'data' => ['id' => $id, 'status' => $status]]);
+        json_response(['success' => true, 'data' => ['id' => $id, 'status' => $status]]);
     }
 
     // ---- 管理：编辑 ----
     if ($action === 'edit') {
-        requireAdmin();
+        requireAdmin('WALL_ADMIN_TOKEN');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            json(['success' => false, 'error' => '请使用 POST 请求'], 405);
+            json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }
         $input = readInput();
         $id = requireId($input);
@@ -405,29 +272,29 @@ try {
         $stmt->execute([$id]);
         $existing = $stmt->fetch();
         if (!$existing) {
-            json(['success' => false, 'error' => '留言不存在'], 404);
+            json_response(['success' => false, 'error' => '留言不存在'], 404);
         }
 
         $name = array_key_exists('name', $input) ? trim($input['name']) : $existing['name'];
         $content = array_key_exists('content', $input) ? trim($input['content']) : $existing['content'];
 
         if (charCount($name) < MIN_NAME_LENGTH || charCount($name) > MAX_NAME_LENGTH) {
-            json(['success' => false, 'error' => '昵称长度需在 2–20 个字符之间'], 400);
+            json_response(['success' => false, 'error' => '昵称长度需在 2–20 个字符之间'], 400);
         }
         if ($content === '' || charCount($content) > MAX_CONTENT_LENGTH) {
-            json(['success' => false, 'error' => '留言内容不能为空，且不能超过 500 个字符'], 400);
+            json_response(['success' => false, 'error' => '留言内容不能为空，且不能超过 500 个字符'], 400);
         }
 
         $stmt = $db->prepare('UPDATE messages SET name = ?, content = ? WHERE id = ?');
         $stmt->execute([$name, $content, $id]);
-        json(['success' => true, 'data' => ['id' => $id, 'name' => $name, 'content' => $content]]);
+        json_response(['success' => true, 'data' => ['id' => $id, 'name' => $name, 'content' => $content]]);
     }
 
     // ---- 管理：删除 ----
     if ($action === 'delete') {
-        requireAdmin();
+        requireAdmin('WALL_ADMIN_TOKEN');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            json(['success' => false, 'error' => '请使用 POST 请求'], 405);
+            json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }
         $input = readInput();
         $id = requireId($input);
@@ -435,13 +302,13 @@ try {
         $stmt = $db->prepare('DELETE FROM messages WHERE id = ?');
         $stmt->execute([$id]);
         if ($stmt->rowCount() === 0) {
-            json(['success' => false, 'error' => '留言不存在'], 404);
+            json_response(['success' => false, 'error' => '留言不存在'], 404);
         }
-        json(['success' => true, 'data' => ['id' => $id]]);
+        json_response(['success' => true, 'data' => ['id' => $id]]);
     }
 
-    json(['success' => false, 'error' => '未知操作'], 400);
+    json_response(['success' => false, 'error' => '未知操作'], 400);
 } catch (Throwable $e) {
     error_log('[wall.php] ' . $e->getMessage());
-    json(['success' => false, 'error' => '服务器内部错误'], 500);
+    json_response(['success' => false, 'error' => '服务器内部错误'], 500);
 }

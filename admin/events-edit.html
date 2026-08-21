@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#213d87">
+  <title id="pageTitle">编辑活动 — UEMCraft</title>
+  <link rel="icon" href="../favicon.ico" type="images/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <script>
+    (function(){
+      var t = localStorage.getItem('uemcraft-theme');
+      if(!t) t = window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+      document.documentElement.style.colorScheme = t;
+    })();
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+<a href="#main" class="skip-link">跳转到主内容</a>
+
+<!-- ====== Header ====== -->
+<header class="site-header" role="banner">
+  <div class="header-inner">
+    <a href="../index.html" class="header-logo" aria-label="UEMCraft 首页">
+      <img src="../assets/img/logo-256.webp" alt="UEMCraft Logo" width="40" height="40">
+      <span class="logo-text">
+        <span class="logo-cn">应大MC同好会</span>
+        <span class="logo-en">UEMCraft</span>
+      </span>
+    </a>
+    <nav class="header-nav" aria-label="主导航">
+      <a href="../index.html">首页</a>
+      <a href="../about.html">关于我们</a>
+      <a href="../news/">资讯动态</a>
+      <a href="../events.html">活动中心</a>
+      <a href="../gallery/">作品展示</a>
+      <a href="../wall/">留言墙</a>
+    </nav>
+    <div class="header-actions">
+      <button class="theme-toggle" aria-label="切换深色/亮色模式" title="切换主题">
+        <span class="iconfont-theme icon-sun" aria-hidden="true"></span>
+        <span class="iconfont-theme icon-moon" aria-hidden="true"></span>
+      </button>
+      <button class="hamburger" aria-label="菜单" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<nav class="mobile-nav" aria-label="移动端导航">
+  <a href="../index.html">首页</a>
+  <a href="../about.html">关于我们</a>
+  <a href="../events.html">活动中心</a>
+  <a href="../news/">资讯动态</a>
+  <a href="../gallery/">作品展示</a>
+  <a href="../wall/">留言墙</a>
+</nav>
+
+<!-- ====== Admin Nav ====== -->
+<div class="admin-nav">
+  <div class="container admin-nav-inner">
+    <a href="index.html" class="admin-nav-link">仪表盘</a>
+    <a href="news.html" class="admin-nav-link">新闻管理</a>
+    <a href="events.html" class="admin-nav-link is-active">活动管理</a>
+    <a href="../wall/admin.html" class="admin-nav-link">留言墙管理</a>
+    <button class="btn btn-ghost btn-sm" id="logoutBtn">退出登录</button>
+  </div>
+</div>
+
+<!-- ====== Main ====== -->
+<main id="main">
+
+<section class="page-hero">
+  <div class="container">
+    <h1 id="heroTitle">新建活动</h1>
+    <p class="hero-sub" id="heroSub">填写活动信息并保存</p>
+    <nav class="breadcrumb" aria-label="面包屑">
+      <a href="../index.html">首页</a> <span>/</span> <a href="index.html">管理后台</a> <span>/</span> <a href="events.html">活动</a> <span>/</span> <span id="crumbAction">新建</span>
+    </nav>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <form id="eventForm" class="admin-edit-form" novalidate>
+      <div class="form-row">
+        <div class="form-group form-group--full">
+          <label for="inputTitle">标题 <span class="required">*</span></label>
+          <input type="text" id="inputTitle" class="form-input" placeholder="活动标题" required maxlength="255">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="inputSlug">Slug <span class="required">*</span></label>
+          <input type="text" id="inputSlug" class="form-input" placeholder="url-slug" required pattern="[a-z0-9\-]+">
+        </div>
+        <div class="form-group">
+          <label for="inputStatus">状态</label>
+          <select id="inputStatus" class="form-input">
+            <option value="upcoming">即将开始</option>
+            <option value="ongoing">进行中</option>
+            <option value="past">已结束</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="inputDateLabel">时间标签</label>
+          <input type="text" id="inputDateLabel" class="form-input" placeholder="如：2026.10">
+        </div>
+        <div class="form-group">
+          <label for="inputDateStart">开始日期</label>
+          <input type="date" id="inputDateStart" class="form-input">
+        </div>
+        <div class="form-group">
+          <label for="inputDateEnd">结束日期</label>
+          <input type="date" id="inputDateEnd" class="form-input">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group form-group--full">
+          <label for="inputCover">封面图 URL</label>
+          <input type="text" id="inputCover" class="form-input" placeholder="/assets/img/events/xxx.jpg">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group form-group--full">
+          <label for="inputLink">外部链接</label>
+          <input type="text" id="inputLink" class="form-input" placeholder="/news/article.html?slug=xxx 或 https://...">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="inputFeatured">置顶</label>
+          <select id="inputFeatured" class="form-input">
+            <option value="0">否</option>
+            <option value="1">是</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="inputSortOrder">排序权重</label>
+          <input type="number" id="inputSortOrder" class="form-input" value="0" min="0">
+          <small class="form-help">数值越小越靠前</small>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group form-group--full">
+          <label for="inputExcerpt">摘要</label>
+          <textarea id="inputExcerpt" class="form-textarea" rows="3" placeholder="活动简介" maxlength="500"></textarea>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group form-group--full">
+          <label for="inputContent">详情（Markdown）</label>
+          <textarea id="inputContent" class="form-textarea admin-content-textarea" rows="15" placeholder="Markdown 格式详情（可选）"></textarea>
+        </div>
+      </div>
+
+      <span id="formMessage" class="wall-form-message" role="status" aria-live="polite"></span>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="saveBtn">保存</button>
+        <a href="events.html" class="btn btn-ghost">取消</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<!-- ====== Footer ====== -->
+<footer class="site-footer" role="contentinfo">
+  <div class="footer-bottom">
+    <span>&copy; <span id="year"></span> 应急管理大学 Minecraft 同好会 · UEMCraft</span>
+    <span>Minecraft 是 Mojang AB 的商标 · 本站为社群非商业用途</span>
+  </div>
+</footer>
+
+<script defer src="../js/main.js"></script>
+<script defer src="../js/admin-auth.js"></script>
+<script defer src="../js/admin-edit.js"></script>
+</body>
+</html>

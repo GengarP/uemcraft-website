@@ -1,16 +1,17 @@
 /* ============================================================
    wall-admin.js — 留言墙管理页
    依赖 api/wall.php 的管理接口（X-Admin-Token 鉴权）
+   使用 admin-auth.js 统一认证
    ============================================================ */
 
 (function() {
   'use strict';
 
+  var Auth = window.UEMAdminAuth;
+  if (!Auth) return;
+
   var API_URL = '../api/wall.php';
   var LIMIT = 20;
-  var TOKEN_KEY = 'uemcraft-wall-admin-token';
-
-  var token = localStorage.getItem(TOKEN_KEY) || '';
 
   // 元素
   var tokenSection = document.getElementById('adminTokenSection');
@@ -62,59 +63,51 @@
   /* ---- API ---- */
   function apiRequest(action, options) {
     var url = API_URL + '?action=' + action;
-    var opts = {
+    var fetchOptions = {
       method: 'GET',
-      headers: { 'X-Admin-Token': token }
+      headers: {}
     };
     if (options && options.method) {
-      opts.method = options.method;
-      opts.headers['Content-Type'] = 'application/json';
-      opts.body = JSON.stringify(options.body || {});
+      fetchOptions.method = options.method;
+      fetchOptions.headers['Content-Type'] = 'application/json';
+      fetchOptions.body = JSON.stringify(options.body || {});
     }
     if (options && options.query) {
       url += '&' + options.query;
     }
 
-    return fetch(url, opts).then(function(res) {
-      return res.json().then(function(data) {
-        if (!res.ok || !data.success) {
-          var err = new Error(data.error || ('HTTP ' + res.status));
-          err.status = res.status;
-          throw err;
-        }
-        return data;
-      });
-    });
+    return Auth.api(url, fetchOptions);
   }
 
   function handleApiError(err, container) {
-    if (err.status === 403) {
-      // 令牌失效，回到登录态
-      logout();
-      return;
-    }
     if (container) {
       container.innerHTML = '<div class="wall-empty">' + escapeHtml(err.message || '加载失败') + '</div>';
     }
   }
 
   /* ---- 登录 / 退出 ---- */
-  function login(tokenValue) {
-    token = tokenValue;
-    localStorage.setItem(TOKEN_KEY, token);
+  function showPanel() {
     tokenSection.hidden = true;
     panelSection.hidden = false;
     currentPage = 1;
     loadMessages(1);
   }
 
-  function logout() {
-    token = '';
-    localStorage.removeItem(TOKEN_KEY);
+  function showLogin() {
     tokenSection.hidden = false;
     panelSection.hidden = true;
     tokenInput.value = '';
     showTokenMessage('');
+  }
+
+  // 已有 token 则自动验证
+  if (Auth.getToken()) {
+    Auth.verify(Auth.getToken(), API_URL + '?action=admin_list&page=1&limit=1&status=all')
+      .then(function(valid) {
+        if (valid) showPanel();
+        else showLogin();
+      })
+      .catch(function() { showLogin(); });
   }
 
   tokenForm.addEventListener('submit', function(e) {
@@ -127,19 +120,23 @@
     setConnecting(true);
     showTokenMessage('');
 
-    token = value;
-    apiRequest('admin_list', { query: 'page=1&limit=1&status=all' })
-      .then(function() {
-        login(value);
+    Auth.verify(value, API_URL + '?action=admin_list&page=1&limit=1&status=all')
+      .then(function(valid) {
+        if (valid) {
+          Auth.saveToken(value);
+          showPanel();
+        } else {
+          setConnecting(false);
+          showTokenMessage('令牌无效', 'error');
+        }
       })
-      .catch(function(err) {
-        token = '';
+      .catch(function() {
         setConnecting(false);
-        showTokenMessage(err.message || '令牌无效', 'error');
+        showTokenMessage('验证请求失败', 'error');
       });
   });
 
-  logoutBtn.addEventListener('click', logout);
+  logoutBtn.addEventListener('click', function() { Auth.logout(); });
 
   /* ---- 列表加载 ---- */
   function loadMessages(page) {
@@ -205,7 +202,6 @@
   function buildActions(container, item, card) {
     var hidden = item.status === 'hidden';
 
-    // 审核（屏蔽/恢复）
     var auditBtn = document.createElement('button');
     auditBtn.type = 'button';
     auditBtn.className = 'btn btn-ghost btn-sm';
@@ -217,7 +213,6 @@
         .catch(function(err) { handleApiError(err, adminList); });
     });
 
-    // 编辑
     var editBtn = document.createElement('button');
     editBtn.type = 'button';
     editBtn.className = 'btn btn-ghost btn-sm';
@@ -226,7 +221,6 @@
       enterEditMode(card, item);
     });
 
-    // 删除
     var delBtn = document.createElement('button');
     delBtn.type = 'button';
     delBtn.className = 'btn btn-ghost btn-sm admin-btn-danger';
@@ -321,12 +315,4 @@
       loadMessages(1);
     });
   });
-
-  /* ---- 初始化 ---- */
-  if (token) {
-    // 已有令牌，直接尝试进入
-    apiRequest('admin_list', { query: 'page=1&limit=1&status=all' })
-      .then(function() { login(token); })
-      .catch(function() { logout(); });
-  }
 })();

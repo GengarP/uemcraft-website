@@ -1,0 +1,167 @@
+/* ============================================================
+   admin.css — UEMCraft 管理后台专属样式
+   复用 tokens.css 变量，与 pages.css 中的 admin-* 类保持一致
+   ============================================================ */
+
+/* ---- Admin Nav ---- */
+.admin-nav {
+  background: var(--c-surface);
+  border-bottom: 2px solid var(--c-border);
+  position: sticky;
+  top: var(--header-h-scrolled);
+  z-index: 90;
+}
+
+.admin-nav-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding-block: var(--space-sm);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-nav-link {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-muted);
+  text-decoration: none;
+  padding: 6px 14px;
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  white-space: nowrap;
+  transition: color var(--duration) var(--ease), border-color var(--duration) var(--ease), background var(--duration) var(--ease);
+}
+
+.admin-nav-link:hover {
+  color: var(--c-primary);
+  border-color: var(--c-border);
+}
+
+.admin-nav-link.is-active {
+  color: #fff;
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+}
+
+.admin-nav .btn {
+  margin-left: auto;
+}
+
+/* ---- Dashboard Grid ---- */
+.admin-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-lg);
+}
+
+.admin-dashboard-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  background: var(--c-surface);
+  border: 2px solid var(--c-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hard-sm);
+  text-decoration: none;
+  color: var(--c-text);
+  transition: border-color var(--duration) var(--ease), box-shadow var(--duration) var(--ease), transform var(--duration) var(--ease);
+}
+
+.admin-dashboard-card:hover {
+  border-color: var(--c-primary);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+.admin-dashboard-card h3 {
+  font-size: var(--fs-lg);
+  margin: 0;
+}
+
+.admin-dashboard-card p {
+  margin: 0;
+}
+
+.admin-dashboard-card-icon {
+  margin-bottom: var(--space-xs);
+}
+
+/* ---- Edit Form ---- */
+.admin-edit-form {
+  max-width: 900px;
+}
+
+.admin-edit-form .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.admin-edit-form .form-group--full {
+  grid-column: 1 / -1;
+}
+
+.admin-edit-form label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 4px;
+  font-size: var(--fs-sm);
+  color: var(--c-heading);
+}
+
+.admin-edit-form .required {
+  color: var(--c-red);
+}
+
+.admin-edit-form .form-help {
+  display: block;
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+  margin-top: 4px;
+}
+
+.admin-edit-form .form-input,
+.admin-edit-form .form-textarea {
+  width: 100%;
+}
+
+.admin-content-textarea {
+  min-height: 400px;
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  line-height: var(--lh);
+}
+
+.admin-edit-form .form-actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--c-border);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  .admin-edit-form .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-nav-inner {
+    gap: 2px;
+  }
+
+  .admin-nav-link {
+    padding: 4px 10px;
+    font-size: var(--fs-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}

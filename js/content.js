@@ -1,7 +1,7 @@
 /* ============================================================
    content.js — 内容渲染
-   新闻：通过 fetch 从 articles/index.json 和 articles-json/*.json 加载
-   活动：仍从 window.UEMCRAFT_DATA（js/data.js）读取
+   新闻：通过 fetch 从 /api/news.php 加载
+   活动：通过 fetch 从 /api/events.php 加载
    在 DOM ready 时按容器 ID 自动渲染列表 / 详情 / 首页预览。
    ============================================================ */
 
@@ -33,25 +33,45 @@ function newsUrl(slug) {
   return '/news/article.html?slug=' + encodeURIComponent(slug);
 }
 
-/* ---- 异步数据加载 ---- */
+/* ---- 异步数据加载（API） ---- */
 function fetchArticleIndex() {
-  return fetch('/articles/index.json')
+  return fetch('/api/news.php?action=list&limit=100')
     .then(function (res) {
-      if (!res.ok) throw new Error('Failed to load article index');
+      if (!res.ok) throw new Error('Failed to load news');
       return res.json();
+    })
+    .then(function (json) {
+      if (!json.success) throw new Error(json.error || 'Failed');
+      return json.data || [];
     });
 }
 
 function fetchArticleBySlug(slug) {
-  return fetch('/articles-json/' + encodeURIComponent(slug) + '.json')
+  return fetch('/api/news.php?action=detail&slug=' + encodeURIComponent(slug))
     .then(function (res) {
       if (!res.ok) return null;
       return res.json();
     })
+    .then(function (json) {
+      if (!json || !json.success) return null;
+      return json.data;
+    })
     .catch(function () { return null; });
 }
 
-// 按日期降序排序（与旧 sortedNews 行为一致）
+function fetchEvents(type) {
+  return fetch('/api/events.php?action=' + (type || 'upcoming'))
+    .then(function (res) {
+      if (!res.ok) throw new Error('Failed to load events');
+      return res.json();
+    })
+    .then(function (json) {
+      if (!json.success) throw new Error(json.error || 'Failed');
+      return json.data || [];
+    });
+}
+
+// 按日期降序排序（与旧行为一致）
 function sortArticles(articles) {
   return articles.slice().sort(function (a, b) {
     return String(b.date || '').localeCompare(String(a.date || ''));
@@ -87,7 +107,7 @@ function renderEventCard(item) {
       '<div class="event-card-img">' +
         '<img src="' + escapeHtml(item.cover || '') + '" alt="">' +
         '<div class="event-img-meta">' +
-          '<div class="event-date-badge">' + escapeHtml(item.dateLabel || '') + '</div>' +
+          '<div class="event-date-badge">' + escapeHtml(item.date_label || item.dateLabel || '') + '</div>' +
           '<div class="event-status ' + st.cls + '">' + st.label + '</div>' +
         '</div>' +
       '</div>' +
@@ -107,7 +127,6 @@ var GENERIC_KEYWORDS = {
   'true':1,'false':1,'null':1,'undefined':1,'this':1,'typeof':1,'instanceof':1,'in':1,'of':1,'void':1,'delete':1
 };
 
-// JSON 高亮：键名 / 字符串 / 数字 / 布尔·null / 标点分色
 function highlightJson(src) {
   return src.replace(
     /("(?:\\.|[^"\\])*")(\s*:)?|(-?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)|\b(true|false|null)\b|([{}\[\],:])|([\s\S])/g,
@@ -125,8 +144,6 @@ function highlightJson(src) {
   );
 }
 
-// 通用高亮：注释 / 字符串 / 数字 / 关键字（其余原样安全转义）
-// 注释起始符按语言区分，避免 URL 里的 // 被误判为注释
 var RE_SLASH_COMMENT = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)|\b(-?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\b|\b([A-Za-z_$][\w$]*)\b|([\s\S])/g;
 var RE_HASH_COMMENT  = /(#[^\n]*)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)|\b(-?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\b|\b([A-Za-z_$][\w$]*)\b|([\s\S])/g;
 var HASH_COMMENT_LANGS = /^(bash|sh|shell|zsh|python|py|yaml|yml|ruby|rb|perl|pl|nginx|toml|ini|http|text|plaintext)$/;
@@ -150,7 +167,6 @@ function copyText(text) {
   if (navigator.clipboard && window.isSecureContext) {
     return navigator.clipboard.writeText(text);
   }
-  // 兼容非 HTTPS / file:// 环境
   var ta = document.createElement('textarea');
   ta.value = text;
   ta.style.position = 'fixed';
@@ -186,7 +202,6 @@ function enhanceCodeBlocks(root) {
         ? highlightJson(raw)
         : highlightGeneric(raw, lang);
 
-      // 包一层 .code-block，插入语言标签 + 复制按钮
       var wrapper = document.createElement('div');
       wrapper.className = 'code-block';
       pre.parentNode.insertBefore(wrapper, pre);
@@ -261,7 +276,7 @@ function renderArticleData(item) {
 
   if (coverEl) {
     if (item.cover) {
-      var cap = item.coverCaption ? '<figcaption>' + escapeHtml(item.coverCaption) + '</figcaption>' : '';
+      var cap = item.cover_caption ? '<figcaption>' + escapeHtml(item.cover_caption) + '</figcaption>' : '';
       coverEl.innerHTML = '<img src="' + escapeHtml(item.cover) + '" alt="' + escapeHtml(item.title) + '" loading="eager">' + cap;
       coverEl.style.display = '';
     } else {
@@ -277,7 +292,8 @@ function renderArticleData(item) {
   if (contentEl) {
     if (typeof marked !== 'undefined') {
       marked.setOptions({ gfm: true, breaks: false, headerIds: true, mangle: false, sanitize: false });
-      contentEl.innerHTML = marked.parse(item.markdown || '');
+      // API 返回的字段是 content（不是 markdown）
+      contentEl.innerHTML = marked.parse(item.content || item.markdown || '');
       enhanceCodeBlocks(contentEl);
     } else {
       contentEl.innerHTML = '<p>Markdown 引擎加载失败，请刷新重试。</p>';
@@ -287,8 +303,6 @@ function renderArticleData(item) {
 
 /* ---- 初始化：按容器 ID 自动渲染 ---- */
 function initContent() {
-  var data = window.UEMCRAFT_DATA || { events: { upcoming: [], past: [] } };
-
   // 文章详情页（异步）
   if (document.getElementById('articleContent')) {
     var slug = new URLSearchParams(window.location.search).get('slug');
@@ -344,20 +358,26 @@ function initContent() {
     });
   }
 
-  // 首页近期活动预览（同步，来自 data.js）
+  // 首页近期活动预览（异步，从 API）
   var eventsGrid = document.getElementById('eventsGrid');
   if (eventsGrid) {
-    (data.events.upcoming || []).forEach(function (item) { eventsGrid.appendChild(renderEventCard(item)); });
+    fetchEvents('upcoming').then(function (items) {
+      items.forEach(function (item) { eventsGrid.appendChild(renderEventCard(item)); });
+    }).catch(function () {});
   }
 
-  // 活动页：近期活动 / 往期回顾（同步，来自 data.js）
+  // 活动页：近期活动 / 往期回顾（异步，从 API）
   var eventUpcoming = document.getElementById('eventUpcoming');
   if (eventUpcoming) {
-    (data.events.upcoming || []).forEach(function (item) { eventUpcoming.appendChild(renderEventCard(item)); });
+    fetchEvents('upcoming').then(function (items) {
+      items.forEach(function (item) { eventUpcoming.appendChild(renderEventCard(item)); });
+    }).catch(function () {});
   }
   var eventPast = document.getElementById('eventPast');
   if (eventPast) {
-    (data.events.past || []).forEach(function (item) { eventPast.appendChild(renderEventCard(item)); });
+    fetchEvents('past').then(function (items) {
+      items.forEach(function (item) { eventPast.appendChild(renderEventCard(item)); });
+    }).catch(function () {});
   }
 }
 
