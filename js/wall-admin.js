@@ -14,13 +14,6 @@
   var LIMIT = 20;
 
   // 元素
-  var tokenSection = document.getElementById('adminTokenSection');
-  var tokenForm = document.getElementById('adminTokenForm');
-  var tokenInput = document.getElementById('adminTokenInput');
-  var connectBtn = document.getElementById('adminConnectBtn');
-  var tokenMessage = document.getElementById('adminTokenMessage');
-
-  var panelSection = document.getElementById('adminPanelSection');
   var adminList = document.getElementById('adminList');
   var totalCount = document.getElementById('adminTotalCount');
   var pagination = document.getElementById('adminPagination');
@@ -50,16 +43,6 @@
     return div.innerHTML;
   }
 
-  function showTokenMessage(msg, type) {
-    tokenMessage.textContent = msg;
-    tokenMessage.className = 'wall-form-message is-' + (type || 'info');
-  }
-
-  function setConnecting(isLoading) {
-    connectBtn.disabled = isLoading;
-    connectBtn.textContent = isLoading ? '验证中…' : '进入管理';
-  }
-
   /* ---- API ---- */
   function apiRequest(action, options) {
     var url = API_URL + '?action=' + action;
@@ -85,56 +68,12 @@
     }
   }
 
-  /* ---- 登录 / 退出 ---- */
-  function showPanel() {
-    tokenSection.hidden = true;
-    panelSection.hidden = false;
-    currentPage = 1;
-    loadMessages(1);
-  }
-
-  function showLogin() {
-    tokenSection.hidden = false;
-    panelSection.hidden = true;
-    tokenInput.value = '';
-    showTokenMessage('');
-  }
-
-  // 已有 token 则自动验证
-  if (Auth.getToken()) {
-    Auth.verify(Auth.getToken(), API_URL + '?action=admin_list&page=1&limit=1&status=all')
-      .then(function(valid) {
-        if (valid) showPanel();
-        else showLogin();
-      })
-      .catch(function() { showLogin(); });
-  }
-
-  tokenForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-    var value = (tokenInput.value || '').trim();
-    if (!value) {
-      showTokenMessage('请输入管理员令牌', 'error');
-      return;
-    }
-    setConnecting(true);
-    showTokenMessage('');
-
-    Auth.verify(value, API_URL + '?action=admin_list&page=1&limit=1&status=all')
-      .then(function(valid) {
-        if (valid) {
-          Auth.saveToken(value);
-          showPanel();
-        } else {
-          setConnecting(false);
-          showTokenMessage('令牌无效', 'error');
-        }
-      })
-      .catch(function() {
-        setConnecting(false);
-        showTokenMessage('验证请求失败', 'error');
-      });
-  });
+  /* ---- 认证 ---- */
+  Auth.requireAuth(API_URL + '?action=admin_list&page=1&limit=1&status=all')
+    .then(function() {
+      currentPage = 1;
+      loadMessages(1);
+    });
 
   logoutBtn.addEventListener('click', function() { Auth.logout(); });
 

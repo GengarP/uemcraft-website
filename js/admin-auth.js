@@ -2,7 +2,7 @@
  * admin-auth.js — UEMCraft 统一管理后台认证模块
  * ------------------------------------------------
  * 提供 token 存储、验证、API 请求等公共功能。
- * 供 admin/*.html 和 wall/admin.html 复用。
+ * 供 admin/*.html 复用。
  */
 window.UEMAdminAuth = (function () {
   'use strict';
