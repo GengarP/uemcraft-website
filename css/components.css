@@ -198,6 +198,9 @@
   box-shadow:var(--shadow-hard-sm);
   scroll-margin-top:80px;
 }
+.server-panel + .server-panel {
+  margin-top:var(--space-lg);
+}
 .server-indicator {
   width:14px; height:14px;
   border-radius:50%;
@@ -299,10 +302,9 @@
 }
 .player-tooltip {
   position:absolute;
-  top:100%;
+  bottom:calc(100% + 8px);
   left:50%;
   transform:translate(-50%,4px);
-  margin-top:6px;
   background:var(--c-surface);
   border:1px solid var(--c-border);
   border-radius:var(--radius);
@@ -313,7 +315,6 @@
   opacity:0;
   visibility:hidden;
   transition:opacity .15s ease,visibility .15s ease;
-  pointer-events:none;
 }
 .player-list {
   list-style:none;
