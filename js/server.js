@@ -21,11 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const res = await fetch('/api/servers.php?action=list');
       const json = await res.json();
+      console.log('[server.js] API response:', json);
       if (json.success && json.data && json.data.length) {
         servers = json.data;
       }
     } catch (e) {
-      console.warn('Failed to load servers:', e.message);
+      console.warn('[server.js] Failed to load servers:', e.message);
     }
   }
 
@@ -76,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const playerList = online && status.players && status.players.list ? status.players.list : [];
 
       const panel = document.createElement('div');
-      panel.className = 'server-panel reveal';
+      panel.className = 'server-panel';
       panel.innerHTML =
         '<div class="server-indicator' + (online ? '' : ' is-offline') + '"></div>' +
         '<div class="server-info">' +
@@ -159,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
           var oldPanels = container.querySelectorAll('.server-panel');
           oldPanels.forEach(function(p) { p.remove(); });
           var placeholder = document.createElement('div');
-          placeholder.className = 'server-panel reveal';
+          placeholder.className = 'server-panel';
           placeholder.innerHTML = '<div class="server-info"><p class="text-muted" style="text-align:center;">暂未配置服务器，请在管理后台添加</p></div>';
           container.appendChild(placeholder);
         }

@@ -248,9 +248,8 @@ function migrateSiteTables($db, $driver) {
         return;
     }
 
-    // SQLite
-    $tables = $db->query("SELECT name FROM sqlite_master WHERE type='table' AND name='servers'")->fetchAll();
-    if (empty($tables)) {
+    // SQLite — 使用 try/catch 兼容 "table already exists" 错误
+    try {
         $db->exec("CREATE TABLE servers (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             name        TEXT NOT NULL,
@@ -261,7 +260,12 @@ function migrateSiteTables($db, $driver) {
             created_at  INTEGER NOT NULL,
             updated_at  INTEGER NOT NULL
         )");
-        $db->exec("CREATE INDEX idx_servers_sort ON servers(sort_order)");
+        $db->exec("CREATE INDEX IF NOT EXISTS idx_servers_sort ON servers(sort_order)");
+    } catch (PDOException $e) {
+        // 表已存在则忽略
+        if (strpos($e->getMessage(), 'already exists') === false) {
+            throw $e;
+        }
     }
 }
 
