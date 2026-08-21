@@ -591,8 +591,22 @@
     function uploadFiles(files) {
       if (!files || !files.length) return;
 
+      // 将 FileList 转为数组
+      var fileArr = Array.prototype.slice.call(files);
+
+      // 逐个询问标题
+      var queue = [];
+      for (var i = 0; i < fileArr.length; i++) {
+        var defaultTitle = fileArr[i].name.replace(/\.[^.]+$/, '');
+        var title = prompt('为图片「' + fileArr[i].name + '」输入标题：', defaultTitle);
+        if (title === null) continue; // 跳过取消的
+        queue.push({ file: fileArr[i], title: title.trim() || defaultTitle });
+      }
+
+      if (queue.length === 0) return;
+
       progressEl.style.display = 'flex';
-      var total = files.length;
+      var total = queue.length;
       var done = 0;
 
       function uploadNext() {
@@ -606,12 +620,13 @@
           return;
         }
 
-        var file = files[done];
-        statusEl.textContent = '上传 ' + (done + 1) + '/' + total + ': ' + file.name;
+        var item = queue[done];
+        statusEl.textContent = '上传 ' + (done + 1) + '/' + total + ': ' + item.file.name;
         barEl.style.width = Math.round((done / total) * 100) + '%';
 
         var formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', item.file);
+        formData.append('title', item.title);
 
         var token = Auth.getToken();
         fetch('../api/images.php?action=upload', {
@@ -622,7 +637,7 @@
         .then(function (json) {
           done++;
           if (!json.success) {
-            console.warn('Upload failed:', file.name, json.error);
+            console.warn('Upload failed:', item.file.name, json.error);
           }
           uploadNext();
         }).catch(function () {

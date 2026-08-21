@@ -110,9 +110,12 @@ try {
         }
 
         // 生成文件名：yy-mm-dd-title
-        $baseName = pathinfo($origName, PATHINFO_FILENAME);
+        $title = trim($_POST['title'] ?? '');
+        if ($title === '') {
+            $title = pathinfo($origName, PATHINFO_FILENAME);
+        }
         // 清理标题部分：只保留字母数字中文和连字符
-        $baseName = preg_replace('/[^\w\-]/u', '_', $baseName);
+        $baseName = preg_replace('/[^\w\-]/u', '_', $title);
         $baseName = preg_replace('/_+/', '_', $baseName);
         $baseName = trim($baseName, '_');
         if ($baseName === '') $baseName = 'image';
