@@ -91,10 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
         '      <div class="server-stat player-stat-wrap">' +
         '        <span class="sval">' + (online ? players + ' / ' + maxPlayers : '离线') + '</span>' +
         '        <span class="slbl">在线 / 最大</span>' +
-        (playerList.length ?
-          '        <div class="player-tooltip"><ul class="player-list">' +
-          playerList.map(function(n) { return '<li>' + escapeHtml(typeof n === 'object' ? n.name : n) + '</li>'; }).join('') +
-          '</ul></div>' : '') +
+        '        <div class="player-tooltip"><ul class="player-list">' +
+          (playerList.length ? playerList.map(function(n) { return '<li>' + escapeHtml(typeof n === 'object' ? n.name : n) + '</li>'; }).join('') : '') +
+          '</ul></div>' +
         '      </div>' +
         '      <div class="server-stat">' +
         '        <span class="sval">' + (online ? escapeHtml(version) : '--') + '</span>' +
