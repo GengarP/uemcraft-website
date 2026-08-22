@@ -914,12 +914,12 @@ img.member-avatar { object-fit:cover; }
 
 .gallery-grid {
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-  gap:var(--space-md);
+  grid-template-columns:repeat(3,1fr);
+  gap:var(--space-lg);
 }
 .gallery-tile {
   position:relative;
-  aspect-ratio:1;
+  aspect-ratio:16/10;
   background:var(--c-bg-2);
   border:2px solid var(--c-border);
   border-radius:var(--radius);
@@ -1404,6 +1404,11 @@ a.contact-card:hover .cc-title {
   }
   #refreshServer { margin-left:0; }
   .hero-stats { gap:var(--space-lg); }
-  .gallery-grid { grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); }
+  .gallery-grid { grid-template-columns:repeat(2,1fr); }
+  .gallery-tile { aspect-ratio:4/3; }
   .org-branch { flex-direction:column; align-items:center; }
+}
+@media (max-width:480px) {
+  .gallery-grid { grid-template-columns:1fr; }
+  .gallery-tile { aspect-ratio:16/10; }
 }
