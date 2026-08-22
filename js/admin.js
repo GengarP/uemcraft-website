@@ -647,11 +647,23 @@
     var barEl = document.getElementById('uploadBar');
     var statusEl = document.getElementById('uploadStatus');
     var refreshBtn = document.getElementById('refreshBtn');
+    var currentFolder = 'news';
+
+    // ---- 目录 Tab 切换 ----
+    var folderTabs = document.querySelectorAll('#folderTabs .admin-tab');
+    folderTabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        folderTabs.forEach(function (t) { t.classList.remove('is-active'); });
+        tab.classList.add('is-active');
+        currentFolder = tab.getAttribute('data-folder');
+        load();
+      });
+    });
 
     function load() {
       gridEl.innerHTML = '<div class="wall-loading">正在加载图片…</div>';
 
-      Auth.api('../api/images.php?action=list').then(function (json) {
+      Auth.api('../api/images.php?action=list&folder=' + currentFolder).then(function (json) {
         if (!json.success) {
           gridEl.innerHTML = '<div class="wall-empty">加载失败</div>';
           return;
@@ -666,7 +678,6 @@
         }
 
         gridEl.innerHTML = items.map(renderImageCard).join('');
-        bindImageActions(gridEl);
       }).catch(function () {
         gridEl.innerHTML = '<div class="wall-empty">加载失败</div>';
       });
@@ -678,7 +689,7 @@
       var date = new Date(item.mtime * 1000);
       var dateStr = date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate());
 
-      return '<div class="admin-image-card" data-name="' + escapeHtml(item.name) + '">'
+      return '<div class="admin-image-card" data-name="' + escapeHtml(item.name) + '" data-folder="' + escapeHtml(item.folder) + '">'
         + '  <div class="admin-image-thumb">'
         + '    <img src="' + escapeHtml(item.url) + '" alt="' + escapeHtml(item.name) + '" loading="lazy">'
         + '  </div>'
@@ -688,52 +699,161 @@
         + '  </div>'
         + '  <div class="admin-image-actions">'
         + '    <button class="btn btn-ghost btn-sm" data-action="copy-path" data-path="' + escapeHtml(item.url) + '">复制路径</button>'
+        + '    <button class="btn btn-ghost btn-sm" data-action="rename" data-name="' + escapeHtml(item.name) + '">重命名</button>'
+        + '    <button class="btn btn-ghost btn-sm admin-btn-danger" data-action="delete" data-name="' + escapeHtml(item.name) + '">删除</button>'
         + '  </div>'
         + '</div>';
     }
 
-    function bindImageActions(container) {
-      container.addEventListener('click', function (e) {
-        var btn = e.target.closest('[data-action]');
-        if (!btn) return;
+    // ---- 事件委托 ----
+    gridEl.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-action]');
+      if (!btn) return;
 
-        var action = btn.getAttribute('data-action');
+      var action = btn.getAttribute('data-action');
 
-        if (action === 'copy-path') {
-          var path = btn.getAttribute('data-path');
-          if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(path).then(function () {
-              btn.textContent = '已复制';
-              setTimeout(function () { btn.textContent = '复制路径'; }, 2000);
-            });
-          } else {
-            var ta = document.createElement('textarea');
-            ta.value = path;
-            ta.style.position = 'fixed'; ta.style.opacity = '0';
-            document.body.appendChild(ta);
-            ta.select();
-            try { document.execCommand('copy'); btn.textContent = '已复制'; }
-            catch (err) { btn.textContent = '失败'; }
-            document.body.removeChild(ta);
+      // 复制路径
+      if (action === 'copy-path') {
+        var path = btn.getAttribute('data-path');
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(path).then(function () {
+            btn.textContent = '已复制';
             setTimeout(function () { btn.textContent = '复制路径'; }, 2000);
-          }
+          });
+        } else {
+          var ta = document.createElement('textarea');
+          ta.value = path;
+          ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); btn.textContent = '已复制'; }
+          catch (err) { btn.textContent = '失败'; }
+          document.body.removeChild(ta);
+          setTimeout(function () { btn.textContent = '复制路径'; }, 2000);
         }
-      });
-    }
+        return;
+      }
+
+      // 删除
+      if (action === 'delete') {
+        var delName = btn.getAttribute('data-name');
+        if (!confirm('确定要删除图片「' + delName + '」吗？')) return;
+
+        Auth.api('../api/images.php?action=delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: delName, folder: currentFolder })
+        }).then(function (json) {
+          if (json.success) {
+            load();
+          } else if (json.refs) {
+            alert('无法删除：' + json.message);
+          } else {
+            alert('删除失败：' + (json.error || '未知错误'));
+          }
+        }).catch(function () {
+          alert('请求失败');
+        });
+        return;
+      }
+
+      // 重命名（inline edit）
+      if (action === 'rename') {
+        var card = btn.closest('.admin-image-card');
+        var nameSpan = card.querySelector('.admin-image-name');
+        var oldName = btn.getAttribute('data-name');
+
+        // 防止重复点击
+        if (card.querySelector('.admin-image-rename-input')) return;
+
+        // 替换文件名为输入框
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'admin-image-rename-input';
+        input.value = oldName;
+        nameSpan.style.display = 'none';
+        nameSpan.parentNode.insertBefore(input, nameSpan.nextSibling);
+        input.focus();
+        input.select();
+
+        // 隐藏其他操作按钮
+        var actions = card.querySelectorAll('[data-action]');
+        actions.forEach(function (a) {
+          if (a.getAttribute('data-action') !== 'rename-confirm') {
+            a.style.display = 'none';
+          }
+        });
+
+        // 添加确认/取消按钮
+        var confirmBtn = document.createElement('button');
+        confirmBtn.className = 'btn btn-primary btn-sm';
+        confirmBtn.textContent = '确认';
+        confirmBtn.setAttribute('data-action', 'rename-confirm');
+        var cancelBtn = document.createElement('button');
+        cancelBtn.className = 'btn btn-ghost btn-sm';
+        cancelBtn.textContent = '取消';
+        cancelBtn.setAttribute('data-action', 'rename-cancel');
+        btn.parentNode.appendChild(confirmBtn);
+        btn.parentNode.appendChild(cancelBtn);
+        btn.style.display = 'none';
+
+        function finishRename() {
+          input.remove();
+          nameSpan.style.display = '';
+          confirmBtn.remove();
+          cancelBtn.remove();
+          actions.forEach(function (a) { a.style.display = ''; });
+        }
+
+        // 确认重命名
+        function doRename() {
+          var newName = input.value.trim();
+          if (newName === '' || newName === oldName) {
+            finishRename();
+            return;
+          }
+
+          Auth.api('../api/images.php?action=rename', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: oldName, newName: newName, folder: currentFolder })
+          }).then(function (json) {
+            if (json.success) {
+              load();
+            } else if (json.refs) {
+              alert('无法重命名：' + json.message);
+              finishRename();
+            } else {
+              alert('重命名失败：' + (json.error || '未知错误'));
+              finishRename();
+            }
+          }).catch(function () {
+            alert('请求失败');
+            finishRename();
+          });
+        }
+
+        confirmBtn.addEventListener('click', doRename);
+        cancelBtn.addEventListener('click', finishRename);
+        input.addEventListener('keydown', function (ev) {
+          if (ev.key === 'Enter') { ev.preventDefault(); doRename(); }
+          if (ev.key === 'Escape') { finishRename(); }
+        });
+        return;
+      }
+    });
 
     // 上传
     function uploadFiles(files) {
       if (!files || !files.length) return;
 
-      // 将 FileList 转为数组
       var fileArr = Array.prototype.slice.call(files);
 
-      // 逐个询问标题
       var queue = [];
       for (var i = 0; i < fileArr.length; i++) {
         var defaultTitle = fileArr[i].name.replace(/\.[^.]+$/, '');
         var title = prompt('为图片「' + fileArr[i].name + '」输入标题：', defaultTitle);
-        if (title === null) continue; // 跳过取消的
+        if (title === null) continue;
         queue.push({ file: fileArr[i], title: title.trim() || defaultTitle });
       }
 
@@ -763,7 +883,7 @@
         formData.append('title', item.title);
 
         var token = Auth.getToken();
-        fetch('../api/images.php?action=upload', {
+        fetch('../api/images.php?action=upload&folder=' + currentFolder, {
           method: 'POST',
           headers: { 'X-Admin-Token': token },
           body: formData

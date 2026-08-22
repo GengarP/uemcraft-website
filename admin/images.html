@@ -88,7 +88,7 @@
 <section class="page-hero">
   <div class="container">
     <h1>图片管理</h1>
-    <p class="hero-sub">浏览、上传 assets/img/events/ 活动图片资源</p>
+    <p class="hero-sub">浏览、上传、管理图片资源</p>
     <nav class="breadcrumb" aria-label="面包屑">
       <a href="../index.html">首页</a> <span>/</span> <a href="index.html">管理后台</a> <span>/</span> <span>图片</span>
     </nav>
@@ -97,6 +97,12 @@
 
 <section class="section">
   <div class="container">
+
+    <!-- 目录切换 Tab -->
+    <div class="admin-tabs" id="folderTabs">
+      <button class="admin-tab is-active" data-folder="news">新闻/活动图片</button>
+      <button class="admin-tab" data-folder="gallery">作品展示图片</button>
+    </div>
 
     <!-- 上传区域 -->
     <div class="admin-upload-zone" id="uploadZone">

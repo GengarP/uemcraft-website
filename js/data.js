@@ -179,7 +179,7 @@ Happy Crafting!
       date: '2026-8-13',
       author: 'UEMCraft 理事会',
       tags: ['功能', '基建'],
-      cover: '/assets/img/events/26-8-13-skin-uemcraft-cn.jpg',
+      cover: '/assets/img/news/26-8-13-skin-uemcraft-cn.jpg',
       markdown: `YIT & UEM 联合皮肤站（[https://skin.uemcraft.cn/](https://skin.uemcraft.cn/)）现已正式接入 **MUA Union 联合验证系统**。即日起，燕京理工学院与应急管理大学的 Minecraft 玩家可使用联合认证账号在更多高校服务器间畅游，皮肤与披风数据互联互通。
 
 ## 什么是 MUA Union 联合验证？
@@ -235,8 +235,8 @@ YIT & UEM 联合皮肤站基于 Blessing Skin Server（v6.0.2，Laravel 10）构
       date: '2026-08-06', // ISO，用于排序；显示时由 content.js 格式化为中文
       author: 'UEMCraft 理事会',
       tags: ['活动'],
-      cover: '/assets/img/events/26-8-12-autumn-recruitment.png',
-      markdown: `![招新海报](/assets/img/events/26-8-13-autumn-recruitment-2.jpg "招新海报")
+      cover: '/assets/img/news/26-8-12-autumn-recruitment.png',
+      markdown: `![招新海报](/assets/img/news/26-8-13-autumn-recruitment-2.jpg "招新海报")
       
 应急管理大学 Minecraft 同好会（UEMCraft）现面向全体在校同学启动本年度秋季招新。无论你是建筑大师、红石工程师，还是单纯热爱方块世界的冒险家，这里都有属于你的一片天地。
 
@@ -284,7 +284,7 @@ UEMCraft，全称应急管理大学 Minecraft 同好会（英文名 UEMCraft）�
       date: '2026-08-06',
       author: 'UEMCraft 理事会',
       tags: ['活动'],
-      cover: '/assets/img/events/26-8-6-immersive-fight.png',
+      cover: '/assets/img/news/26-8-6-immersive-fight.png',
       coverCaption: '沉浸战斗整合包官方宣传图',
       markdown: `## 整合包简介
 
@@ -327,7 +327,7 @@ UEMCraft，全称应急管理大学 Minecraft 同好会（英文名 UEMCraft）�
         title: '秋季招新',
         dateLabel: '2026.10',
         status: 'upcoming',
-        cover: '/assets/img/events/26-8-12-autumn-recruitment.png',
+        cover: '/assets/img/news/26-8-12-autumn-recruitment.png',
         excerpt: '新学年，新气象！UEMCraft 秋季招新即将开启，欢迎各位新同学加入我们，一起用方块创造世界。',
         link: '/news/article.html?slug=autumn-recruitment'
       },
@@ -335,7 +335,7 @@ UEMCraft，全称应急管理大学 Minecraft 同好会（英文名 UEMCraft）�
         title: '沉浸战斗整合包服务器开设',
         dateLabel: '2026.7.24',
         status: 'ongoing',
-        cover: '/assets/img/events/26-8-6-immersive-fight.png',
+        cover: '/assets/img/news/26-8-6-immersive-fight.png',
         excerpt: '全新沉浸战斗整合包服务器正式上线！包含丰富的技能树、精英怪物与战斗机制，带来全新的 PvE 体验。',
         link: '/news/article.html?slug=immersive-fight'
       }

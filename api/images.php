@@ -3,34 +3,116 @@
  * images.php — UEMCraft 图片管理 API
  * ------------------------------------
  * 管理接口（需 X-Admin-Token 请求头）：
- *   GET  ?action=list                      （列出 assets/img/events/ 下所有图片）
- *   POST ?action=upload                    （上传图片，自动重命名为 yy-mm-dd-title 格式）
+ *   GET  ?action=list&folder=news|gallery           （列出指定目录下所有图片）
+ *   POST ?action=upload&folder=news|gallery          （上传图片，自动重命名为 yy-mm-dd-title 格式）
+ *   POST ?action=delete                              （删除图片，需通过引用检查）
+ *   POST ?action=rename                              （重命名图片，需通过引用检查）
  */
 
 require_once __DIR__ . '/common.php';
 
 $ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'ico'];
 $MAX_SIZE    = 10 * 1024 * 1024; // 10MB
-$IMG_DIR     = realpath(__DIR__ . '/../assets/img/events');
 
-if (!$IMG_DIR || !is_dir($IMG_DIR)) {
-    // 目录不存在则尝试创建
-    $target = __DIR__ . '/../assets/img/events';
-    if (!is_dir($target)) {
-        mkdir($target, 0755, true);
-    }
-    $IMG_DIR = realpath($target);
-    if (!$IMG_DIR) {
-        json_response(['success' => false, 'error' => '图片目录创建失败'], 500);
-    }
-}
+// 允许的图片子目录
+$ALLOWED_FOLDERS = ['news', 'gallery'];
+$BASE_IMG_DIR = realpath(__DIR__ . '/../assets/img');
 
 $action = $_GET['action'] ?? '';
+
+/**
+ * 获取并验证目标目录
+ */
+function resolveFolder($folder) {
+    global $ALLOWED_FOLDERS, $BASE_IMG_DIR;
+
+    if (!in_array($folder, $ALLOWED_FOLDERS, true)) {
+        json_response(['success' => false, 'error' => '无效的目录：' . $folder], 400);
+    }
+
+    $dir = $BASE_IMG_DIR . '/' . $folder;
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
+    $real = realpath($dir);
+    if (!$real) {
+        json_response(['success' => false, 'error' => '图片目录创建失败'], 500);
+    }
+    return $real;
+}
+
+/**
+ * 检查图片是否被新闻、活动、作品引用
+ * 返回引用列表，空数组表示未被引用
+ */
+function checkImageReferences($db, $imageUrl) {
+    $refs = [];
+    $likePattern = '%' . $imageUrl . '%';
+
+    // 检查 news.cover
+    $stmt = $db->prepare("SELECT id, title FROM news WHERE cover = ?");
+    $stmt->execute([$imageUrl]);
+    while ($row = $stmt->fetch()) {
+        $refs[] = ['type' => 'news', 'id' => (int)$row['id'], 'title' => $row['title'], 'field' => 'cover'];
+    }
+
+    // 检查 news.content（Markdown 可能内嵌图片）
+    $stmt = $db->prepare("SELECT id, title FROM news WHERE content LIKE ?");
+    $stmt->execute([$likePattern]);
+    while ($row = $stmt->fetch()) {
+        // 避免重复（cover 已查过）
+        $exists = false;
+        foreach ($refs as $r) {
+            if ($r['type'] === 'news' && $r['id'] == $row['id'] && $r['field'] === 'content') {
+                $exists = true;
+                break;
+            }
+        }
+        if (!$exists) {
+            $refs[] = ['type' => 'news', 'id' => (int)$row['id'], 'title' => $row['title'], 'field' => 'content'];
+        }
+    }
+
+    // 检查 events.cover
+    $stmt = $db->prepare("SELECT id, title FROM events WHERE cover = ?");
+    $stmt->execute([$imageUrl]);
+    while ($row = $stmt->fetch()) {
+        $refs[] = ['type' => 'events', 'id' => (int)$row['id'], 'title' => $row['title'], 'field' => 'cover'];
+    }
+
+    // 检查 works.cover
+    $stmt = $db->prepare("SELECT id, title FROM works WHERE cover = ?");
+    $stmt->execute([$imageUrl]);
+    while ($row = $stmt->fetch()) {
+        $refs[] = ['type' => 'works', 'id' => (int)$row['id'], 'title' => $row['title'], 'field' => 'cover'];
+    }
+
+    // 检查 works.image
+    $stmt = $db->prepare("SELECT id, title FROM works WHERE image = ?");
+    $stmt->execute([$imageUrl]);
+    while ($row = $stmt->fetch()) {
+        $exists = false;
+        foreach ($refs as $r) {
+            if ($r['type'] === 'works' && $r['id'] == $row['id']) {
+                $exists = true;
+                break;
+            }
+        }
+        if (!$exists) {
+            $refs[] = ['type' => 'works', 'id' => (int)$row['id'], 'title' => $row['title'], 'field' => 'image'];
+        }
+    }
+
+    return $refs;
+}
 
 try {
     // ---- 列出图片 ----
     if ($action === 'list') {
         requireAdmin();
+
+        $folder = $_GET['folder'] ?? 'news';
+        $IMG_DIR = resolveFolder($folder);
 
         $files = [];
         $iterator = new RecursiveIteratorIterator(
@@ -45,10 +127,11 @@ try {
 
             $relativePath = str_replace('\\', '/', substr($file->getRealPath(), strlen($IMG_DIR) + 1));
             $files[] = [
-                'name'  => $relativePath,
-                'url'   => '../assets/img/events/' . $relativePath,
-                'size'  => $file->getSize(),
-                'mtime' => $file->getMTime(),
+                'name'   => $relativePath,
+                'url'    => '/assets/img/' . $folder . '/' . $relativePath,
+                'folder' => $folder,
+                'size'   => $file->getSize(),
+                'mtime'  => $file->getMTime(),
             ];
         }
 
@@ -66,6 +149,9 @@ try {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }
+
+        $folder = $_GET['folder'] ?? 'news';
+        $IMG_DIR = resolveFolder($folder);
 
         if (empty($_FILES['file'])) {
             json_response(['success' => false, 'error' => '未选择文件'], 400);
@@ -139,9 +225,141 @@ try {
         json_response([
             'success' => true,
             'data' => [
-                'name' => $targetName,
-                'url'  => '../assets/img/events/' . $targetName,
-                'size' => $file['size'],
+                'name'   => $targetName,
+                'url'    => '/assets/img/' . $folder . '/' . $targetName,
+                'folder' => $folder,
+                'size'   => $file['size'],
+            ],
+        ]);
+    }
+
+    // ---- 删除图片 ----
+    if ($action === 'delete') {
+        requireAdmin();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
+        }
+
+        $input = readInput();
+        $name   = trim($input['name'] ?? '');
+        $folder = trim($input['folder'] ?? 'news');
+
+        if ($name === '') {
+            json_response(['success' => false, 'error' => '缺少文件名'], 400);
+        }
+
+        $IMG_DIR = resolveFolder($folder);
+        $filePath = $IMG_DIR . '/' . $name;
+
+        // 安全检查：确保文件在目标目录内
+        $realPath = realpath($filePath);
+        if (!$realPath || strpos($realPath, $IMG_DIR) !== 0) {
+            json_response(['success' => false, 'error' => '文件不存在或路径非法'], 404);
+        }
+
+        if (!file_exists($realPath)) {
+            json_response(['success' => false, 'error' => '文件不存在'], 404);
+        }
+
+        // 引用检查
+        $imageUrl = '/assets/img/' . $folder . '/' . $name;
+        $db = getSiteDb();
+        $refs = checkImageReferences($db, $imageUrl);
+
+        if (!empty($refs)) {
+            $typeLabels = ['news' => '新闻', 'events' => '活动', 'works' => '作品'];
+            $refDescriptions = [];
+            foreach ($refs as $ref) {
+                $label = $typeLabels[$ref['type']] ?? $ref['type'];
+                $refDescriptions[] = $label . '「' . $ref['title'] . '」的' . $ref['field'] . '字段';
+            }
+            json_response([
+                'success' => false,
+                'error'   => '该图片正在被引用，无法删除',
+                'refs'    => $refs,
+                'message' => '引用来源：' . implode('；', $refDescriptions),
+            ], 409);
+        }
+
+        // 执行删除
+        if (!unlink($realPath)) {
+            json_response(['success' => false, 'error' => '删除文件失败'], 500);
+        }
+
+        json_response(['success' => true, 'data' => ['name' => $name, 'folder' => $folder]]);
+    }
+
+    // ---- 重命名图片 ----
+    if ($action === 'rename') {
+        requireAdmin();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
+        }
+
+        $input    = readInput();
+        $name     = trim($input['name'] ?? '');
+        $newName  = trim($input['newName'] ?? '');
+        $folder   = trim($input['folder'] ?? 'news');
+
+        if ($name === '' || $newName === '') {
+            json_response(['success' => false, 'error' => '缺少文件名或新文件名'], 400);
+        }
+
+        // 验证新文件名合法性
+        if (preg_match('/[\/\\\\:*?"<>|]/', $newName) || $newName !== basename($newName)) {
+            json_response(['success' => false, 'error' => '新文件名包含非法字符'], 400);
+        }
+
+        $IMG_DIR = resolveFolder($folder);
+        $oldPath = $IMG_DIR . '/' . $name;
+        $newPath = $IMG_DIR . '/' . $newName;
+
+        // 安全检查
+        $realOldPath = realpath($oldPath);
+        if (!$realOldPath || strpos($realOldPath, $IMG_DIR) !== 0) {
+            json_response(['success' => false, 'error' => '源文件不存在或路径非法'], 404);
+        }
+
+        if (!file_exists($realOldPath)) {
+            json_response(['success' => false, 'error' => '源文件不存在'], 404);
+        }
+
+        if (file_exists($newPath)) {
+            json_response(['success' => false, 'error' => '目标文件名已存在'], 409);
+        }
+
+        // 引用检查
+        $oldUrl = '/assets/img/' . $folder . '/' . $name;
+        $db = getSiteDb();
+        $refs = checkImageReferences($db, $oldUrl);
+
+        if (!empty($refs)) {
+            $typeLabels = ['news' => '新闻', 'events' => '活动', 'works' => '作品'];
+            $refDescriptions = [];
+            foreach ($refs as $ref) {
+                $label = $typeLabels[$ref['type']] ?? $ref['type'];
+                $refDescriptions[] = $label . '「' . $ref['title'] . '」的' . $ref['field'] . '字段';
+            }
+            json_response([
+                'success' => false,
+                'error'   => '该图片正在被引用，无法重命名',
+                'refs'    => $refs,
+                'message' => '引用来源：' . implode('；', $refDescriptions),
+            ], 409);
+        }
+
+        // 执行重命名
+        if (!rename($realOldPath, $newPath)) {
+            json_response(['success' => false, 'error' => '重命名失败'], 500);
+        }
+
+        json_response([
+            'success' => true,
+            'data' => [
+                'name'    => $newName,
+                'oldName' => $name,
+                'folder'  => $folder,
+                'url'     => '/assets/img/' . $folder . '/' . $newName,
             ],
         ]);
     }

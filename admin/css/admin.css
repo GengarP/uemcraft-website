@@ -278,4 +278,24 @@
   padding: 0 var(--space-sm) var(--space-sm);
   display: flex;
   gap: var(--space-xs);
+  flex-wrap: wrap;
+}
+
+/* 重命名输入框 */
+.admin-image-rename-input {
+  width: 100%;
+  padding: 2px 6px;
+  font-size: var(--fs-sm);
+  font-family: inherit;
+  border: 1px solid var(--c-primary);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+  color: var(--c-text);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(33, 61, 135, 0.15);
+}
+
+.admin-image-rename-input:focus {
+  border-color: var(--c-primary);
+  box-shadow: 0 0 0 3px rgba(33, 61, 135, 0.25);
 }
