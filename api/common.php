@@ -2,7 +2,7 @@
 /**
  * common.php — UEMCraft 公共 API 函数库
  * --------------------------------------
- * 供 wall.php / news.php / events.php 复用。
+ * 供 wall.php / news.php / events.php / works.php 复用。
  * 包含：PDO 连接、管理员鉴权、JSON 响应、输入读取、通用工具函数。
  */
 
@@ -185,6 +185,24 @@ function createSiteTables($db, $driver) {
             KEY idx_events_date (date_start),
             KEY idx_events_status (status)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        $db->exec("CREATE TABLE IF NOT EXISTS works (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            title VARCHAR(255) NOT NULL,
+            slug VARCHAR(255) NOT NULL,
+            description TEXT NOT NULL,
+            cover VARCHAR(500) NOT NULL DEFAULT '',
+            image VARCHAR(500) NOT NULL DEFAULT '',
+            is_featured TINYINT NOT NULL DEFAULT 0,
+            sort_order INT NOT NULL DEFAULT 0,
+            status VARCHAR(16) NOT NULL DEFAULT 'published',
+            created_at INT NOT NULL,
+            updated_at INT NOT NULL,
+            PRIMARY KEY (id),
+            UNIQUE KEY idx_works_slug (slug),
+            KEY idx_works_status (status),
+            KEY idx_works_sort (sort_order)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
         return;
     }
 
@@ -228,9 +246,70 @@ function createSiteTables($db, $driver) {
     $db->exec("CREATE INDEX idx_events_date   ON events(date_start DESC)");
     $db->exec("CREATE INDEX idx_events_slug   ON events(slug)");
     $db->exec("CREATE INDEX idx_events_status ON events(status)");
+
+    $db->exec("CREATE TABLE works (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        title       TEXT NOT NULL,
+        slug        TEXT NOT NULL UNIQUE,
+        description TEXT NOT NULL DEFAULT '',
+        cover       TEXT NOT NULL DEFAULT '',
+        image       TEXT NOT NULL DEFAULT '',
+        is_featured INTEGER NOT NULL DEFAULT 0,
+        sort_order  INTEGER NOT NULL DEFAULT 0,
+        status      TEXT NOT NULL DEFAULT 'published',
+        created_at  INTEGER NOT NULL,
+        updated_at  INTEGER NOT NULL
+    )");
+    $db->exec("CREATE INDEX idx_works_slug   ON works(slug)");
+    $db->exec("CREATE INDEX idx_works_status ON works(status)");
+    $db->exec("CREATE INDEX idx_works_sort   ON works(sort_order)");
 }
 
 function migrateSiteTables($db, $driver) {
+    // 迁移：新增 works 表
+    if ($driver === 'mysql') {
+        $db->exec("CREATE TABLE IF NOT EXISTS works (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            title VARCHAR(255) NOT NULL,
+            slug VARCHAR(255) NOT NULL,
+            description TEXT NOT NULL,
+            cover VARCHAR(500) NOT NULL DEFAULT '',
+            image VARCHAR(500) NOT NULL DEFAULT '',
+            is_featured TINYINT NOT NULL DEFAULT 0,
+            sort_order INT NOT NULL DEFAULT 0,
+            status VARCHAR(16) NOT NULL DEFAULT 'published',
+            created_at INT NOT NULL,
+            updated_at INT NOT NULL,
+            PRIMARY KEY (id),
+            UNIQUE KEY idx_works_slug (slug),
+            KEY idx_works_status (status),
+            KEY idx_works_sort (sort_order)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    } else {
+        try {
+            $db->exec("CREATE TABLE works (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                title       TEXT NOT NULL,
+                slug        TEXT NOT NULL UNIQUE,
+                description TEXT NOT NULL DEFAULT '',
+                cover       TEXT NOT NULL DEFAULT '',
+                image       TEXT NOT NULL DEFAULT '',
+                is_featured INTEGER NOT NULL DEFAULT 0,
+                sort_order  INTEGER NOT NULL DEFAULT 0,
+                status      TEXT NOT NULL DEFAULT 'published',
+                created_at  INTEGER NOT NULL,
+                updated_at  INTEGER NOT NULL
+            )");
+            $db->exec("CREATE INDEX IF NOT EXISTS idx_works_slug   ON works(slug)");
+            $db->exec("CREATE INDEX IF NOT EXISTS idx_works_status ON works(status)");
+            $db->exec("CREATE INDEX IF NOT EXISTS idx_works_sort   ON works(sort_order)");
+        } catch (PDOException $e) {
+            if (strpos($e->getMessage(), 'already exists') === false) {
+                throw $e;
+            }
+        }
+    }
+
     // 迁移：新增 servers 表
     if ($driver === 'mysql') {
         $db->exec("CREATE TABLE IF NOT EXISTS servers (

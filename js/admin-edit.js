@@ -16,6 +16,8 @@
       initNewsEdit();
     } else if (document.getElementById('eventForm')) {
       initEventsEdit();
+    } else if (document.getElementById('workForm')) {
+      initWorksEdit();
     } else if (document.getElementById('serverForm')) {
       initServersEdit();
     }
@@ -236,6 +238,105 @@
         sort_order: parseInt(getVal('inputSortOrder')) || 0,
         excerpt: getVal('inputExcerpt'),
         content: getVal('inputContent')
+      };
+    }
+  }
+
+  // ============================================================
+  //  作品编辑
+  // ============================================================
+  function initWorksEdit() {
+    var params = new URLSearchParams(window.location.search);
+    var editId = params.get('id');
+    var isEdit = !!editId;
+    var apiBase = '../api/works.php';
+
+    if (isEdit) {
+      setText('heroTitle', '编辑作品');
+      setText('heroSub', '修改作品信息');
+      setText('crumbAction', '编辑');
+      document.title = '编辑作品 — UEMCraft';
+    }
+
+    var form = document.getElementById('workForm');
+    var msg = document.getElementById('formMessage');
+    var btn = document.getElementById('saveBtn');
+
+    // 编辑模式：加载现有数据
+    if (isEdit) {
+      Auth.api(apiBase + '?action=admin_detail&id=' + editId).then(function (json) {
+        if (!json.success || !json.data) {
+          showMessage(msg, '作品不存在', 'error');
+          return;
+        }
+        fillWorkForm(json.data);
+      }).catch(function () {
+        showMessage(msg, '加载失败', 'error');
+      });
+    }
+
+    // 提交
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var data = getWorkFormData();
+
+      if (!data.title) {
+        showMessage(msg, '标题不能为空', 'error');
+        return;
+      }
+      if (!data.slug) {
+        showMessage(msg, 'slug 不能为空', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '保存中…';
+      showMessage(msg, '', '');
+
+      var action = isEdit ? 'update' : 'create';
+      var body = isEdit ? Object.assign({ id: parseInt(editId) }, data) : data;
+
+      Auth.api(apiBase + '?action=' + action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      }).then(function (json) {
+        if (json.success) {
+          showMessage(msg, '保存成功！', 'success');
+          setTimeout(function () { window.location.href = 'works.html'; }, 800);
+        } else {
+          showMessage(msg, '保存失败：' + (json.error || '未知错误'), 'error');
+          btn.disabled = false;
+          btn.textContent = '保存';
+        }
+      }).catch(function () {
+        showMessage(msg, '请求失败', 'error');
+        btn.disabled = false;
+        btn.textContent = '保存';
+      });
+    });
+
+    function fillWorkForm(item) {
+      setInput('inputTitle', item.title);
+      setInput('inputSlug', item.slug);
+      setInput('inputStatus', item.status);
+      setInput('inputCover', item.cover);
+      setInput('inputImage', item.image);
+      setInput('inputFeatured', String(item.is_featured ? 1 : 0));
+      setInput('inputSortOrder', String(item.sort_order || 0));
+      setInput('inputDescription', item.description || '');
+    }
+
+    function getWorkFormData() {
+      return {
+        title: getVal('inputTitle'),
+        slug: getVal('inputSlug'),
+        status: getVal('inputStatus'),
+        cover: getVal('inputCover'),
+        image: getVal('inputImage'),
+        is_featured: parseInt(getVal('inputFeatured')) || 0,
+        sort_order: parseInt(getVal('inputSortOrder')) || 0,
+        description: getVal('inputDescription')
       };
     }
   }

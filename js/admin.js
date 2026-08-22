@@ -22,6 +22,8 @@
       initNewsList();
     } else if (document.getElementById('eventsList')) {
       initEventsList();
+    } else if (document.getElementById('worksList')) {
+      initWorksList();
     } else if (document.getElementById('serversList')) {
       initServersList();
     } else if (document.getElementById('imagesGrid')) {
@@ -113,6 +115,18 @@
             setText('eventsUpcoming', up);
             setText('eventsPast', total - up);
           });
+        });
+      }
+    }).catch(function () {});
+
+    // 加载作品统计
+    Auth.api('../api/works.php?action=admin_list&limit=1').then(function (json) {
+      if (json.success) {
+        var total = json.total || 0;
+        Auth.api('../api/works.php?action=admin_list&limit=1&status=published').then(function (r) {
+          var pub = r.success ? (r.total || 0) : 0;
+          setText('worksPublished', pub);
+          setText('worksDraft', total - pub);
         });
       }
     }).catch(function () {});
@@ -344,6 +358,126 @@
         if (action === 'delete') {
           if (!confirm('确定要删除这个活动吗？此操作不可撤销。')) return;
           Auth.api('../api/events.php?action=delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: parseInt(id) })
+          }).then(function (json) {
+            if (json.success) load();
+            else alert('删除失败：' + (json.error || '未知错误'));
+          });
+        }
+      });
+    }
+
+    // Tab 切换
+    var tabs = document.querySelectorAll('.admin-tab');
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        tabs.forEach(function (t) { t.classList.remove('is-active'); });
+        tab.classList.add('is-active');
+        currentStatus = tab.getAttribute('data-status');
+        currentPage = 1;
+        load();
+      });
+    });
+
+    // 分页
+    function updatePagination(page, pages, total) {
+      if (pages <= 1) {
+        pagEl.style.display = 'none';
+        return;
+      }
+      pagEl.style.display = 'flex';
+      prevBtn.disabled = page <= 1;
+      nextBtn.disabled = page >= pages;
+      infoEl.textContent = page + ' / ' + pages + '（共 ' + total + ' 条）';
+    }
+
+    prevBtn.addEventListener('click', function () { currentPage--; load(); });
+    nextBtn.addEventListener('click', function () { currentPage++; load(); });
+
+    load();
+  }
+
+  // ============================================================
+  //  作品列表
+  // ============================================================
+  function initWorksList() {
+    var currentStatus = 'all';
+    var currentPage = 1;
+    var limit = 20;
+    var listEl = document.getElementById('worksList');
+    var totalEl = document.getElementById('totalCount');
+    var pagEl = document.getElementById('pagination');
+    var prevBtn = document.getElementById('prevPage');
+    var nextBtn = document.getElementById('nextPage');
+    var infoEl = document.getElementById('pageInfo');
+
+    function load() {
+      var url = '../api/works.php?action=admin_list&page=' + currentPage + '&limit=' + limit;
+      if (currentStatus !== 'all') url += '&status=' + currentStatus;
+
+      listEl.innerHTML = '<div class="wall-loading">正在加载…</div>';
+
+      Auth.api(url).then(function (json) {
+        if (!json.success) {
+          listEl.innerHTML = '<div class="wall-empty">加载失败</div>';
+          return;
+        }
+
+        totalEl.textContent = json.total;
+        var items = json.data || [];
+
+        if (items.length === 0) {
+          listEl.innerHTML = '<div class="wall-empty">暂无作品</div>';
+          pagEl.style.display = 'none';
+          return;
+        }
+
+        listEl.innerHTML = items.map(renderWorkCard).join('');
+        bindWorkActions(listEl);
+        updatePagination(json.page, json.pages, json.total);
+      }).catch(function () {
+        listEl.innerHTML = '<div class="wall-empty">加载失败</div>';
+      });
+    }
+
+    function renderWorkCard(item) {
+      var statusMap = { published: '已发布', draft: '草稿' };
+      var statusClassMap = { published: 'is-approved', draft: 'is-hidden' };
+      var statusLabel = statusMap[item.status] || item.status;
+      var statusClass = statusClassMap[item.status] || '';
+
+      return '<article class="admin-card" data-id="' + item.id + '">'
+        + '<div class="admin-card-header">'
+        + '  <div class="admin-card-meta">'
+        + '    <span class="admin-card-name">' + escapeHtml(item.title) + '</span>'
+        + '    <span class="admin-badge ' + statusClass + '">' + statusLabel + '</span>'
+        + (item.is_featured ? '<span class="admin-badge is-approved">置顶</span>' : '')
+        + '  </div>'
+        + '  <div class="admin-card-actions">'
+        + '    <a href="works-edit.html?id=' + item.id + '" class="btn btn-ghost btn-sm">编辑</a>'
+        + '    <button class="btn btn-ghost btn-sm admin-btn-danger" data-action="delete" data-id="' + item.id + '">删除</button>'
+        + '  </div>'
+        + '</div>'
+        + '<div class="admin-card-body">'
+        + '  <p class="text-muted">' + escapeHtml(item.description || '无描述') + '</p>'
+        + '  <small class="text-muted">slug: ' + escapeHtml(item.slug) + ' · 排序: ' + item.sort_order + '</small>'
+        + '</div>'
+        + '</article>';
+    }
+
+    function bindWorkActions(container) {
+      container.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-action]');
+        if (!btn) return;
+
+        var action = btn.getAttribute('data-action');
+        var id = btn.getAttribute('data-id');
+
+        if (action === 'delete') {
+          if (!confirm('确定要删除这个作品吗？此操作不可撤销。')) return;
+          Auth.api('../api/works.php?action=delete', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: parseInt(id) })
