@@ -13,14 +13,17 @@ uemcraft.cn/
 │   ├── login.html（登录页）、index.html（仪表盘）
 │   ├── news.html / news-edit.html（新闻管理）
 │   ├── events.html / events-edit.html（活动管理）
+│   ├── works.html / works-edit.html（作品管理）
 │   └── css/admin.css（后台样式）
 ├── news/ → index.html（资讯列表）、article.html（文章详情，?slug= 加载）
-├── gallery/ → index.html
+├── works/ → index.html（作品展示，API 驱动 + Lightbox）
+├── gallery/ → index.html（静态画廊，旧版）
 ├── wall/ → index.html（留言墙）、admin.html（留言墙管理端）
 ├── api/ → 后端 API
 │   ├── common.php（公共函数库：PDO 连接、token 校验、JSON 响应）
 │   ├── news.php（新闻 API：公开 list/detail + 管理 CRUD）
 │   ├── events.php（活动 API：公开 list/upcoming/past/detail + 管理 CRUD）
+│   ├── works.php（作品 API：公开 list/detail + 管理 CRUD）
 │   └── wall.php（留言墙 API：公开 list/post + 管理审核/编辑/删除 + AI 审核）
 ├── scripts/ → migrate-to-db.php（一次性数据迁移脚本）
 ├── css/ → tokens.css → base.css → layout.css → components.css → pages.css
@@ -32,6 +35,7 @@ uemcraft.cn/
 │   ├── admin-edit.js（后台编辑表单逻辑）
 │   ├── wall.js（留言墙前端）、wall-admin.js（留言墙管理端）
 │   ├── marked.umd.js（Markdown 解析）
+│   ├── works.js（作品展示前端：API 加载 + Lightbox + 下载）
 │   └── hero-gallery.js / server.js / events.js / gallery.js / join.js
 ├── assets/ → img/、svg/、docs/章程.pdf、fonts/（iconfont / Fusion Pixel）
 ├── package.json、favicon.ico、robots.txt、sitemap.xml
@@ -57,6 +61,16 @@ uemcraft.cn/
 - **状态**：upcoming（即将开始）/ ongoing（进行中）/ past（已结束）
 - **前端加载**：`content.js` 通过 `fetch` 从 `/api/events.php?action=upcoming` 和 `?action=past` 异步加载
 
+### 内容管理（作品）
+
+作品通过管理后台 `/admin/works.html` 管理，数据存储在数据库 `site.db` 的 `works` 表中。
+
+- **新增作品**：登录管理后台 → 作品管理 → 新建作品 → 填写表单（标题、slug、封面图、大图、描述、状态、置顶、排序）→ 保存
+- **状态**：published（已发布）/ draft（草稿）
+- **前端加载**：`js/works.js` 通过 `fetch` 从 `/api/works.php?action=list` 异步加载，渲染卡片网格
+- **Lightbox**：点击卡片弹出 Lightbox，展示大图、标题、描述，提供下载按钮（前端 fetch blob 下载）
+- **键盘支持**：ESC 关闭，← → 翻页
+
 ### 管理后台
 
 统一管理后台入口：`/admin/`
@@ -65,7 +79,7 @@ uemcraft.cn/
 - **仪表盘**：`/admin/index.html`，显示新闻/活动统计，链接到各管理页面
 - **认证模块**：`js/admin-auth.js`，提供 token 存储（localStorage key `uemcraft-admin-token`）、验证、API 请求封装
 - **样式**：`admin/css/admin.css`，复用 `tokens.css` 变量
-- **导航**：后台顶部有统一导航栏（仪表盘 / 新闻管理 / 活动管理 / 留言墙管理）
+- **导航**：后台顶部有统一导航栏（仪表盘 / 新闻管理 / 活动管理 / 作品管理 / 服务器管理 / 图片管理 / 留言墙管理）
 - **留言墙管理**：`/wall/admin.html` 也集成了后台导航栏，复用 `admin-auth.js`
 
 ### 留言墙（留言板）
@@ -92,7 +106,7 @@ uemcraft.cn/
 
 #### 数据库
 
-- **site.db**（新闻 + 活动）：环境变量 `SITE_DB_DRIVER`（默认 sqlite）、`SITE_DB_HOST/PORT/NAME/USER/PASS`
+- **site.db**（新闻 + 活动 + 作品）：环境变量 `SITE_DB_DRIVER`（默认 sqlite）、`SITE_DB_HOST/PORT/NAME/USER/PASS`
 - **wall.db**（留言墙）：环境变量 `WALL_DB_DRIVER`（默认 sqlite）、`WALL_DB_HOST/PORT/NAME/USER/PASS`
 - 建表自动执行（SQLite 仅新库时、MySQL 用 `CREATE TABLE IF NOT EXISTS`）
 - 表结构见 `common.php` 的 `createSiteTables()` / `createWallTables()`
