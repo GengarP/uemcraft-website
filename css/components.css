@@ -945,6 +945,58 @@ img.member-avatar { object-fit:cover; }
 .tile-overlay .tile-meta  { color:rgba(255,255,255,.7); font-size:var(--fs-xs); }
 .gallery-tile.is-hidden { display:none; }
 
+/* ---- Gallery Filter ---- */
+.gallery-filter {
+  display:flex;
+  flex-wrap:wrap;
+  gap:var(--space-sm);
+  justify-content:center;
+  margin-bottom:var(--space-xl);
+}
+
+.gallery-filter-btn {
+  font-family:var(--font-mono);
+  font-size:var(--fs-sm);
+  padding:6px 16px;
+  border:2px solid var(--c-border);
+  border-radius:var(--radius);
+  background:var(--c-surface);
+  color:var(--c-text);
+  cursor:pointer;
+  transition:background var(--duration),color var(--duration),border-color var(--duration);
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+
+.gallery-filter-btn:hover {
+  border-color:var(--c-primary);
+  color:var(--c-primary);
+}
+
+.gallery-filter-btn.is-active {
+  background:var(--c-primary);
+  color:#fff;
+  border-color:var(--c-primary);
+}
+
+.gallery-filter-count {
+  font-size:var(--fs-xs);
+  opacity:.7;
+}
+
+/* ---- Works Card Category Badge ---- */
+.works-card-category {
+  display:inline-block;
+  font-family:var(--font-mono);
+  font-size:var(--fs-xs);
+  padding:2px 8px;
+  border:1px solid var(--c-border);
+  border-radius:var(--radius);
+  color:var(--c-text-muted);
+  margin-bottom:var(--space-xs);
+}
+
 /* ---- Lightbox ---- */
 .lightbox {
   display:none;

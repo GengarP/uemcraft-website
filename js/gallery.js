@@ -1,124 +1,230 @@
-/* ============================================================
-   gallery.js — 画廊筛选 + 图片灯箱
-   ============================================================ */
+/**
+ * gallery.js — UEMCraft 作品展示前端
+ * ---------------------------------
+ * 从 API 加载作品列表，渲染卡片网格，提供 Lightbox 预览和下载。
+ * 支持分类筛选按钮（从后端数据动态生成）。
+ * 依赖：main.js（全局工具函数）
+ */
+(function () {
+  'use strict';
 
-document.addEventListener('DOMContentLoaded', () => {
+  var API_URL = '../api/works.php';
+  var gridEl = document.getElementById('worksGrid');
+  var filterEl = document.getElementById('galleryFilter');
+  var allWorks = [];
+  var displayedWorks = [];
+  var currentCategory = '';
 
-  /* ---- Filter ---- */
-  const filterBtns = document.querySelectorAll('.gallery-filters .filter-btn');
-  const tiles = document.querySelectorAll('.gallery-tile');
+  if (!gridEl) return;
 
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const cat = btn.getAttribute('data-filter');
+  // ---- 加载作品 ----
+  function loadWorks() {
+    gridEl.innerHTML = '<div class="wall-loading">正在加载作品…</div>';
 
-      // Active state
-      filterBtns.forEach(b => b.classList.remove('is-active'));
-      btn.classList.add('is-active');
-
-      // Filter tiles
-      tiles.forEach(tile => {
-        if (cat === 'all' || tile.getAttribute('data-category') === cat) {
-          tile.classList.remove('is-hidden');
-        } else {
-          tile.classList.add('is-hidden');
+    fetch(API_URL + '?action=list')
+      .then(function (res) { return res.json(); })
+      .then(function (json) {
+        if (!json.success || !json.data || json.data.length === 0) {
+          gridEl.innerHTML = '<div class="wall-empty">暂无作品，敬请期待</div>';
+          return;
         }
+        allWorks = json.data;
+        buildFilters(allWorks);
+        renderGrid(allWorks);
+      })
+      .catch(function () {
+        gridEl.innerHTML = '<div class="wall-empty">加载失败，请刷新重试</div>';
       });
-    });
-  });
-
-  /* ---- Lightbox ---- */
-  const lightbox = document.getElementById('lightbox');
-  if (!lightbox) return;
-
-  const lightboxImg = lightbox.querySelector('.lightbox-img');
-  const lightboxCaption = lightbox.querySelector('.lightbox-caption');
-  const closeBtn = lightbox.querySelector('.lightbox-close');
-  const prevBtn = lightbox.querySelector('.lightbox-prev');
-  const nextBtn = lightbox.querySelector('.lightbox-next');
-
-  let currentIndex = -1;
-  let visibleTiles = [];
-
-  function getVisibleTiles() {
-    return Array.from(tiles).filter(t => !t.classList.contains('is-hidden'));
   }
 
-  function openLightbox(index) {
-    visibleTiles = getVisibleTiles();
-    currentIndex = index;
-    const tile = visibleTiles[currentIndex];
-    if (!tile) return;
+  // ---- 构建分类筛选按钮 ----
+  function buildFilters(works) {
+    if (!filterEl) return;
 
-    const img = tile.querySelector('img');
-    const title = tile.querySelector('.tile-title');
-    const meta = tile.querySelector('.tile-meta');
+    var catMap = {};
+    works.forEach(function (w) {
+      if (w.category) catMap[w.category] = (catMap[w.category] || 0) + 1;
+    });
+    var categories = Object.keys(catMap).sort();
 
-    if (img) lightboxImg.src = img.src;
-    if (title && meta) {
-      lightboxCaption.textContent = title.textContent + ' · ' + meta.textContent;
-    } else if (title) {
-      lightboxCaption.textContent = title.textContent;
+    if (categories.length === 0) {
+      filterEl.style.display = 'none';
+      return;
     }
 
+    var html = '<button class="gallery-filter-btn is-active" data-category="">全部</button>';
+    categories.forEach(function (cat) {
+      html += '<button class="gallery-filter-btn" data-category="' + escapeHtml(cat) + '">'
+        + escapeHtml(cat) + '<span class="gallery-filter-count">' + catMap[cat] + '</span></button>';
+    });
+    filterEl.innerHTML = html;
+
+    filterEl.addEventListener('click', function (e) {
+      var btn = e.target.closest('.gallery-filter-btn');
+      if (!btn) return;
+      var cat = btn.getAttribute('data-category');
+      if (cat === currentCategory) return;
+      currentCategory = cat;
+
+      filterEl.querySelectorAll('.gallery-filter-btn').forEach(function (b) { b.classList.remove('is-active'); });
+      btn.classList.add('is-active');
+
+      var filtered = cat ? allWorks.filter(function (w) { return w.category === cat; }) : allWorks;
+      renderGrid(filtered);
+    });
+  }
+
+  // ---- 渲染卡片网格 ----
+  function renderGrid(works) {
+    displayedWorks = works;
+    if (works.length === 0) {
+      gridEl.innerHTML = '<div class="wall-empty">该分类下暂无作品</div>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < works.length; i++) {
+      html += renderWorkCard(works[i], i);
+    }
+    gridEl.innerHTML = html;
+    bindCardClicks();
+  }
+
+  function renderWorkCard(item, index) {
+    var cover = item.cover || item.image || '';
+    var title = escapeHtml(item.title);
+    var desc = escapeHtml(item.description || '');
+
+    return '<div class="works-card" data-index="' + index + '">'
+      + '<div class="works-card-img">'
+      + (cover ? '<img src="' + escapeHtml(cover) + '" alt="' + title + '" loading="lazy">' : '')
+      + '</div>'
+      + '<div class="works-card-body">'
+      + '<h3 class="works-card-title">' + title + '</h3>'
+      + (item.category ? '<span class="works-card-category">' + escapeHtml(item.category) + '</span>' : '')
+      + (desc ? '<p class="works-card-desc">' + desc + '</p>' : '')
+      + '</div>'
+      + '</div>';
+  }
+
+  // ---- 卡片点击 → Lightbox ----
+  function bindCardClicks() {
+    var cards = gridEl.querySelectorAll('.works-card');
+    for (var i = 0; i < cards.length; i++) {
+      (function (card) {
+        card.addEventListener('click', function () {
+          var idx = parseInt(card.getAttribute('data-index'), 10);
+          openLightbox(idx);
+        });
+      })(cards[i]);
+    }
+  }
+
+  // ---- Lightbox ----
+  var lightbox = document.getElementById('worksLightbox');
+  var lbImg = lightbox ? lightbox.querySelector('.lightbox-img') : null;
+  var lbTitle = lightbox ? lightbox.querySelector('.lightbox-title') : null;
+  var lbDesc = lightbox ? lightbox.querySelector('.lightbox-desc') : null;
+  var lbDownload = lightbox ? lightbox.querySelector('.lightbox-download') : null;
+  var closeBtn = lightbox ? lightbox.querySelector('.lightbox-close') : null;
+  var prevBtn = lightbox ? lightbox.querySelector('.lightbox-prev') : null;
+  var nextBtn = lightbox ? lightbox.querySelector('.lightbox-next') : null;
+  var currentIdx = -1;
+
+  function openLightbox(index) {
+    if (!lightbox || index < 0 || index >= displayedWorks.length) return;
+    currentIdx = index;
+    updateLightboxContent();
     lightbox.classList.add('is-open');
     document.body.style.overflow = 'hidden';
-
-    // Focus trap
     closeBtn.focus();
   }
 
   function closeLightbox() {
+    if (!lightbox) return;
     lightbox.classList.remove('is-open');
     document.body.style.overflow = '';
-    currentIndex = -1;
+    currentIdx = -1;
+  }
+
+  function updateLightboxContent() {
+    var item = displayedWorks[currentIdx];
+    if (!item) return;
+
+    var imgSrc = item.image || item.cover || '';
+    if (lbImg) {
+      lbImg.src = imgSrc;
+      lbImg.alt = item.title;
+    }
+    if (lbTitle) lbTitle.textContent = item.title;
+    if (lbDesc) lbDesc.textContent = item.description || '';
+    if (lbDownload) {
+      lbDownload.style.display = imgSrc ? '' : 'none';
+    }
   }
 
   function navigate(direction) {
-    if (currentIndex < 0 || visibleTiles.length === 0) return;
-    currentIndex = (currentIndex + direction + visibleTiles.length) % visibleTiles.length;
-    const tile = visibleTiles[currentIndex];
-    if (!tile) return;
-
-    const img = tile.querySelector('img');
-    const title = tile.querySelector('.tile-title');
-    const meta = tile.querySelector('.tile-meta');
-
-    if (img) lightboxImg.src = img.src;
-    if (title && meta) {
-      lightboxCaption.textContent = title.textContent + ' · ' + meta.textContent;
-    } else if (title) {
-      lightboxCaption.textContent = title.textContent;
-    }
+    if (currentIdx < 0 || displayedWorks.length === 0) return;
+    currentIdx = (currentIdx + direction + displayedWorks.length) % displayedWorks.length;
+    updateLightboxContent();
   }
 
-  // Attach click to tiles
-  tiles.forEach((tile, i) => {
-    tile.addEventListener('click', () => {
-      visibleTiles = getVisibleTiles();
-      const idx = visibleTiles.indexOf(tile);
-      if (idx >= 0) openLightbox(idx);
+  // 下载图片
+  function downloadImage() {
+    var item = displayedWorks[currentIdx];
+    if (!item) return;
+    var imgSrc = item.image || item.cover || '';
+    if (!imgSrc) return;
+
+    fetch(imgSrc)
+      .then(function (res) { return res.blob(); })
+      .then(function (blob) {
+        var ext = 'jpg';
+        var mimeType = blob.type || '';
+        if (mimeType.indexOf('png') !== -1) ext = 'png';
+        else if (mimeType.indexOf('webp') !== -1) ext = 'webp';
+        else if (mimeType.indexOf('gif') !== -1) ext = 'gif';
+
+        var filename = (item.title || 'work') + '.' + ext;
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      })
+      .catch(function () {
+        // fallback: 在新标签页打开
+        window.open(imgSrc, '_blank');
+      });
+  }
+
+  // 事件绑定
+  if (closeBtn) closeBtn.addEventListener('click', closeLightbox);
+  if (lightbox) {
+    lightbox.addEventListener('click', function (e) {
+      if (e.target === lightbox) closeLightbox();
     });
+  }
+  if (prevBtn) prevBtn.addEventListener('click', function () { navigate(-1); });
+  if (nextBtn) nextBtn.addEventListener('click', function () { navigate(1); });
+  if (lbDownload) lbDownload.addEventListener('click', downloadImage);
+
+  document.addEventListener('keydown', function (e) {
+    if (!lightbox || !lightbox.classList.contains('is-open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    else if (e.key === 'ArrowLeft') navigate(-1);
+    else if (e.key === 'ArrowRight') navigate(1);
   });
 
-  // Close
-  closeBtn?.addEventListener('click', closeLightbox);
-  lightbox.addEventListener('click', e => {
-    if (e.target === lightbox) closeLightbox();
-  });
+  // ---- 工具函数 ----
+  function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.textContent = text || '';
+    return div.innerHTML;
+  }
 
-  // Nav
-  prevBtn?.addEventListener('click', () => navigate(-1));
-  nextBtn?.addEventListener('click', () => navigate(1));
-
-  // Keyboard
-  document.addEventListener('keydown', e => {
-    if (!lightbox.classList.contains('is-open')) return;
-    switch (e.key) {
-      case 'Escape': closeLightbox(); break;
-      case 'ArrowLeft': navigate(-1); break;
-      case 'ArrowRight': navigate(1); break;
-    }
-  });
-
-});
+  // ---- 初始化 ----
+  loadWorks();
+})();

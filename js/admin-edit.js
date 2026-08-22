@@ -303,7 +303,7 @@
       }).then(function (json) {
         if (json.success) {
           showMessage(msg, '保存成功！', 'success');
-          setTimeout(function () { window.location.href = 'works.html'; }, 800);
+          setTimeout(function () { window.location.href = 'gallery.html'; }, 800);
         } else {
           showMessage(msg, '保存失败：' + (json.error || '未知错误'), 'error');
           btn.disabled = false;
@@ -316,13 +316,26 @@
       });
     });
 
+    // 加载已有分类填充 datalist
+    Auth.api(apiBase + '?action=admin_list&limit=100').then(function (json) {
+      if (!json.success || !json.data) return;
+      var cats = {};
+      json.data.forEach(function (w) { if (w.category) cats[w.category] = true; });
+      var list = document.getElementById('categoryList');
+      if (list) {
+        list.innerHTML = Object.keys(cats).sort().map(function (c) {
+          return '<option value="' + escapeHtmlAttr(c) + '">';
+        }).join('');
+      }
+    }).catch(function () {});
+
     function fillWorkForm(item) {
       setInput('inputTitle', item.title);
       setInput('inputSlug', item.slug);
       setInput('inputStatus', item.status);
       setInput('inputCover', item.cover);
       setInput('inputImage', item.image);
-      setInput('inputFeatured', String(item.is_featured ? 1 : 0));
+      setInput('inputCategory', item.category || '');
       setInput('inputSortOrder', String(item.sort_order || 0));
       setInput('inputDescription', item.description || '');
     }
@@ -334,7 +347,7 @@
         status: getVal('inputStatus'),
         cover: getVal('inputCover'),
         image: getVal('inputImage'),
-        is_featured: parseInt(getVal('inputFeatured')) || 0,
+        category: getVal('inputCategory'),
         sort_order: parseInt(getVal('inputSortOrder')) || 0,
         description: getVal('inputDescription')
       };
@@ -437,6 +450,10 @@
   // ============================================================
   //  工具函数
   // ============================================================
+  function escapeHtmlAttr(text) {
+    return String(text || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
   function getVal(id) {
     var el = document.getElementById(id);
     return el ? el.value.trim() : '';

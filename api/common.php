@@ -310,6 +310,17 @@ function migrateSiteTables($db, $driver) {
         }
     }
 
+    // 迁移：works 表新增 category 列
+    try {
+        $test = $db->query("SELECT category FROM works LIMIT 0");
+    } catch (PDOException $e) {
+        if ($driver === 'mysql') {
+            $db->exec("ALTER TABLE works ADD COLUMN category VARCHAR(100) NOT NULL DEFAULT ''");
+        } else {
+            $db->exec("ALTER TABLE works ADD COLUMN category TEXT NOT NULL DEFAULT ''");
+        }
+    }
+
     // 迁移：新增 servers 表
     if ($driver === 'mysql') {
         $db->exec("CREATE TABLE IF NOT EXISTS servers (

@@ -358,6 +358,37 @@ function initContent() {
     });
   }
 
+  // 首页精选作品：随机 3 件（异步，从 API）
+  var galleryGrid = document.querySelector('.gallery-grid');
+  if (galleryGrid) {
+    fetch('/api/works.php?action=list')
+      .then(function (res) { return res.json(); })
+      .then(function (json) {
+        if (!json.success || !json.data || json.data.length === 0) return;
+        var works = json.data;
+        // Fisher-Yates 洗牌取前 3
+        for (var i = works.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var tmp = works[i]; works[i] = works[j]; works[j] = tmp;
+        }
+        var pick = works.slice(0, 3);
+        galleryGrid.innerHTML = '';
+        pick.forEach(function (item) {
+          var tile = document.createElement('div');
+          tile.className = 'gallery-tile';
+          var cover = item.cover || item.image || '';
+          tile.innerHTML =
+            (cover ? '<img src="' + escapeHtml(cover) + '" alt="' + escapeHtml(item.title) + '" loading="lazy">' : '') +
+            '<div class="tile-overlay">' +
+              '<span class="tile-title">' + escapeHtml(item.title) + '</span>' +
+              '<span class="tile-meta">' + escapeHtml(item.description || '') + '</span>' +
+            '</div>';
+          galleryGrid.appendChild(tile);
+        });
+      })
+      .catch(function () {});
+  }
+
   // 首页近期活动预览（异步，从 API）
   var eventsGrid = document.getElementById('eventsGrid');
   if (eventsGrid) {

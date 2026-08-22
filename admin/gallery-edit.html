@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <meta name="robots" content="noindex,nofollow">
   <meta name="theme-color" content="#213d87">
-  <title>作品管理 — UEMCraft</title>
+  <title id="pageTitle">编辑作品 — UEMCraft</title>
   <link rel="icon" href="../favicon.ico" type="images/x-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,7 +44,7 @@
       <a href="../about.html">关于我们</a>
       <a href="../news/">资讯动态</a>
       <a href="../events.html">活动中心</a>
-      <a href="../works/">作品展示</a>
+      <a href="../gallery/">作品展示</a>
       <a href="../wall/">留言墙</a>
     </nav>
     <div class="header-actions">
@@ -64,7 +64,7 @@
   <a href="../about.html">关于我们</a>
   <a href="../events.html">活动中心</a>
   <a href="../news/">资讯动态</a>
-  <a href="../works/">作品展示</a>
+  <a href="../gallery/">作品展示</a>
   <a href="../wall/">留言墙</a>
 </nav>
 
@@ -74,7 +74,7 @@
     <a href="index.html" class="admin-nav-link">仪表盘</a>
     <a href="news.html" class="admin-nav-link">新闻管理</a>
     <a href="events.html" class="admin-nav-link">活动管理</a>
-    <a href="works.html" class="admin-nav-link is-active">作品管理</a>
+    <a href="gallery.html" class="admin-nav-link is-active">作品管理</a>
     <a href="servers.html" class="admin-nav-link">服务器管理</a>
     <a href="images.html" class="admin-nav-link">图片管理</a>
     <a href="wall.html" class="admin-nav-link">留言墙管理</a>
@@ -87,40 +87,82 @@
 
 <section class="page-hero">
   <div class="container">
-    <h1>作品管理</h1>
-    <p class="hero-sub">创建、编辑、管理作品展示</p>
+    <h1 id="heroTitle">新建作品</h1>
+    <p class="hero-sub" id="heroSub">填写作品信息并保存</p>
     <nav class="breadcrumb" aria-label="面包屑">
-      <a href="../index.html">首页</a> <span>/</span> <a href="index.html">管理后台</a> <span>/</span> <span>作品</span>
+      <a href="../index.html">首页</a> <span>/</span> <a href="index.html">管理后台</a> <span>/</span> <a href="gallery.html">作品</a> <span>/</span> <span id="crumbAction">新建</span>
     </nav>
   </div>
 </section>
 
 <section class="section">
   <div class="container">
-
-    <div class="admin-toolbar">
-      <div class="admin-tabs" role="tablist" aria-label="状态筛选">
-        <button class="admin-tab is-active" data-status="all">全部</button>
-        <button class="admin-tab" data-status="published">已发布</button>
-        <button class="admin-tab" data-status="draft">草稿</button>
+    <form id="workForm" class="admin-edit-form" novalidate>
+      <div class="form-row">
+        <div class="form-group form-group--full">
+          <label for="inputTitle">标题 <span class="required">*</span></label>
+          <input type="text" id="inputTitle" class="form-input" placeholder="作品标题" required maxlength="255">
+        </div>
       </div>
-      <div class="admin-toolbar-right">
-        <span class="text-muted">共 <strong id="totalCount">0</strong> 条</span>
-        <a href="works-edit.html" class="btn btn-primary btn-sm">+ 新建作品</a>
-        <button class="btn btn-ghost btn-sm" id="logoutBtn2">退出</button>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="inputSlug">Slug <span class="required">*</span></label>
+          <input type="text" id="inputSlug" class="form-input" placeholder="url-slug" required pattern="[a-z0-9\-]+">
+        </div>
+        <div class="form-group">
+          <label for="inputStatus">状态</label>
+          <select id="inputStatus" class="form-input">
+            <option value="published">已发布</option>
+            <option value="draft">草稿</option>
+          </select>
+        </div>
       </div>
-    </div>
 
-    <div id="worksList" class="admin-list">
-      <div class="wall-loading">正在加载作品…</div>
-    </div>
+      <div class="form-row">
+        <div class="form-group form-group--full">
+          <label for="inputCover">封面图 URL</label>
+          <input type="text" id="inputCover" class="form-input" placeholder="/assets/img/gallery/xxx.jpg">
+          <small class="form-help">卡片列表中显示的缩略图</small>
+        </div>
+      </div>
 
-    <div id="pagination" class="wall-pagination" style="display:none;">
-      <button class="btn btn-ghost btn-sm" id="prevPage" disabled>‹ 上一页</button>
-      <span id="pageInfo" class="wall-page-info"></span>
-      <button class="btn btn-ghost btn-sm" id="nextPage" disabled>下一页 ›</button>
-    </div>
+      <div class="form-row">
+        <div class="form-group form-group--full">
+          <label for="inputImage">大图 URL</label>
+          <input type="text" id="inputImage" class="form-input" placeholder="/assets/img/gallery/xxx-large.jpg">
+          <small class="form-help">Lightbox 中展示的高清大图，留空则使用封面图</small>
+        </div>
+      </div>
 
+      <div class="form-row">
+        <div class="form-group">
+          <label for="inputCategory">分类</label>
+          <input type="text" id="inputCategory" class="form-input" list="categoryList" placeholder="输入或选择分类">
+          <datalist id="categoryList"></datalist>
+          <small class="form-help">可输入新分类或从已有分类中选择</small>
+        </div>
+        <div class="form-group">
+          <label for="inputSortOrder">排序权重</label>
+          <input type="number" id="inputSortOrder" class="form-input" value="0" min="0">
+          <small class="form-help">数值越小越靠前</small>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group form-group--full">
+          <label for="inputDescription">作品描述</label>
+          <textarea id="inputDescription" class="form-textarea" rows="4" placeholder="作品简介" maxlength="1000"></textarea>
+        </div>
+      </div>
+
+      <span id="formMessage" class="wall-form-message" role="status" aria-live="polite"></span>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="saveBtn">保存</button>
+        <a href="gallery.html" class="btn btn-ghost">取消</a>
+      </div>
+    </form>
   </div>
 </section>
 
@@ -134,10 +176,8 @@
   </div>
 </footer>
 
-<button class="back-to-top" aria-label="回到顶部" title="回到顶部">↑</button>
-
 <script defer src="../js/main.js"></script>
 <script defer src="../js/admin-auth.js"></script>
-<script defer src="../js/admin.js"></script>
+<script defer src="../js/admin-edit.js"></script>
 </body>
 </html>

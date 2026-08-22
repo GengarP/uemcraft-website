@@ -189,8 +189,10 @@
 
       var statusClass = item.status === 'published' ? 'is-approved' : 'is-hidden';
       var statusLabel = item.status === 'published' ? '已发布' : '草稿';
+      var thumb = item.cover || '';
 
       return '<article class="admin-card' + (item.status === 'draft' ? ' is-hidden' : '') + '" data-id="' + item.id + '">'
+        + (thumb ? '<div class="admin-card-thumb"><img src="' + escapeHtml(thumb) + '" alt="" loading="lazy"></div>' : '')
         + '<div class="admin-card-header">'
         + '  <div class="admin-card-meta">'
         + '    <span class="admin-card-name">' + escapeHtml(item.title) + '</span>'
@@ -275,6 +277,7 @@
     prevBtn.addEventListener('click', function () { currentPage--; load(); });
     nextBtn.addEventListener('click', function () { currentPage++; load(); });
 
+    setupViewToggle(listEl);
     load();
   }
 
@@ -326,14 +329,15 @@
       var statusClassMap = { upcoming: 'status-upcoming', ongoing: 'status-ongoing', past: 'status-past' };
       var statusLabel = statusMap[item.status] || item.status;
       var statusClass = statusClassMap[item.status] || '';
+      var thumb = item.cover || '';
 
       return '<article class="admin-card" data-id="' + item.id + '">'
+        + (thumb ? '<div class="admin-card-thumb"><img src="' + escapeHtml(thumb) + '" alt="" loading="lazy"></div>' : '')
         + '<div class="admin-card-header">'
         + '  <div class="admin-card-meta">'
         + '    <span class="admin-card-name">' + escapeHtml(item.title) + '</span>'
         + '    <span class="admin-badge ' + statusClass + '">' + statusLabel + '</span>'
         + '    <time class="wall-card-time">' + escapeHtml(item.date_label || item.date_start || '') + '</time>'
-        + (item.is_featured ? '<span class="admin-badge is-approved">置顶</span>' : '')
         + '  </div>'
         + '  <div class="admin-card-actions">'
         + '    <a href="events-edit.html?id=' + item.id + '" class="btn btn-ghost btn-sm">编辑</a>'
@@ -396,6 +400,7 @@
     prevBtn.addEventListener('click', function () { currentPage--; load(); });
     nextBtn.addEventListener('click', function () { currentPage++; load(); });
 
+    setupViewToggle(listEl);
     load();
   }
 
@@ -447,16 +452,18 @@
       var statusClassMap = { published: 'is-approved', draft: 'is-hidden' };
       var statusLabel = statusMap[item.status] || item.status;
       var statusClass = statusClassMap[item.status] || '';
+      var thumb = item.cover || item.image || '';
 
       return '<article class="admin-card" data-id="' + item.id + '">'
+        + (thumb ? '<div class="admin-card-thumb"><img src="' + escapeHtml(thumb) + '" alt="" loading="lazy"></div>' : '')
         + '<div class="admin-card-header">'
         + '  <div class="admin-card-meta">'
         + '    <span class="admin-card-name">' + escapeHtml(item.title) + '</span>'
         + '    <span class="admin-badge ' + statusClass + '">' + statusLabel + '</span>'
-        + (item.is_featured ? '<span class="admin-badge is-approved">置顶</span>' : '')
+        + (item.category ? '<span class="admin-badge">' + escapeHtml(item.category) + '</span>' : '')
         + '  </div>'
         + '  <div class="admin-card-actions">'
-        + '    <a href="works-edit.html?id=' + item.id + '" class="btn btn-ghost btn-sm">编辑</a>'
+        + '    <a href="gallery-edit.html?id=' + item.id + '" class="btn btn-ghost btn-sm">编辑</a>'
         + '    <button class="btn btn-ghost btn-sm admin-btn-danger" data-action="delete" data-id="' + item.id + '">删除</button>'
         + '  </div>'
         + '</div>'
@@ -516,6 +523,7 @@
     prevBtn.addEventListener('click', function () { currentPage--; load(); });
     nextBtn.addEventListener('click', function () { currentPage++; load(); });
 
+    setupViewToggle(listEl);
     load();
   }
 
@@ -632,6 +640,7 @@
     prevBtn.addEventListener('click', function () { currentPage--; load(); });
     nextBtn.addEventListener('click', function () { currentPage++; load(); });
 
+    setupViewToggle(listEl);
     load();
   }
 
@@ -934,6 +943,35 @@
   }
 
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+  // ============================================================
+  //  视图切换（网格/列表）
+  // ============================================================
+  function setupViewToggle(listEl) {
+    var toggleEl = document.querySelector('.view-toggle');
+    if (!toggleEl || !listEl) return;
+
+    var btns = toggleEl.querySelectorAll('.view-toggle-btn');
+    var saved = localStorage.getItem('uemcraft-admin-view') || 'list';
+
+    function apply(mode) {
+      btns.forEach(function (b) { b.classList.toggle('is-active', b.getAttribute('data-view') === mode); });
+      if (mode === 'grid') {
+        listEl.classList.add('admin-list-grid');
+      } else {
+        listEl.classList.remove('admin-list-grid');
+      }
+      localStorage.setItem('uemcraft-admin-view', mode);
+    }
+
+    btns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        apply(btn.getAttribute('data-view'));
+      });
+    });
+
+    apply(saved);
+  }
 
   // ============================================================
   //  工具函数

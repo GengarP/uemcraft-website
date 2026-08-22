@@ -72,7 +72,6 @@
 <!-- ====== Main ====== -->
 <main id="main">
 
-<!-- Page Hero -->
 <section class="page-hero">
   <div class="container">
     <h1>作品展示</h1>
@@ -83,23 +82,12 @@
   </div>
 </section>
 
-<!-- Gallery -->
 <section class="section section-alt">
   <div class="container">
-
-    <!-- Filters -->
-    <div class="gallery-filters reveal">
-      <button class="filter-btn is-active" data-filter="all">全部</button>
-      <button class="filter-btn" data-filter="restoration">复原工程</button>
-      <button class="filter-btn" data-filter="building">其他建筑</button>
-      <button class="filter-btn" data-filter="tech">技术作品</button>
-      <button class="filter-btn" data-filter="photo">社员合照</button>
+    <div class="gallery-filter" id="galleryFilter"></div>
+    <div id="worksGrid" class="works-grid">
+      <div class="wall-loading">正在加载作品…</div>
     </div>
-
-    <!-- Gallery Grid -->
-    <div class="gallery-grid reveal">
-    </div>
-
   </div>
 </section>
 
@@ -174,12 +162,18 @@
 <button class="back-to-top" aria-label="回到顶部" title="回到顶部">↑</button>
 
 <!-- Lightbox -->
-<div id="lightbox" class="lightbox" aria-modal="true" role="dialog" aria-label="图片预览">
+<div id="worksLightbox" class="lightbox" aria-modal="true" role="dialog" aria-label="作品预览">
   <button class="lightbox-close" aria-label="关闭">✕</button>
   <button class="lightbox-prev lightbox-nav" aria-label="上一张">&lt;</button>
   <button class="lightbox-next lightbox-nav" aria-label="下一张">&gt;</button>
-  <img class="lightbox-img" src="" alt="">
-  <div class="lightbox-caption"></div>
+  <div class="lightbox-body">
+    <img class="lightbox-img" src="" alt="">
+    <div class="lightbox-caption">
+      <h3 class="lightbox-title"></h3>
+      <p class="lightbox-desc"></p>
+      <button class="btn btn-primary btn-sm lightbox-download">下载图片</button>
+    </div>
+  </div>
 </div>
 
 <script defer src="../js/main.js"></script>

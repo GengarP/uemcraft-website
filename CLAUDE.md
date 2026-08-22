@@ -13,11 +13,10 @@ uemcraft.cn/
 │   ├── login.html（登录页）、index.html（仪表盘）
 │   ├── news.html / news-edit.html（新闻管理）
 │   ├── events.html / events-edit.html（活动管理）
-│   ├── works.html / works-edit.html（作品管理）
+│   ├── gallery.html / gallery-edit.html（作品管理）
 │   └── css/admin.css（后台样式）
 ├── news/ → index.html（资讯列表）、article.html（文章详情，?slug= 加载）
-├── works/ → index.html（作品展示，API 驱动 + Lightbox）
-├── gallery/ → index.html（静态画廊，旧版）
+├── gallery/ → index.html（作品展示，API 驱动 + Lightbox）
 ├── wall/ → index.html（留言墙）、admin.html（留言墙管理端）
 ├── api/ → 后端 API
 │   ├── common.php（公共函数库：PDO 连接、token 校验、JSON 响应）
@@ -35,7 +34,7 @@ uemcraft.cn/
 │   ├── admin-edit.js（后台编辑表单逻辑）
 │   ├── wall.js（留言墙前端）、wall-admin.js（留言墙管理端）
 │   ├── marked.umd.js（Markdown 解析）
-│   ├── works.js（作品展示前端：API 加载 + Lightbox + 下载）
+│   ├── gallery.js（作品展示前端：API 加载 + Lightbox + 下载）
 │   └── hero-gallery.js / server.js / events.js / gallery.js / join.js
 ├── assets/ → img/、svg/、docs/章程.pdf、fonts/（iconfont / Fusion Pixel）
 ├── package.json、favicon.ico、robots.txt、sitemap.xml
@@ -63,11 +62,12 @@ uemcraft.cn/
 
 ### 内容管理（作品）
 
-作品通过管理后台 `/admin/works.html` 管理，数据存储在数据库 `site.db` 的 `works` 表中。
+作品通过管理后台 `/admin/gallery.html` 管理，数据存储在数据库 `site.db` 的 `works` 表中。
 
-- **新增作品**：登录管理后台 → 作品管理 → 新建作品 → 填写表单（标题、slug、封面图、大图、描述、状态、置顶、排序）→ 保存
+- **新增作品**：登录管理后台 → 作品管理 → 新建作品 → 填写表单（标题、slug、封面图、大图、分类、描述、状态、排序）→ 保存
 - **状态**：published（已发布）/ draft（草稿）
-- **前端加载**：`js/works.js` 通过 `fetch` 从 `/api/works.php?action=list` 异步加载，渲染卡片网格
+- **分类**：自由输入 + datalist 历史建议，前端 gallery 页按分类筛选
+- **前端加载**：`js/gallery.js` 通过 `fetch` 从 `/api/works.php?action=list` 异步加载，渲染卡片网格 + 分类筛选按钮
 - **Lightbox**：点击卡片弹出 Lightbox，展示大图、标题、描述，提供下载按钮（前端 fetch blob 下载）
 - **键盘支持**：ESC 关闭，← → 翻页
 
@@ -80,6 +80,7 @@ uemcraft.cn/
 - **认证模块**：`js/admin-auth.js`，提供 token 存储（localStorage key `uemcraft-admin-token`）、验证、API 请求封装
 - **样式**：`admin/css/admin.css`，复用 `tokens.css` 变量
 - **导航**：后台顶部有统一导航栏（仪表盘 / 新闻管理 / 活动管理 / 作品管理 / 服务器管理 / 图片管理 / 留言墙管理）
+- **视图切换**：所有管理列表页（新闻/活动/作品/服务器）支持列表/网格两种视图，偏好保存在 localStorage（`uemcraft-admin-view`）。网格模式下显示封面缩略图。
 - **留言墙管理**：`/wall/admin.html` 也集成了后台导航栏，复用 `admin-auth.js`
 
 ### 留言墙（留言板）
