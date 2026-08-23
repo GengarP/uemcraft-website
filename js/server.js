@@ -77,6 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const maxPlayers = online ? ((status.players && status.players.max) || 0) : 0;
       const motd = status && status.motd ? status.motd : '';
       const playerList = online && status.players && status.players.list ? status.players.list : [];
+      const latency = online && status.latency != null ? status.latency : null;
+      const favicon = online && status.favicon ? status.favicon : '';
       const addrDisplay = escapeHtml(server.address) + (server.port ? ':' + server.port : '');
 
       const panel = document.createElement('div');
@@ -85,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         '<div class="server-indicator' + (online ? '' : ' is-offline') + '"></div>' +
         '<div class="server-info">' +
         '  <div class="server-header">' +
+        (favicon ? '    <img class="server-favicon" src="' + favicon + '" alt="" width="40" height="40">' : '') +
         '    <span class="server-title">' + escapeHtml(server.name) + (server.note ? ' <small class="text-muted">(' + escapeHtml(server.note) + ')</small>' : '') + '</span>' +
         '  </div>' +
         '  <div class="server-addr-row">' +
@@ -102,6 +105,10 @@ document.addEventListener('DOMContentLoaded', () => {
         '        <span class="sval">' + (online ? escapeHtml(version) : '--') + '</span>' +
         '        <span class="slbl">版本</span>' +
         '      </div>' +
+        (latency != null ? '      <div class="server-stat">' +
+        '        <span class="sval server-latency ' + latencyClass(latency) + '">' + latency + ' ms</span>' +
+        '        <span class="slbl">延迟</span>' +
+        '      </div>' : '') +
         '    </div>' +
         '  </div>' +
         (motd ? '  <div class="server-motd">' + parseMotd(motd) + '</div>' : '') +
@@ -188,6 +195,13 @@ document.addEventListener('DOMContentLoaded', () => {
     var div = document.createElement('div');
     div.textContent = text || '';
     return div.innerHTML;
+  }
+
+  // ---- 延迟等级样式 ----
+  function latencyClass(ms) {
+    if (ms <= 100) return 'latency-good';
+    if (ms <= 300) return 'latency-ok';
+    return 'latency-bad';
   }
 
   // ---- MOTD § 颜色代码解析 ----

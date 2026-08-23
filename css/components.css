@@ -293,6 +293,21 @@
 .server-stat .sval { font-family:var(--font-mono); font-size:1rem; font-weight:700; color:var(--c-heading); }
 .server-stat .slbl { font-size:var(--fs-xs); color:var(--c-text-muted); }
 
+/* Server favicon */
+.server-favicon {
+  width:40px; height:40px;
+  border-radius:var(--radius);
+  border:2px solid var(--c-border);
+  image-rendering:pixelated;
+  flex-shrink:0;
+  background:var(--c-surface-2);
+}
+
+/* Latency indicator */
+.server-latency.latency-good { color:var(--c-ok); }
+.server-latency.latency-ok   { color:var(--c-gold); }
+.server-latency.latency-bad  { color:var(--c-red); }
+
 /* Player list tooltip */
 .player-stat-wrap { position:relative; cursor:default; }
 .player-stat-wrap:hover .player-tooltip {
@@ -1451,6 +1466,7 @@ a.contact-card:hover .cc-title {
     justify-content:center;
     gap:var(--space-md);
   }
+  .server-favicon { width:32px; height:32px; }
   .server-title { text-align:center; }
   .server-addr-row {
     flex-wrap:wrap;
