@@ -21,7 +21,7 @@
         document.documentElement.setAttribute('data-texture', tex);
         var s = document.createElement('style');
         s.id = 'texture-style';
-        s.textContent = 'body::after{background-image:url(assets/img/background_textures/'+tex+'.png);}';
+        s.textContent = 'body::after{background-image:url(/assets/img/background_textures/'+tex+'.png);}';
         document.head.appendChild(s);
       }
     })();
@@ -40,7 +40,7 @@
   <div class="loader-curtain loader-curtain-l"></div>
   <div class="loader-curtain loader-curtain-r"></div>
   <div class="loader-center" id="loaderCenter">
-    <img src="assets/img/logo-256.webp" alt="" class="loader-logo" id="loaderLogo" width="80" height="80">
+    <img src="/assets/img/logo-256.webp" alt="" class="loader-logo" id="loaderLogo" width="80" height="80">
     <div class="loader-title">UEMCraft</div>
     <div class="loader-sub">正在生成区块…</div>
   </div>
@@ -53,7 +53,7 @@
 <header class="site-header" role="banner">
   <div class="header-inner">
     <a href="index.html" class="header-logo" aria-label="UEMCraft 首页">
-      <img src="assets/img/logo-256.webp" alt="UEMCraft Logo" width="40" height="40">
+      <img src="/assets/img/logo-256.webp" alt="UEMCraft Logo" width="40" height="40">
       <span class="logo-text">
         <span class="logo-cn">应大MC同好会</span>
         <span class="logo-en">UEMCraft</span>
@@ -70,7 +70,7 @@
     <div class="header-actions">
       <div class="settings-wrapper">
         <button class="settings-toggle" aria-label="设置" title="设置">
-          <img src="assets/svg/setting.svg" alt="" width="20" height="20" class="settings-icon">
+          <img src="/assets/svg/setting.svg" alt="" width="20" height="20" class="settings-icon">
         </button>
         <div class="settings-panel" aria-hidden="true">
           <div class="settings-group">
@@ -89,22 +89,22 @@
             <div class="texture-grid">
               <button class="texture-option" data-texture="none" title="无纹理">无</button>
               <button class="texture-option" data-texture="bricks" title="砖块">
-                <img src="assets/img/background_textures/bricks.png" alt="砖块">
+                <img src="/assets/img/background_textures/bricks.png" alt="砖块">
               </button>
               <button class="texture-option" data-texture="cobblestone" title="圆石">
-                <img src="assets/img/background_textures/cobblestone.png" alt="圆石">
+                <img src="/assets/img/background_textures/cobblestone.png" alt="圆石">
               </button>
               <button class="texture-option" data-texture="dirt" title="泥土">
-                <img src="assets/img/background_textures/dirt.png" alt="泥土">
+                <img src="/assets/img/background_textures/dirt.png" alt="泥土">
               </button>
               <button class="texture-option" data-texture="end_stone" title="末地石">
-                <img src="assets/img/background_textures/end_stone.png" alt="末地石">
+                <img src="/assets/img/background_textures/end_stone.png" alt="末地石">
               </button>
               <button class="texture-option" data-texture="stone" title="石头">
-                <img src="assets/img/background_textures/stone.png" alt="石头">
+                <img src="/assets/img/background_textures/stone.png" alt="石头">
               </button>
               <button class="texture-option" data-texture="stone_bricks" title="石砖">
-                <img src="assets/img/background_textures/stone_bricks.png" alt="石砖">
+                <img src="/assets/img/background_textures/stone_bricks.png" alt="石砖">
               </button>
             </div>
           </div>
@@ -137,10 +137,10 @@
   <!-- 背景画廊：可左右滑动切换背景图。在下方 slide 的 src 填入图片路径；不需要的整行删除 -->
   <div class="hero-gallery" id="heroGallery" aria-hidden="true">
     <div class="hero-gallery-track">
-      <div class="hero-slide"><img src="assets/img/bg-1.jpg" alt=""></div>
-      <div class="hero-slide"><img src="assets/img/bg-2.jpg" alt=""></div>
-      <div class="hero-slide"><img src="assets/img/bg-3.jpg" alt=""></div>
-      <div class="hero-slide"><img src="assets/img/bg-4.jpg" alt=""></div>
+      <div class="hero-slide"><img src="/assets/img/bg-1.jpg" alt=""></div>
+      <div class="hero-slide"><img src="/assets/img/bg-2.jpg" alt=""></div>
+      <div class="hero-slide"><img src="/assets/img/bg-3.jpg" alt=""></div>
+      <div class="hero-slide"><img src="/assets/img/bg-4.jpg" alt=""></div>
     </div>
   </div>
   <div class="container hero-index-content">
@@ -149,7 +149,7 @@
       <span id="heroStatus">加载中…</span>
     </a>
     <h1 class="reveal reveal-delay-1">
-      <img src="assets/img/minecraft_title.png" alt="UEMCraft" class="hero-title-img" width="560" height="80">
+      <img src="/assets/img/minecraft_title.png" alt="UEMCraft" class="hero-title-img" width="560" height="80">
       <span class="hero-title-cn">应急管理大学<br>Minecraft 同好会</span>
     </h1>
     <p class="hero-desc reveal reveal-delay-2">
@@ -200,7 +200,7 @@
     </div>
 
     <div class="club-intro-body reveal">
-      <img class="club-intro-logo" src="assets/img/logo-512.webp" alt="UEMCraft Logo">
+      <img class="club-intro-logo" src="/assets/img/logo-512.webp" alt="UEMCraft Logo">
       <p class="club-intro-lead">
         应急管理大学 Minecraft 同好会（<strong class="text-mono">UEMCraft</strong>）是以 Minecraft 为平台的学生社群，
         以 <strong>校园数字复原</strong> 为核心项目，开展建筑创作、红石技术与模组探索等活动。
@@ -331,7 +331,7 @@
       <p>无论你是建筑大师、红石极客，还是刚刚踏入 Minecraft 世界的新人，这里都有你的一席之地。</p>
       <div class="cta-row">
         <a href="join.html" class="btn btn-gold btn-lg">立即报名</a>
-        <a href="assets/docs/章程.pdf" class="btn btn-ghost btn-lg" style="color:#fff;border-color:rgba(255,255,255,.3);">阅读章程</a>
+        <a href="/assets/docs/章程.pdf" class="btn btn-ghost btn-lg" style="color:#fff;border-color:rgba(255,255,255,.3);">阅读章程</a>
       </div>
     </div>
   </div>
@@ -344,7 +344,7 @@
   <div class="footer-grid">
     <div class="footer-col">
       <div class="footer-logo">
-        <img src="assets/img/logo-256.webp" alt="UEMCraft" width="32" height="32">
+        <img src="/assets/img/logo-256.webp" alt="UEMCraft" width="32" height="32">
         <span>应急管理大学 Minecraft 同好会</span>
       </div>
       <p>以 Minecraft 为平台，建设校园数字复原与创作社区。<br>MUA 成员组织。</p>
@@ -388,7 +388,7 @@
     <span>&copy; <span id="year"></span> 应急管理大学 Minecraft 同好会 · UEMCraft</span>
     <span>Minecraft 是 Mojang AB 的商标 · 本站为社群非商业用途</span>
     <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" style="color:var(--c-text-muted);text-decoration:none;">赣ICP备2026018930号</a>
-    <a href="https://beian.mps.gov.cn/" target="_blank" rel="noopener" style="color:var(--c-text-muted);text-decoration:none;display:inline-flex;align-items:center;gap:4px;"><img src="assets/img/备案图标.png" alt="公安备案" style="height:14px;width:auto;">赣公网安备 36072102000273号</a>
+    <a href="https://beian.mps.gov.cn/" target="_blank" rel="noopener" style="color:var(--c-text-muted);text-decoration:none;display:inline-flex;align-items:center;gap:4px;"><img src="/assets/img/备案图标.png" alt="公安备案" style="height:14px;width:auto;">赣公网安备 36072102000273号</a>
   </div>
 </footer>
 

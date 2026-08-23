@@ -20,17 +20,17 @@
         document.documentElement.setAttribute('data-texture', tex);
         var s = document.createElement('style');
         s.id = 'texture-style';
-        s.textContent = 'body::after{background-image:url(../assets/img/background_textures/'+tex+'.png);}';
+        s.textContent = 'body::after{background-image:url(/assets/img/background_textures/'+tex+'.png);}';
         document.head.appendChild(s);
       }
     })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/tokens.css">
-  <link rel="stylesheet" href="../css/base.css">
-  <link rel="stylesheet" href="../css/layout.css">
-  <link rel="stylesheet" href="../css/components.css">
-  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/pages.css">
   <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
@@ -40,25 +40,25 @@
 <!-- ====== Header ====== -->
 <header class="site-header" role="banner">
   <div class="header-inner">
-    <a href="../index.html" class="header-logo" aria-label="UEMCraft 首页">
-      <img src="../assets/img/logo-256.webp" alt="UEMCraft Logo" width="40" height="40">
+    <a href="/index.html" class="header-logo" aria-label="UEMCraft 首页">
+      <img src="/assets/img/logo-256.webp" alt="UEMCraft Logo" width="40" height="40">
       <span class="logo-text">
         <span class="logo-cn">应大MC同好会</span>
         <span class="logo-en">UEMCraft</span>
       </span>
     </a>
     <nav class="header-nav" aria-label="主导航">
-      <a href="../index.html">首页</a>
-      <a href="../about.html">关于我们</a>
-      <a href="../news/">资讯动态</a>
-      <a href="../events.html">活动中心</a>
-      <a href="../gallery/">作品展示</a>
-      <a href="../wall/">留言墙</a>
+      <a href="/index.html">首页</a>
+      <a href="/about.html">关于我们</a>
+      <a href="/news/">资讯动态</a>
+      <a href="/events.html">活动中心</a>
+      <a href="/gallery/">作品展示</a>
+      <a href="/wall/">留言墙</a>
     </nav>
     <div class="header-actions">
       <div class="settings-wrapper">
         <button class="settings-toggle" aria-label="设置" title="设置">
-          <img src="../assets/svg/setting.svg" alt="" width="20" height="20" class="settings-icon">
+          <img src="/assets/svg/setting.svg" alt="" width="20" height="20" class="settings-icon">
         </button>
         <div class="settings-panel" aria-hidden="true">
           <div class="settings-group">
@@ -77,22 +77,22 @@
             <div class="texture-grid">
               <button class="texture-option" data-texture="none" title="无纹理">无</button>
               <button class="texture-option" data-texture="bricks" title="砖块">
-                <img src="../assets/img/background_textures/bricks.png" alt="砖块">
+                <img src="/assets/img/background_textures/bricks.png" alt="砖块">
               </button>
               <button class="texture-option" data-texture="cobblestone" title="圆石">
-                <img src="../assets/img/background_textures/cobblestone.png" alt="圆石">
+                <img src="/assets/img/background_textures/cobblestone.png" alt="圆石">
               </button>
               <button class="texture-option" data-texture="dirt" title="泥土">
-                <img src="../assets/img/background_textures/dirt.png" alt="泥土">
+                <img src="/assets/img/background_textures/dirt.png" alt="泥土">
               </button>
               <button class="texture-option" data-texture="end_stone" title="末地石">
-                <img src="../assets/img/background_textures/end_stone.png" alt="末地石">
+                <img src="/assets/img/background_textures/end_stone.png" alt="末地石">
               </button>
               <button class="texture-option" data-texture="stone" title="石头">
-                <img src="../assets/img/background_textures/stone.png" alt="石头">
+                <img src="/assets/img/background_textures/stone.png" alt="石头">
               </button>
               <button class="texture-option" data-texture="stone_bricks" title="石砖">
-                <img src="../assets/img/background_textures/stone_bricks.png" alt="石砖">
+                <img src="/assets/img/background_textures/stone_bricks.png" alt="石砖">
               </button>
             </div>
           </div>
@@ -106,12 +106,12 @@
 </header>
 
 <nav class="mobile-nav" aria-label="移动端导航">
-  <a href="../index.html">首页</a>
-  <a href="../about.html">关于我们</a>
-  <a href="../events.html">活动中心</a>
-  <a href="../news/">资讯动态</a>
-  <a href="../gallery/">作品展示</a>
-  <a href="../wall/">留言墙</a>
+  <a href="/index.html">首页</a>
+  <a href="/about.html">关于我们</a>
+  <a href="/events.html">活动中心</a>
+  <a href="/news/">资讯动态</a>
+  <a href="/gallery/">作品展示</a>
+  <a href="/wall/">留言墙</a>
 </nav>
 
 <!-- ====== Admin Nav ====== -->
@@ -136,7 +136,7 @@
     <h1>图片管理</h1>
     <p class="hero-sub">浏览、上传、管理图片资源</p>
     <nav class="breadcrumb" aria-label="面包屑">
-      <a href="../index.html">首页</a> <span>/</span> <a href="index.html">管理后台</a> <span>/</span> <span>图片</span>
+      <a href="/index.html">首页</a> <span>/</span> <a href="index.html">管理后台</a> <span>/</span> <span>图片</span>
     </nav>
   </div>
 </section>
@@ -189,8 +189,8 @@
 
 <button class="back-to-top" aria-label="回到顶部" title="回到顶部">↑</button>
 
-<script defer src="../js/main.js"></script>
-<script defer src="../js/admin-auth.js"></script>
-<script defer src="../js/admin.js"></script>
+<script defer src="/js/main.js"></script>
+<script defer src="/js/admin-auth.js"></script>
+<script defer src="/js/admin.js"></script>
 </body>
 </html>

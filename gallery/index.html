@@ -20,17 +20,17 @@
         document.documentElement.setAttribute('data-texture', tex);
         var s = document.createElement('style');
         s.id = 'texture-style';
-        s.textContent = 'body::after{background-image:url(../assets/img/background_textures/'+tex+'.png);}';
+        s.textContent = 'body::after{background-image:url(/assets/img/background_textures/'+tex+'.png);}';
         document.head.appendChild(s);
       }
     })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/tokens.css">
-  <link rel="stylesheet" href="../css/base.css">
-  <link rel="stylesheet" href="../css/layout.css">
-  <link rel="stylesheet" href="../css/components.css">
-  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/pages.css">
 </head>
 <body>
 
@@ -39,25 +39,25 @@
 <!-- ====== Header ====== -->
 <header class="site-header" role="banner">
   <div class="header-inner">
-    <a href="../index.html" class="header-logo" aria-label="UEMCraft 首页">
-      <img src="../assets/img/logo-256.webp" alt="UEMCraft Logo" width="40" height="40">
+    <a href="/index.html" class="header-logo" aria-label="UEMCraft 首页">
+      <img src="/assets/img/logo-256.webp" alt="UEMCraft Logo" width="40" height="40">
       <span class="logo-text">
         <span class="logo-cn">应大MC同好会</span>
         <span class="logo-en">UEMCraft</span>
       </span>
     </a>
     <nav class="header-nav" aria-label="主导航">
-      <a href="../index.html">首页</a>
-      <a href="../about.html">关于我们</a>
-      <a href="../news/">资讯动态</a>
-      <a href="../events.html">活动中心</a>
-      <a href="../gallery/" class="is-active">作品展示</a>
-      <a href="../wall/">留言墙</a>
+      <a href="/index.html">首页</a>
+      <a href="/about.html">关于我们</a>
+      <a href="/news/">资讯动态</a>
+      <a href="/events.html">活动中心</a>
+      <a href="/gallery/" class="is-active">作品展示</a>
+      <a href="/wall/">留言墙</a>
     </nav>
     <div class="header-actions">
       <div class="settings-wrapper">
         <button class="settings-toggle" aria-label="设置" title="设置">
-          <img src="../assets/svg/setting.svg" alt="" width="20" height="20" class="settings-icon">
+          <img src="/assets/svg/setting.svg" alt="" width="20" height="20" class="settings-icon">
         </button>
         <div class="settings-panel" aria-hidden="true">
           <div class="settings-group">
@@ -76,28 +76,28 @@
             <div class="texture-grid">
               <button class="texture-option" data-texture="none" title="无纹理">无</button>
               <button class="texture-option" data-texture="bricks" title="砖块">
-                <img src="../assets/img/background_textures/bricks.png" alt="砖块">
+                <img src="/assets/img/background_textures/bricks.png" alt="砖块">
               </button>
               <button class="texture-option" data-texture="cobblestone" title="圆石">
-                <img src="../assets/img/background_textures/cobblestone.png" alt="圆石">
+                <img src="/assets/img/background_textures/cobblestone.png" alt="圆石">
               </button>
               <button class="texture-option" data-texture="dirt" title="泥土">
-                <img src="../assets/img/background_textures/dirt.png" alt="泥土">
+                <img src="/assets/img/background_textures/dirt.png" alt="泥土">
               </button>
               <button class="texture-option" data-texture="end_stone" title="末地石">
-                <img src="../assets/img/background_textures/end_stone.png" alt="末地石">
+                <img src="/assets/img/background_textures/end_stone.png" alt="末地石">
               </button>
               <button class="texture-option" data-texture="stone" title="石头">
-                <img src="../assets/img/background_textures/stone.png" alt="石头">
+                <img src="/assets/img/background_textures/stone.png" alt="石头">
               </button>
               <button class="texture-option" data-texture="stone_bricks" title="石砖">
-                <img src="../assets/img/background_textures/stone_bricks.png" alt="石砖">
+                <img src="/assets/img/background_textures/stone_bricks.png" alt="石砖">
               </button>
             </div>
           </div>
         </div>
       </div>
-      <a href="../join.html" class="btn btn-primary btn-sm">加入我们</a>
+      <a href="/join.html" class="btn btn-primary btn-sm">加入我们</a>
       <button class="hamburger" aria-label="菜单" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
@@ -106,13 +106,13 @@
 </header>
 
 <nav class="mobile-nav" aria-label="移动端导航">
-  <a href="../index.html">首页</a>
-  <a href="../about.html">关于我们</a>
-  <a href="../events.html">活动中心</a>
-  <a href="../news/">资讯动态</a>
-  <a href="../gallery/" class="is-active">作品展示</a>
-  <a href="../wall/">留言墙</a>
-  <a href="../join.html" class="btn btn-primary btn-block mobile-cta">加入我们</a>
+  <a href="/index.html">首页</a>
+  <a href="/about.html">关于我们</a>
+  <a href="/events.html">活动中心</a>
+  <a href="/news/">资讯动态</a>
+  <a href="/gallery/" class="is-active">作品展示</a>
+  <a href="/wall/">留言墙</a>
+  <a href="/join.html" class="btn btn-primary btn-block mobile-cta">加入我们</a>
 </nav>
 
 <!-- ====== Main ====== -->
@@ -123,7 +123,7 @@
     <h1>作品展示</h1>
     <p class="hero-sub">用方块创造无限可能 · 社群成员作品画廊</p>
     <nav class="breadcrumb" aria-label="面包屑">
-      <a href="../index.html">首页</a> <span>/</span> <span>作品展示</span>
+      <a href="/index.html">首页</a> <span>/</span> <span>作品展示</span>
     </nav>
   </div>
 </section>
@@ -144,7 +144,7 @@
       <h2>有作品想展示？</h2>
       <p>把你的 Minecraft 建筑、红石装置或精彩截图投稿给我们！</p>
       <div class="cta-row">
-        <a href="../join.html" class="btn btn-gold btn-lg">联系宣传部</a>
+        <a href="/join.html" class="btn btn-gold btn-lg">联系宣传部</a>
       </div>
     </div>
   </div>
@@ -157,25 +157,25 @@
   <div class="footer-grid">
     <div class="footer-col">
       <div class="footer-logo">
-        <img src="../assets/img/logo-256.webp" alt="UEMCraft" width="32" height="32">
+        <img src="/assets/img/logo-256.webp" alt="UEMCraft" width="32" height="32">
         <span>应急管理大学 Minecraft 同好会</span>
       </div>
       <p>以 Minecraft 为平台，建设校园数字复原与创作社区。<br>MUA 成员组织。</p>
       <div class="footer-badges">
-        <a href="../index.html" class="footer-badge">UEMCraft</a>
+        <a href="/index.html" class="footer-badge">UEMCraft</a>
         <a href="https://www.mualliance.cn/" target="_blank" rel="noopener" class="footer-badge">MUA</a>
       </div>
     </div>
     <div class="footer-col">
       <h4>快速链接</h4>
       <ul>
-        <li><a href="../index.html">首页</a></li>
-        <li><a href="../about.html">关于我们</a></li>
-        <li><a href="../news/">资讯动态</a></li>
-        <li><a href="../events.html">活动中心</a></li>
-        <li><a href="../gallery/">作品展示</a></li>
-        <li><a href="../wall/">留言墙</a></li>
-        <li><a href="../join.html">加入我们</a></li>
+        <li><a href="/index.html">首页</a></li>
+        <li><a href="/about.html">关于我们</a></li>
+        <li><a href="/news/">资讯动态</a></li>
+        <li><a href="/events.html">活动中心</a></li>
+        <li><a href="/gallery/">作品展示</a></li>
+        <li><a href="/wall/">留言墙</a></li>
+        <li><a href="/join.html">加入我们</a></li>
       </ul>
     </div>
     <div class="footer-col">
@@ -201,7 +201,7 @@
     <span>&copy; <span id="year"></span> 应急管理大学 Minecraft 同好会 · UEMCraft</span>
     <span>Minecraft 是 Mojang AB 的商标 · 本站为社群非商业用途</span>
     <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" style="color:var(--c-text-muted);text-decoration:none;">赣ICP备2026018930号</a>
-    <a href="https://beian.mps.gov.cn/" target="_blank" rel="noopener" style="color:var(--c-text-muted);text-decoration:none;display:inline-flex;align-items:center;gap:4px;"><img src="../assets/img/备案图标.png" alt="公安备案" style="height:14px;width:auto;">赣公网安备 36072102000273号</a>
+    <a href="https://beian.mps.gov.cn/" target="_blank" rel="noopener" style="color:var(--c-text-muted);text-decoration:none;display:inline-flex;align-items:center;gap:4px;"><img src="/assets/img/备案图标.png" alt="公安备案" style="height:14px;width:auto;">赣公网安备 36072102000273号</a>
   </div>
 </footer>
 
@@ -222,7 +222,7 @@
   </div>
 </div>
 
-<script defer src="../js/main.js"></script>
-<script defer src="../js/gallery.js"></script>
+<script defer src="/js/main.js"></script>
+<script defer src="/js/gallery.js"></script>
 </body>
 </html>

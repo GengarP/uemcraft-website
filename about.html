@@ -20,7 +20,7 @@
         document.documentElement.setAttribute('data-texture', tex);
         var s = document.createElement('style');
         s.id = 'texture-style';
-        s.textContent = 'body::after{background-image:url(assets/img/background_textures/'+tex+'.png);}';
+        s.textContent = 'body::after{background-image:url(/assets/img/background_textures/'+tex+'.png);}';
         document.head.appendChild(s);
       }
     })();
@@ -40,7 +40,7 @@
 <header class="site-header" role="banner">
   <div class="header-inner">
     <a href="index.html" class="header-logo" aria-label="UEMCraft 首页">
-      <img src="assets/img/logo-256.webp" alt="UEMCraft Logo" width="40" height="40">
+      <img src="/assets/img/logo-256.webp" alt="UEMCraft Logo" width="40" height="40">
       <span class="logo-text">
         <span class="logo-cn">应大MC同好会</span>
         <span class="logo-en">UEMCraft</span>
@@ -57,7 +57,7 @@
     <div class="header-actions">
       <div class="settings-wrapper">
         <button class="settings-toggle" aria-label="设置" title="设置">
-          <img src="assets/svg/setting.svg" alt="" width="20" height="20" class="settings-icon">
+          <img src="/assets/svg/setting.svg" alt="" width="20" height="20" class="settings-icon">
         </button>
         <div class="settings-panel" aria-hidden="true">
           <div class="settings-group">
@@ -76,22 +76,22 @@
             <div class="texture-grid">
               <button class="texture-option" data-texture="none" title="无纹理">无</button>
               <button class="texture-option" data-texture="bricks" title="砖块">
-                <img src="assets/img/background_textures/bricks.png" alt="砖块">
+                <img src="/assets/img/background_textures/bricks.png" alt="砖块">
               </button>
               <button class="texture-option" data-texture="cobblestone" title="圆石">
-                <img src="assets/img/background_textures/cobblestone.png" alt="圆石">
+                <img src="/assets/img/background_textures/cobblestone.png" alt="圆石">
               </button>
               <button class="texture-option" data-texture="dirt" title="泥土">
-                <img src="assets/img/background_textures/dirt.png" alt="泥土">
+                <img src="/assets/img/background_textures/dirt.png" alt="泥土">
               </button>
               <button class="texture-option" data-texture="end_stone" title="末地石">
-                <img src="assets/img/background_textures/end_stone.png" alt="末地石">
+                <img src="/assets/img/background_textures/end_stone.png" alt="末地石">
               </button>
               <button class="texture-option" data-texture="stone" title="石头">
-                <img src="assets/img/background_textures/stone.png" alt="石头">
+                <img src="/assets/img/background_textures/stone.png" alt="石头">
               </button>
               <button class="texture-option" data-texture="stone_bricks" title="石砖">
-                <img src="assets/img/background_textures/stone_bricks.png" alt="石砖">
+                <img src="/assets/img/background_textures/stone_bricks.png" alt="石砖">
               </button>
             </div>
           </div>
@@ -140,7 +140,7 @@
 
     <div class="about-body reveal">
       <div class="about-visual">
-        <img src="assets/img/logo-512.webp" alt="UEMCraft Logo">
+        <img src="/assets/img/logo-512.webp" alt="UEMCraft Logo">
       </div>
       <div class="about-content">
         <p class="about-lead">
@@ -298,25 +298,25 @@
     </div>
     <div class="grid-4 reveal">
       <div class="member-card">
-        <img class="member-avatar" src="assets/img/avatars/Gengar_Sama.png" alt="Gengar_Sama">
+        <img class="member-avatar" src="/assets/img/avatars/Gengar_Sama.png" alt="Gengar_Sama">
         <div class="member-name">Gengar_Sama</div>
         <div class="member-role">会长</div>
         <div class="member-bio">全面负责社群，协调各部门工作</div>
       </div>
       <div class="member-card">
-        <img class="member-avatar" src="assets/img/avatars/muguang.png" alt="目光">
+        <img class="member-avatar" src="/assets/img/avatars/muguang.png" alt="目光">
         <div class="member-name">目光</div>
         <div class="member-role">副会长</div>
         <div class="member-bio">协助会长，主要负责策划和组织活动</div>
       </div>
       <div class="member-card">
-        <img class="member-avatar" src="assets/img/avatars/dongxia.png" alt="冬夏">
+        <img class="member-avatar" src="/assets/img/avatars/dongxia.png" alt="冬夏">
         <div class="member-name">冬夏</div>
         <div class="member-role">副会长</div>
         <div class="member-bio">协助会长，主要负责外联和部门沟通</div>
       </div>
       <div class="member-card">
-        <img class="member-avatar" src="assets/img/avatars/unknown.png" alt="???">
+        <img class="member-avatar" src="/assets/img/avatars/unknown.png" alt="???">
         <div class="member-name">你</div>
         <div class="member-role">虚位以待</div>
         <div class="member-bio">无论你是哪种玩家，这里都有你的舞台</div>
@@ -336,16 +336,16 @@
       <p style="font-size:var(--fs-lg);margin-bottom:var(--space-lg);">《应急管理大学 Minecraft 同好会章程》</p>
       <p class="text-muted">应急管理大学 Minecraft 同好会 编制 · 发布日期：2026-08-17</p>
       <div style="margin-top:var(--space-lg);display:flex;gap:var(--space-md);justify-content:center;flex-wrap:wrap;">
-        <a href="assets/docs/章程.pdf" class="btn btn-primary" download>
+        <a href="/assets/docs/章程.pdf" class="btn btn-primary" download>
           下载章程 (PDF)
         </a>
-        <a href="assets/docs/章程.pdf" class="btn btn-outline" target="_blank">
+        <a href="/assets/docs/章程.pdf" class="btn btn-outline" target="_blank">
           在线预览
         </a>
       </div>
       <!-- Embedded PDF preview -->
       <div style="margin-top:var(--space-xl);border:2px solid var(--c-border);border-radius:var(--radius);overflow:hidden;max-width:800px;margin-inline:auto;">
-        <iframe src="assets/docs/章程.pdf" width="100%" height="700" style="border:0;display:block;" title="社群章程预览" loading="lazy"></iframe>
+        <iframe src="/assets/docs/章程.pdf" width="100%" height="700" style="border:0;display:block;" title="社群章程预览" loading="lazy"></iframe>
       </div>
     </div>
   </div>
@@ -358,7 +358,7 @@
   <div class="footer-grid">
     <div class="footer-col">
       <div class="footer-logo">
-        <img src="assets/img/logo-256.webp" alt="UEMCraft" width="32" height="32">
+        <img src="/assets/img/logo-256.webp" alt="UEMCraft" width="32" height="32">
         <span>应急管理大学 Minecraft 同好会</span>
       </div>
       <p>以 Minecraft 为平台，建设校园数字复原与创作社区。<br>MUA 成员组织。</p>
@@ -402,7 +402,7 @@
     <span>&copy; <span id="year"></span> 应急管理大学 Minecraft 同好会 · UEMCraft</span>
     <span>Minecraft 是 Mojang AB 的商标 · 本站为社群非商业用途</span>
     <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" style="color:var(--c-text-muted);text-decoration:none;">赣ICP备2026018930号</a>
-    <a href="https://beian.mps.gov.cn/" target="_blank" rel="noopener" style="color:var(--c-text-muted);text-decoration:none;display:inline-flex;align-items:center;gap:4px;"><img src="assets/img/备案图标.png" alt="公安备案" style="height:14px;width:auto;">赣公网安备 36072102000273号</a>
+    <a href="https://beian.mps.gov.cn/" target="_blank" rel="noopener" style="color:var(--c-text-muted);text-decoration:none;display:inline-flex;align-items:center;gap:4px;"><img src="/assets/img/备案图标.png" alt="公安备案" style="height:14px;width:auto;">赣公网安备 36072102000273号</a>
   </div>
 </footer>
 

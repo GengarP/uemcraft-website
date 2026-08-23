@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Compute relative path prefix based on current page depth
   const _depth = location.pathname.replace(/\\/g, '/').split('/').length - 2;
   const _prefix = _depth > 0 ? '../'.repeat(_depth) : '';
-  const TEXTURE_BASE = _prefix + 'assets/img/background_textures/';
+  const TEXTURE_BASE = '/assets/img/background_textures/';
 
   function getTheme() {
     const stored = localStorage.getItem(THEME_KEY);
