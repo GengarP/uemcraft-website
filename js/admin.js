@@ -604,12 +604,13 @@
     }
 
     function renderServerCard(item) {
+      var addrDisplay = escapeHtml(item.address) + (item.port ? ':' + item.port : '');
       return '<article class="admin-card" data-id="' + item.id + '">'
         + '<div class="admin-card-info">'
         + '  <span class="admin-card-name">' + escapeHtml(item.name) + '</span>'
         + '  <div class="admin-card-title-row">'
         + (item.is_featured ? '<span class="admin-badge is-approved">置顶</span>' : '')
-        + '    <span class="admin-card-date">' + escapeHtml(item.address) + '</span>'
+        + '    <span class="admin-card-date">' + addrDisplay + '</span>'
         + '  </div>'
         + '</div>'
         + '<div class="admin-card-header">'
@@ -626,7 +627,7 @@
         + '  </div>'
         + '</div>'
         + '<div class="admin-card-body">'
-        + '  <p class="text-muted"><code>' + escapeHtml(item.address) + '</code></p>'
+        + '  <p class="text-muted"><code>' + addrDisplay + '</code></p>'
         + (item.note ? '  <small class="text-muted">' + escapeHtml(item.note) + '</small>' : '')
         + '  <small class="text-muted">排序: ' + item.sort_order + '</small>'
         + '</div>'

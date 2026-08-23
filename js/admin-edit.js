@@ -431,15 +431,18 @@
     function fillServerForm(item) {
       setInput('inputName', item.name);
       setInput('inputAddress', item.address);
+      setInput('inputPort', item.port ? String(item.port) : '');
       setInput('inputNote', item.note);
       setInput('inputFeatured', String(item.is_featured ? 1 : 0));
       setInput('inputSortOrder', String(item.sort_order || 0));
     }
 
     function getServerFormData() {
+      var portVal = getVal('inputPort');
       return {
         name: getVal('inputName'),
         address: getVal('inputAddress'),
+        port: portVal ? parseInt(portVal) || 0 : 0,
         note: getVal('inputNote'),
         is_featured: parseInt(getVal('inputFeatured')) || 0,
         sort_order: parseInt(getVal('inputSortOrder')) || 0

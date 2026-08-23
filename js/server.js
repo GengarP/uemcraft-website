@@ -1,6 +1,6 @@
 /* ============================================================
    server.js — 服务器状态（动态多服务器）
-   API: https://api.uemcraft.cn/api/java/{address}
+   API: https://api.uemcraft.cn/mc-query/api/java/{address}
    数据源: /api/servers.php?action=list
    ============================================================ */
 
@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!serverSection && !heroStatus) return;
 
-  const EXTERNAL_API = 'https://api.uemcraft.cn/api/java/';
+  const EXTERNAL_API = 'https://api.uemcraft.cn/mc-query/api/java/';
   let servers = [];
   let statusCache = {}; // address -> status data
 
@@ -31,9 +31,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ---- 查询单台服务器状态 ----
-  async function fetchStatus(address) {
+  async function fetchStatus(address, port) {
     try {
-      const res = await fetch(EXTERNAL_API + encodeURIComponent(address));
+      var url = EXTERNAL_API + encodeURIComponent(address);
+      if (port) url += '?port=' + port;
+      const res = await fetch(url);
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const json = await res.json();
       if (json.status === 'success') {
@@ -48,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ---- 查询所有服务器状态 ----
   async function refreshAll() {
     const promises = servers.map(async (srv) => {
-      const status = await fetchStatus(srv.address);
+      const status = await fetchStatus(srv.address, srv.port);
       statusCache[srv.address] = status;
       return { server: srv, status };
     });
@@ -75,6 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const maxPlayers = online ? ((status.players && status.players.max) || 0) : 0;
       const motd = status && status.motd ? status.motd : '';
       const playerList = online && status.players && status.players.list ? status.players.list : [];
+      const addrDisplay = escapeHtml(server.address) + (server.port ? ':' + server.port : '');
 
       const panel = document.createElement('div');
       panel.className = 'server-panel';
@@ -85,8 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
         '    <span class="server-title">' + escapeHtml(server.name) + (server.note ? ' <small class="text-muted">(' + escapeHtml(server.note) + ')</small>' : '') + '</span>' +
         '  </div>' +
         '  <div class="server-addr-row">' +
-        '    <code class="server-address">' + escapeHtml(server.address) + '</code>' +
-        '    <button class="btn btn-ghost btn-sm btn-copy" data-addr="' + escapeHtml(server.address) + '" title="复制地址">复制</button>' +
+        '    <code class="server-address">' + addrDisplay + '</code>' +
+        '    <button class="btn btn-ghost btn-sm btn-copy" data-addr="' + escapeHtml(server.address) + (server.port ? ' -p ' + server.port : '') + '" title="复制地址">复制</button>' +
         '    <div class="server-stats">' +
         '      <div class="server-stat player-stat-wrap">' +
         '        <span class="sval">' + (online ? players + ' / ' + maxPlayers : '离线') + '</span>' +
@@ -101,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
         '      </div>' +
         '    </div>' +
         '  </div>' +
-        (motd ? '  <div class="server-motd">' + motd.replace(/\n/g, '<br>') + '</div>' : '') +
+        (motd ? '  <div class="server-motd">' + parseMotd(motd) + '</div>' : '') +
         '</div>';
 
       container.appendChild(panel);
@@ -185,6 +188,60 @@ document.addEventListener('DOMContentLoaded', () => {
     var div = document.createElement('div');
     div.textContent = text || '';
     return div.innerHTML;
+  }
+
+  // ---- MOTD § 颜色代码解析 ----
+  var MC_COLOR_MAP = {
+    '0': 'mc-color-0', '1': 'mc-color-1', '2': 'mc-color-2', '3': 'mc-color-3',
+    '4': 'mc-color-4', '5': 'mc-color-5', '6': 'mc-color-6', '7': 'mc-color-7',
+    '8': 'mc-color-8', '9': 'mc-color-9', 'a': 'mc-color-a', 'b': 'mc-color-b',
+    'c': 'mc-color-c', 'd': 'mc-color-d', 'e': 'mc-color-e', 'f': 'mc-color-f'
+  };
+
+  function parseMotd(raw) {
+    if (!raw) return '';
+    // 先转义 HTML，再解析 § 代码
+    var text = escapeHtml(raw);
+    // 将换行转为 <br>
+    text = text.replace(/\n/g, '<br>');
+    // 解析 § 格式代码：§ + 单字符
+    var result = '';
+    var openSpans = 0;
+    var i = 0;
+    while (i < text.length) {
+      if (text[i] === '§' || (text[i] === '&' && i + 1 < text.length && /[0-9a-fk-or]/i.test(text[i + 1]))) {
+        // § 或 & 颜色代码
+        var code = text[i + 1].toLowerCase();
+        if (MC_COLOR_MAP[code]) {
+          // 关闭之前的颜色 span
+          if (openSpans > 0) { result += '</span>'; openSpans--; }
+          result += '<span class="' + MC_COLOR_MAP[code] + '">';
+          openSpans++;
+        } else if (code === 'l') {
+          result += '<span class="mc-bold">';
+          openSpans++;
+        } else if (code === 'o') {
+          result += '<span class="mc-italic">';
+          openSpans++;
+        } else if (code === 'n') {
+          result += '<span class="mc-underline">';
+          openSpans++;
+        } else if (code === 'm') {
+          result += '<span class="mc-strikethrough">';
+          openSpans++;
+        } else if (code === 'r') {
+          // 重置：关闭所有 span
+          while (openSpans > 0) { result += '</span>'; openSpans--; }
+        }
+        i += 2;
+      } else {
+        result += text[i];
+        i++;
+      }
+    }
+    // 关闭未闭合的 span
+    while (openSpans > 0) { result += '</span>'; openSpans--; }
+    return result;
   }
 
   function copyText(text) {

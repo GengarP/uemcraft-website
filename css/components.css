@@ -1471,7 +1471,7 @@ a.contact-card:hover .cc-title {
   }
   .server-stat .sval { font-size:.9rem; }
   .server-motd {
-    text-align:center;
+    text-align:left;
     font-size:var(--fs-xs);
     padding:var(--space-xs) var(--space-sm);
   }

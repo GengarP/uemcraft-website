@@ -23,11 +23,12 @@ try {
 
     // ---- 公开：全部服务器 ----
     if ($action === 'list') {
-        $stmt = $db->query("SELECT id, name, address, note, is_featured, sort_order FROM servers ORDER BY sort_order ASC, id ASC");
+        $stmt = $db->query("SELECT id, name, address, port, note, is_featured, sort_order FROM servers ORDER BY sort_order ASC, id ASC");
         $rows = $stmt->fetchAll();
 
         foreach ($rows as &$row) {
             $row['id'] = (int) $row['id'];
+            $row['port'] = (int) ($row['port'] ?? 0);
             $row['is_featured'] = (int) $row['is_featured'];
             $row['sort_order'] = (int) $row['sort_order'];
         }
@@ -38,17 +39,18 @@ try {
 
     // ---- 公开：置顶服务器 ----
     if ($action === 'featured') {
-        $stmt = $db->query("SELECT id, name, address, note, is_featured, sort_order FROM servers WHERE is_featured = 1 ORDER BY sort_order ASC, id ASC LIMIT 1");
+        $stmt = $db->query("SELECT id, name, address, port, note, is_featured, sort_order FROM servers WHERE is_featured = 1 ORDER BY sort_order ASC, id ASC LIMIT 1");
         $row = $stmt->fetch();
 
         if (!$row) {
             // 回退到第一条
-            $stmt = $db->query("SELECT id, name, address, note, is_featured, sort_order FROM servers ORDER BY sort_order ASC, id ASC LIMIT 1");
+            $stmt = $db->query("SELECT id, name, address, port, note, is_featured, sort_order FROM servers ORDER BY sort_order ASC, id ASC LIMIT 1");
             $row = $stmt->fetch();
         }
 
         if ($row) {
             $row['id'] = (int) $row['id'];
+            $row['port'] = (int) ($row['port'] ?? 0);
             $row['is_featured'] = (int) $row['is_featured'];
             $row['sort_order'] = (int) $row['sort_order'];
         }
@@ -74,6 +76,7 @@ try {
         }
 
         $row['id'] = (int) $row['id'];
+        $row['port'] = (int) ($row['port'] ?? 0);
         $row['is_featured'] = (int) $row['is_featured'];
         $row['sort_order'] = (int) $row['sort_order'];
         $row['created_at'] = (int) $row['created_at'];
@@ -100,6 +103,7 @@ try {
 
         foreach ($result['data'] as &$row) {
             $row['id'] = (int) $row['id'];
+            $row['port'] = (int) ($row['port'] ?? 0);
             $row['is_featured'] = (int) $row['is_featured'];
             $row['sort_order'] = (int) $row['sort_order'];
             $row['created_at'] = (int) $row['created_at'];
@@ -121,6 +125,7 @@ try {
 
         $name       = trim($input['name'] ?? '');
         $address    = trim($input['address'] ?? '');
+        $port       = max(0, intval($input['port'] ?? 0));
         $note       = trim($input['note'] ?? '');
         $is_featured = intval($input['is_featured'] ?? 0) ? 1 : 0;
         $sort_order  = intval($input['sort_order'] ?? 0);
@@ -139,8 +144,8 @@ try {
 
         $ts = now();
 
-        $stmt = $db->prepare("INSERT INTO servers (name, address, note, is_featured, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$name, $address, $note, $is_featured, $sort_order, $ts, $ts]);
+        $stmt = $db->prepare("INSERT INTO servers (name, address, port, note, is_featured, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$name, $address, $port, $note, $is_featured, $sort_order, $ts, $ts]);
 
         json_response([
             'success' => true,
@@ -148,6 +153,7 @@ try {
                 'id'    => (int) $db->lastInsertId(),
                 'name'  => $name,
                 'address' => $address,
+                'port'  => $port,
             ],
         ]);
     }
@@ -172,6 +178,7 @@ try {
         // 部分更新
         $name       = array_key_exists('name', $input)       ? trim($input['name'])       : $existing['name'];
         $address    = array_key_exists('address', $input)    ? trim($input['address'])    : $existing['address'];
+        $port       = array_key_exists('port', $input)       ? max(0, intval($input['port'])) : (int) ($existing['port'] ?? 0);
         $note       = array_key_exists('note', $input)       ? trim($input['note'])       : $existing['note'];
         $is_featured = array_key_exists('is_featured', $input) ? (intval($input['is_featured']) ? 1 : 0) : (int) $existing['is_featured'];
         $sort_order  = array_key_exists('sort_order', $input)  ? intval($input['sort_order'])  : (int) $existing['sort_order'];
@@ -188,8 +195,8 @@ try {
             $db->exec("UPDATE servers SET is_featured = 0 WHERE is_featured = 1");
         }
 
-        $stmt = $db->prepare("UPDATE servers SET name=?, address=?, note=?, is_featured=?, sort_order=?, updated_at=? WHERE id=?");
-        $stmt->execute([$name, $address, $note, $is_featured, $sort_order, now(), $id]);
+        $stmt = $db->prepare("UPDATE servers SET name=?, address=?, port=?, note=?, is_featured=?, sort_order=?, updated_at=? WHERE id=?");
+        $stmt->execute([$name, $address, $port, $note, $is_featured, $sort_order, now(), $id]);
 
         json_response([
             'success' => true,
@@ -197,6 +204,7 @@ try {
                 'id'    => $id,
                 'name'  => $name,
                 'address' => $address,
+                'port'  => $port,
             ],
         ]);
     }

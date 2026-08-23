@@ -158,6 +158,14 @@
 
       <div class="form-row">
         <div class="form-group form-group--full">
+          <label for="inputPort">端口号</label>
+          <input type="number" id="inputPort" class="form-input" placeholder="默认 25565" min="0" max="65535">
+          <small class="form-help">留空使用默认端口 25565，非标准端口需手动填写</small>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group form-group--full">
           <label for="inputNote">备注</label>
           <input type="text" id="inputNote" class="form-input" placeholder="如：1.21 主生存服" maxlength="255">
         </div>

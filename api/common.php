@@ -327,6 +327,7 @@ function migrateSiteTables($db, $driver) {
             id INT UNSIGNED NOT NULL AUTO_INCREMENT,
             name VARCHAR(100) NOT NULL,
             address VARCHAR(255) NOT NULL,
+            port INT NOT NULL DEFAULT 0,
             note VARCHAR(255) NOT NULL DEFAULT '',
             is_featured TINYINT NOT NULL DEFAULT 0,
             sort_order INT NOT NULL DEFAULT 0,
@@ -335,28 +336,40 @@ function migrateSiteTables($db, $driver) {
             PRIMARY KEY (id),
             KEY idx_servers_sort (sort_order)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-        return;
-    }
-
-    // SQLite — 使用 try/catch 兼容 "table already exists" 错误
-    try {
-        $db->exec("CREATE TABLE servers (
-            id          INTEGER PRIMARY KEY AUTOINCREMENT,
-            name        TEXT NOT NULL,
-            address     TEXT NOT NULL,
-            note        TEXT NOT NULL DEFAULT '',
-            is_featured INTEGER NOT NULL DEFAULT 0,
-            sort_order  INTEGER NOT NULL DEFAULT 0,
-            created_at  INTEGER NOT NULL,
-            updated_at  INTEGER NOT NULL
-        )");
-        $db->exec("CREATE INDEX IF NOT EXISTS idx_servers_sort ON servers(sort_order)");
-    } catch (PDOException $e) {
-        // 表已存在则忽略
-        if (strpos($e->getMessage(), 'already exists') === false) {
-            throw $e;
+    } else {
+        // SQLite — 使用 try/catch 兼容 "table already exists" 错误
+        try {
+            $db->exec("CREATE TABLE servers (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                name        TEXT NOT NULL,
+                address     TEXT NOT NULL,
+                port        INTEGER NOT NULL DEFAULT 0,
+                note        TEXT NOT NULL DEFAULT '',
+                is_featured INTEGER NOT NULL DEFAULT 0,
+                sort_order  INTEGER NOT NULL DEFAULT 0,
+                created_at  INTEGER NOT NULL,
+                updated_at  INTEGER NOT NULL
+            )");
+            $db->exec("CREATE INDEX IF NOT EXISTS idx_servers_sort ON servers(sort_order)");
+        } catch (PDOException $e) {
+            // 表已存在则忽略
+            if (strpos($e->getMessage(), 'already exists') === false) {
+                throw $e;
+            }
         }
     }
+
+    // 迁移：servers 表新增 port 列（已有表兼容）
+    try {
+        $test = $db->query("SELECT port FROM servers LIMIT 0");
+    } catch (PDOException $e) {
+        if ($driver === 'mysql') {
+            $db->exec("ALTER TABLE servers ADD COLUMN port INT NOT NULL DEFAULT 0");
+        } else {
+            $db->exec("ALTER TABLE servers ADD COLUMN port INTEGER NOT NULL DEFAULT 0");
+        }
+    }
+    return;
 }
 
 // ---- wall.db 建表（保持兼容） ----
