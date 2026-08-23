@@ -193,6 +193,13 @@
 
       return '<article class="admin-card' + (item.status === 'draft' ? ' is-hidden' : '') + '" data-id="' + item.id + '">'
         + (thumb ? '<div class="admin-card-thumb"><img src="' + escapeHtml(thumb) + '" alt="" loading="lazy"></div>' : '')
+        + '<div class="admin-card-info">'
+        + '  <span class="admin-card-name">' + escapeHtml(item.title) + '</span>'
+        + '  <div class="admin-card-title-row">'
+        + '    <span class="admin-badge ' + statusClass + '">' + statusLabel + '</span>'
+        + '    <span class="admin-card-date">' + escapeHtml(item.date) + '</span>'
+        + '  </div>'
+        + '</div>'
         + '<div class="admin-card-header">'
         + '  <div class="admin-card-meta">'
         + '    <span class="admin-card-name">' + escapeHtml(item.title) + '</span>'
@@ -211,6 +218,13 @@
         + '<div class="admin-card-body">'
         + '  <p class="text-muted">' + escapeHtml(item.excerpt || '无摘要') + '</p>'
         + '  <small class="text-muted">slug: ' + escapeHtml(item.slug) + ' · 作者: ' + escapeHtml(item.author || '未知') + '</small>'
+        + '</div>'
+        + '<div class="admin-card-actions admin-card-actions--grid">'
+        + '  <button class="btn btn-ghost btn-sm" data-action="toggle" data-id="' + item.id + '" data-status="' + item.status + '">'
+        + (item.status === 'published' ? '草稿' : '发布')
+        + '  </button>'
+        + '  <a href="news-edit.html?id=' + item.id + '" class="btn btn-ghost btn-sm">编辑</a>'
+        + '  <button class="btn btn-ghost btn-sm admin-btn-danger" data-action="delete" data-id="' + item.id + '">删除</button>'
         + '</div>'
         + '</article>';
     }
@@ -333,6 +347,13 @@
 
       return '<article class="admin-card" data-id="' + item.id + '">'
         + (thumb ? '<div class="admin-card-thumb"><img src="' + escapeHtml(thumb) + '" alt="" loading="lazy"></div>' : '')
+        + '<div class="admin-card-info">'
+        + '  <span class="admin-card-name">' + escapeHtml(item.title) + '</span>'
+        + '  <div class="admin-card-title-row">'
+        + '    <span class="admin-badge ' + statusClass + '">' + statusLabel + '</span>'
+        + '    <span class="admin-card-date">' + escapeHtml(item.date_label || item.date_start || '') + '</span>'
+        + '  </div>'
+        + '</div>'
         + '<div class="admin-card-header">'
         + '  <div class="admin-card-meta">'
         + '    <span class="admin-card-name">' + escapeHtml(item.title) + '</span>'
@@ -347,6 +368,10 @@
         + '<div class="admin-card-body">'
         + '  <p class="text-muted">' + escapeHtml(item.excerpt || '无摘要') + '</p>'
         + '  <small class="text-muted">slug: ' + escapeHtml(item.slug) + ' · 排序: ' + item.sort_order + '</small>'
+        + '</div>'
+        + '<div class="admin-card-actions admin-card-actions--grid">'
+        + '  <a href="events-edit.html?id=' + item.id + '" class="btn btn-ghost btn-sm">编辑</a>'
+        + '  <button class="btn btn-ghost btn-sm admin-btn-danger" data-action="delete" data-id="' + item.id + '">删除</button>'
         + '</div>'
         + '</article>';
     }
@@ -456,6 +481,13 @@
 
       return '<article class="admin-card" data-id="' + item.id + '">'
         + (thumb ? '<div class="admin-card-thumb"><img src="' + escapeHtml(thumb) + '" alt="" loading="lazy"></div>' : '')
+        + '<div class="admin-card-info">'
+        + '  <span class="admin-card-name">' + escapeHtml(item.title) + '</span>'
+        + '  <div class="admin-card-title-row">'
+        + '    <span class="admin-badge ' + statusClass + '">' + statusLabel + '</span>'
+        + (item.category ? '<span class="admin-badge">' + escapeHtml(item.category) + '</span>' : '')
+        + '  </div>'
+        + '</div>'
         + '<div class="admin-card-header">'
         + '  <div class="admin-card-meta">'
         + '    <span class="admin-card-name">' + escapeHtml(item.title) + '</span>'
@@ -470,6 +502,10 @@
         + '<div class="admin-card-body">'
         + '  <p class="text-muted">' + escapeHtml(item.description || '无描述') + '</p>'
         + '  <small class="text-muted">slug: ' + escapeHtml(item.slug) + ' · 排序: ' + item.sort_order + '</small>'
+        + '</div>'
+        + '<div class="admin-card-actions admin-card-actions--grid">'
+        + '  <a href="gallery-edit.html?id=' + item.id + '" class="btn btn-ghost btn-sm">编辑</a>'
+        + '  <button class="btn btn-ghost btn-sm admin-btn-danger" data-action="delete" data-id="' + item.id + '">删除</button>'
         + '</div>'
         + '</article>';
     }
@@ -569,6 +605,13 @@
 
     function renderServerCard(item) {
       return '<article class="admin-card" data-id="' + item.id + '">'
+        + '<div class="admin-card-info">'
+        + '  <span class="admin-card-name">' + escapeHtml(item.name) + '</span>'
+        + '  <div class="admin-card-title-row">'
+        + (item.is_featured ? '<span class="admin-badge is-approved">置顶</span>' : '')
+        + '    <span class="admin-card-date">' + escapeHtml(item.address) + '</span>'
+        + '  </div>'
+        + '</div>'
         + '<div class="admin-card-header">'
         + '  <div class="admin-card-meta">'
         + '    <span class="admin-card-name">' + escapeHtml(item.name) + '</span>'
@@ -586,6 +629,13 @@
         + '  <p class="text-muted"><code>' + escapeHtml(item.address) + '</code></p>'
         + (item.note ? '  <small class="text-muted">' + escapeHtml(item.note) + '</small>' : '')
         + '  <small class="text-muted">排序: ' + item.sort_order + '</small>'
+        + '</div>'
+        + '<div class="admin-card-actions admin-card-actions--grid">'
+        + '  <button class="btn btn-ghost btn-sm" data-action="toggle-featured" data-id="' + item.id + '" data-featured="' + item.is_featured + '">'
+        + (item.is_featured ? '取消置顶' : '置顶')
+        + '  </button>'
+        + '  <a href="servers-edit.html?id=' + item.id + '" class="btn btn-ghost btn-sm">编辑</a>'
+        + '  <button class="btn btn-ghost btn-sm admin-btn-danger" data-action="delete" data-id="' + item.id + '">删除</button>'
         + '</div>'
         + '</article>';
     }

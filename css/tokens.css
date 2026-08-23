@@ -145,6 +145,9 @@
   /* 过渡 */
   --ease:     cubic-bezier(.4,0,.2,1);
   --duration: .25s;
+
+  /* 背景纹理 */
+  --texture-opacity: .06;
 }
 
 /* ---- 深色模式 ---- */

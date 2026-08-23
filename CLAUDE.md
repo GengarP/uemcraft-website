@@ -36,7 +36,7 @@ uemcraft.cn/
 │   ├── marked.umd.js（Markdown 解析）
 │   ├── gallery.js（作品展示前端：API 加载 + Lightbox + 下载）
 │   └── hero-gallery.js / server.js / events.js / gallery.js / join.js
-├── assets/ → img/、svg/、docs/章程.pdf、fonts/（iconfont / Fusion Pixel）
+├── assets/ → img/（含 background_textures/ 纹理贴图）、svg/（含 setting.svg）、docs/章程.pdf、fonts/（iconfont / Fusion Pixel）
 ├── package.json、favicon.ico、robots.txt、sitemap.xml
 ```
 
@@ -126,7 +126,7 @@ uemcraft.cn/
 - **主题色**: `#213d87`（深蓝），变体 `#217087` / `#214d87` / `#212b87` / `#392187`
 - **亮色**: `--c-bg: #F0F2F7`, `--c-bg-section-alt: #EBEDF3`, `--c-surface: #FFFFFF`, `--c-text: #1A1D28`
 - **深色**: `--c-bg: #0F1320`, `--c-bg-section-alt: #121624`, `--c-surface: #1C2338`, `--c-text: #E2E5ED`
-- **主题记忆**: `main.js` 中 localStorage + 系统 `prefers-color-scheme`，页头按钮切换
+- **主题记忆**: `main.js` 中 localStorage + 系统 `prefers-color-scheme`，通过页头设置菜单切换
 - **风格**: "像素现代" — 低圆角 4px、硬阴影、像素网格纹理
 
 ### 字体
@@ -138,8 +138,20 @@ uemcraft.cn/
 ### 图标
 
 - **社交图标**: QQ / Bilibili / 抖音，使用 iconfont 字体图标（`assets/fonts/iconfont.ttf`），`font-family: "iconfont"`，类名 `.icon-QQ` / `.icon-douyin` / `.icon-bilibili-fill`
-- **主题切换图标**: 太阳/月亮，使用 iconfont 字体图标（`assets/fonts/iconfont-theme.*`），`font-family: "iconfont-theme"`，类名 `.icon-sun` / `.icon-moon`。太阳金色 `var(--c-gold)`，月亮蓝色 `var(--c-primary)`
+- **设置菜单图标**: 齿轮图标使用 `assets/svg/setting.svg`（SVG），深色模式下 `filter: invert(1)` 反色
+- **主题切换图标**: 太阳/月亮，使用 iconfont 字体图标（`assets/fonts/iconfont-theme.*`），`font-family: "iconfont-theme"`，类名 `.icon-sun` / `.icon-moon`。太阳金色 `var(--c-gold)`，月亮蓝色 `var(--c-primary)`。位于设置面板内
 - **页面装饰图标**: 使用 CSS 彩色方块 + 汉字替代 emoji（`.icon-block` / `.icon-dot` / `.hero-icon` 等）
+
+### 设置菜单
+
+- **入口**: 页头齿轮按钮（`.settings-toggle`），点击展开 `.settings-panel` 下拉面板
+- **外观切换**: 亮色/深色两个按钮（`.theme-option`），选中态高亮（`is-active`）
+- **背景纹理**: 7 个选项（无 + bricks / cobblestone / dirt / end_stone / stone / stone_bricks），网格缩略图预览
+- **纹理渲染**: `body::after` 伪元素，`image-rendering: pixelated` + `background-size: 64px`（16×4 最近邻居放大）+ `repeat` 平铺，透明度 `--texture-opacity: .06`
+- **存储**: 主题 `localStorage('uemcraft-theme')`，纹理 `localStorage('uemcraft-texture')`
+- **防闪屏**: `<head>` 内联脚本同步设置 `data-theme` 和 `data-texture` 属性 + 注入 `#texture-style` 样式
+- **交互**: 点击面板外 / ESC 关闭；与移动端导航互斥（开一个关另一个）
+- **路径**: 子目录页面使用 `../assets/...` 前缀；`main.js` 动态计算路径深度
 
 ---
 

@@ -15,6 +15,14 @@
       if(!t) t = window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
       document.documentElement.setAttribute('data-theme', t);
       document.documentElement.style.colorScheme = t;
+      var tex = localStorage.getItem('uemcraft-texture');
+      if(tex && tex !== 'none'){
+        document.documentElement.setAttribute('data-texture', tex);
+        var s = document.createElement('style');
+        s.id = 'texture-style';
+        s.textContent = 'body::after{background-image:url(../assets/img/background_textures/'+tex+'.png);}';
+        document.head.appendChild(s);
+      }
     })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -47,10 +55,48 @@
       <a href="../wall/" class="is-active">留言墙</a>
     </nav>
     <div class="header-actions">
-      <button class="theme-toggle" aria-label="切换深色/亮色模式" title="切换主题">
-        <span class="iconfont-theme icon-sun" aria-hidden="true"></span>
-        <span class="iconfont-theme icon-moon" aria-hidden="true"></span>
-      </button>
+      <div class="settings-wrapper">
+        <button class="settings-toggle" aria-label="设置" title="设置">
+          <img src="../assets/svg/setting.svg" alt="" width="20" height="20" class="settings-icon">
+        </button>
+        <div class="settings-panel" aria-hidden="true">
+          <div class="settings-group">
+            <span class="settings-label">外观</span>
+            <div class="theme-options">
+              <button class="theme-option" data-theme="light" title="亮色模式">
+                <span class="iconfont-theme icon-sun" aria-hidden="true"></span>
+              </button>
+              <button class="theme-option" data-theme="dark" title="深色模式">
+                <span class="iconfont-theme icon-moon" aria-hidden="true"></span>
+              </button>
+            </div>
+          </div>
+          <div class="settings-group">
+            <span class="settings-label">背景纹理</span>
+            <div class="texture-grid">
+              <button class="texture-option" data-texture="none" title="无纹理">无</button>
+              <button class="texture-option" data-texture="bricks" title="砖块">
+                <img src="../assets/img/background_textures/bricks.png" alt="砖块">
+              </button>
+              <button class="texture-option" data-texture="cobblestone" title="圆石">
+                <img src="../assets/img/background_textures/cobblestone.png" alt="圆石">
+              </button>
+              <button class="texture-option" data-texture="dirt" title="泥土">
+                <img src="../assets/img/background_textures/dirt.png" alt="泥土">
+              </button>
+              <button class="texture-option" data-texture="end_stone" title="末地石">
+                <img src="../assets/img/background_textures/end_stone.png" alt="末地石">
+              </button>
+              <button class="texture-option" data-texture="stone" title="石头">
+                <img src="../assets/img/background_textures/stone.png" alt="石头">
+              </button>
+              <button class="texture-option" data-texture="stone_bricks" title="石砖">
+                <img src="../assets/img/background_textures/stone_bricks.png" alt="石砖">
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
       <a href="../join.html" class="btn btn-primary btn-sm">加入我们</a>
       <button class="hamburger" aria-label="菜单" aria-expanded="false">
         <span></span><span></span><span></span>

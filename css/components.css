@@ -1302,17 +1302,90 @@ a.contact-card:hover .cc-title {
 /* ---- Scroll-to-top ---- */
 /* (styled in layout.css) */
 
-/* ---- Dark mode toggle icon swap ---- */
-.theme-toggle .iconfont-theme {
-  font-size:20px;
-  color:var(--c-text);
-  transition:color .25s ease,opacity .25s ease;
+/* ---- Settings panel inner ---- */
+.settings-group {
+  padding:var(--space-sm) var(--space-md);
 }
-.theme-toggle .icon-sun  { color:var(--c-gold); }
-.theme-toggle .icon-moon { color:var(--c-primary); }
-[data-theme="dark"] .theme-toggle .icon-sun  { display:none; }
-[data-theme="dark"] .theme-toggle .icon-moon { display:block; }
-.theme-toggle .icon-moon { display:none; }
+.settings-group + .settings-group {
+  border-top:1px solid var(--c-border);
+}
+.settings-label {
+  display:block;
+  font-size:.75rem;
+  font-weight:700;
+  color:var(--c-text-muted);
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  margin-bottom:var(--space-xs);
+}
+
+/* Theme option buttons */
+.theme-options {
+  display:flex;
+  gap:var(--space-xs);
+}
+.theme-option {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:36px; height:36px;
+  border:2px solid var(--c-border);
+  border-radius:var(--radius);
+  background:var(--c-surface-2);
+  cursor:pointer;
+  font-size:1.1rem;
+  transition:background var(--duration),border var(--duration),box-shadow var(--duration);
+}
+.theme-option:hover { border-color:var(--c-primary); background:var(--c-surface); }
+.theme-option.is-active {
+  border-color:var(--c-primary);
+  background:var(--c-primary);
+  box-shadow:0 0 0 2px var(--c-primary);
+}
+.theme-option.is-active .iconfont-theme { color:#fff; }
+.theme-option .iconfont-theme {
+  font-size:18px;
+  color:var(--c-text);
+  transition:color .25s;
+}
+.theme-option .icon-sun  { color:var(--c-gold); }
+.theme-option .icon-moon { color:var(--c-primary); }
+.theme-option.is-active .icon-sun,
+.theme-option.is-active .icon-moon { color:#fff; }
+
+/* Texture grid */
+.texture-grid {
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:var(--space-xs);
+}
+.texture-option {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%; aspect-ratio:1;
+  border:2px solid var(--c-border);
+  border-radius:var(--radius);
+  background:var(--c-surface-2);
+  cursor:pointer;
+  font-size:.7rem;
+  font-weight:700;
+  color:var(--c-text-muted);
+  overflow:hidden;
+  transition:border var(--duration),box-shadow var(--duration);
+  padding:0;
+}
+.texture-option img {
+  width:100%; height:100%;
+  object-fit:cover;
+  image-rendering:pixelated;
+  -ms-interpolation-mode:nearest-neighbor;
+}
+.texture-option:hover { border-color:var(--c-primary); }
+.texture-option.is-active {
+  border-color:var(--c-primary);
+  box-shadow:0 0 0 2px var(--c-primary);
+}
 
 /* ---- Icon system (replaces emoji) ---- */
 

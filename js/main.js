@@ -69,12 +69,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const hamburger = document.querySelector('.hamburger');
   const mobileNav = document.querySelector('.mobile-nav');
   const backTop   = document.querySelector('.back-to-top');
-  const themeToggle = document.querySelector('.theme-toggle');
+  const settingsToggle = document.querySelector('.settings-toggle');
+  const settingsPanel  = document.querySelector('.settings-panel');
   const yearSpan  = document.getElementById('year');
 
   /* ---- Mobile nav ---- */
   if (hamburger && mobileNav) {
     hamburger.addEventListener('click', () => {
+      // Close settings panel when opening mobile nav
+      settingsPanel?.classList.remove('is-open');
+      settingsPanel?.setAttribute('aria-hidden', 'true');
       const open = mobileNav.classList.toggle('is-open');
       hamburger.classList.toggle('is-open', open);
       hamburger.setAttribute('aria-expanded', open);
@@ -123,11 +127,16 @@ document.addEventListener('DOMContentLoaded', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
-  /* ---- Theme toggle ---- */
-  const STORAGE_KEY = 'uemcraft-theme';
+  /* ---- Settings: theme + texture ---- */
+  const THEME_KEY = 'uemcraft-theme';
+  const TEXTURE_KEY = 'uemcraft-texture';
+  // Compute relative path prefix based on current page depth
+  const _depth = location.pathname.replace(/\\/g, '/').split('/').length - 2;
+  const _prefix = _depth > 0 ? '../'.repeat(_depth) : '';
+  const TEXTURE_BASE = _prefix + 'assets/img/background_textures/';
 
   function getTheme() {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(THEME_KEY);
     if (stored) return stored;
     return window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
   }
@@ -135,21 +144,94 @@ document.addEventListener('DOMContentLoaded', () => {
   function setTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
     document.documentElement.style.colorScheme = t;
-    localStorage.setItem(STORAGE_KEY, t);
+    localStorage.setItem(THEME_KEY, t);
+    // Update theme option active state
+    document.querySelectorAll('.theme-option').forEach(btn => {
+      btn.classList.toggle('is-active', btn.dataset.theme === t);
+    });
   }
 
-  // Init
-  const current = getTheme();
-  setTheme(current);
+  function applyTexture(name) {
+    if (!name || name === 'none') {
+      document.documentElement.removeAttribute('data-texture');
+      localStorage.setItem(TEXTURE_KEY, 'none');
+    } else {
+      document.documentElement.setAttribute('data-texture', name);
+      localStorage.setItem(TEXTURE_KEY, name);
+      // Set background-image on body::after via a style rule
+      let styleEl = document.getElementById('texture-style');
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'texture-style';
+        document.head.appendChild(styleEl);
+      }
+      // Determine correct path prefix based on current directory depth
+      const path = TEXTURE_BASE + name + '.png';
+      styleEl.textContent = 'body::after{background-image:url(' + path + ');}';
+    }
+    // Update texture option active state
+    document.querySelectorAll('.texture-option').forEach(btn => {
+      btn.classList.toggle('is-active', btn.dataset.texture === (name || 'none'));
+    });
+  }
 
-  themeToggle?.addEventListener('click', () => {
-    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    setTheme(next);
+  // Init theme
+  const currentTheme = getTheme();
+  setTheme(currentTheme);
+
+  // Init texture
+  const savedTexture = localStorage.getItem(TEXTURE_KEY) || 'none';
+  applyTexture(savedTexture);
+
+  // Settings panel toggle
+  settingsToggle?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    // Close mobile nav when opening settings
+    if (mobileNav && hamburger) {
+      mobileNav.classList.remove('is-open');
+      hamburger.classList.remove('is-open');
+      hamburger.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    }
+    const isOpen = settingsPanel?.classList.toggle('is-open');
+    settingsPanel?.setAttribute('aria-hidden', !isOpen);
   });
 
-  // Listen for system changes
+  // Close panel on outside click
+  document.addEventListener('click', (e) => {
+    if (settingsPanel?.classList.contains('is-open') &&
+        !settingsPanel.contains(e.target) &&
+        !settingsToggle?.contains(e.target)) {
+      settingsPanel.classList.remove('is-open');
+      settingsPanel.setAttribute('aria-hidden', 'true');
+    }
+  });
+
+  // Close panel on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && settingsPanel?.classList.contains('is-open')) {
+      settingsPanel.classList.remove('is-open');
+      settingsPanel.setAttribute('aria-hidden', 'true');
+    }
+  });
+
+  // Theme option buttons
+  document.querySelectorAll('.theme-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setTheme(btn.dataset.theme);
+    });
+  });
+
+  // Texture option buttons
+  document.querySelectorAll('.texture-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      applyTexture(btn.dataset.texture);
+    });
+  });
+
+  // Listen for system theme changes
   window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change', e => {
-    if (!localStorage.getItem(STORAGE_KEY)) {
+    if (!localStorage.getItem(THEME_KEY)) {
       setTheme(e.matches ? 'dark' : 'light');
     }
   });
