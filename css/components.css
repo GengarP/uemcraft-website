@@ -185,125 +185,225 @@
   margin-bottom:var(--space-md);
 }
 
-/* ---- Server status ---- */
-.server-panel {
+/* ---- Server card ---- */
+.server-card {
   background:var(--c-surface);
   border:2px solid var(--c-border);
+  border-left:4px solid var(--c-ok);
   border-radius:var(--radius);
-  padding:var(--space-xl);
-  display:flex;
-  align-items:center;
-  gap:var(--space-lg);
-  flex-wrap:wrap;
+  overflow:hidden;
   box-shadow:var(--shadow-hard-sm);
   scroll-margin-top:80px;
+  transition:border-color var(--duration) var(--ease);
 }
-.server-panel + .server-panel {
+.server-card + .server-card {
   margin-top:var(--space-lg);
 }
-.server-indicator {
-  width:14px; height:14px;
-  border-radius:50%;
-  background:var(--c-ok);
-  box-shadow:0 0 8px var(--c-ok);
-  animation:pulse-dot 2s infinite;
-  flex-shrink:0;
+.server-card.is-offline {
+  border-left-color:var(--c-red);
 }
-.server-indicator.is-offline {
-  background:var(--c-red);
-  box-shadow:0 0 8px var(--c-red);
-  animation:none;
+.server-card.is-offline .server-card-favicon {
+  filter:grayscale(.6) opacity(.5);
 }
-@keyframes pulse-dot {
-  0%,100% { box-shadow:0 0 6px var(--c-ok); }
-  50%     { box-shadow:0 0 16px var(--c-ok), 0 0 32px rgba(39,174,96,.3); }
-}
-.server-info {
-  flex:1;
-  min-width:0;
-}
-.server-header {
+
+/* Card header */
+.server-card-header {
   display:flex;
   align-items:center;
   gap:var(--space-md);
-  flex-wrap:wrap;
+  padding:var(--space-lg);
+  padding-bottom:0;
 }
-.server-title {
-  font-weight:700;
-  color:var(--c-heading);
-}
-.server-addr-row {
-  display:flex;
-  align-items:center;
-  gap:var(--space-sm);
-  margin-top:var(--space-xs);
-}
-.server-address {
-  font-family:var(--font-mono);
-  font-size:var(--fs-sm);
-  background:var(--c-surface-2);
-  border:2px solid var(--c-border);
-  border-radius:var(--radius);
-  padding:.4rem .8rem;
-  user-select:all;
-}
-.server-motd {
-  margin-top:var(--space-sm);
-  padding:var(--space-sm) var(--space-md);
-  font-family:"Minecraft AE","Fusion Pixel",var(--font-mono);
-  font-size:var(--fs-sm);
-  color:var(--c-text);
-  line-height:1.7;
-  background:var(--c-surface-2);
-  border-left:3px solid var(--c-primary);
-  border-radius:0 var(--radius) var(--radius) 0;
-}
-.server-motd .mc-color-0 { color:#000; }
-.server-motd .mc-color-1 { color:#00a; }
-.server-motd .mc-color-2 { color:#0a0; }
-.server-motd .mc-color-3 { color:#0aa; }
-.server-motd .mc-color-4 { color:#a00; }
-.server-motd .mc-color-5 { color:#a0a; }
-.server-motd .mc-color-6 { color:#fa0; }
-.server-motd .mc-color-7 { color:#aaa; }
-.server-motd .mc-color-8 { color:#555; }
-.server-motd .mc-color-9 { color:#55f; }
-.server-motd .mc-color-a { color:#5f5; }
-.server-motd .mc-color-b { color:#5ff; }
-.server-motd .mc-color-c { color:#f55; }
-.server-motd .mc-color-d { color:#f5f; }
-.server-motd .mc-color-e { color:#ff5; }
-.server-motd .mc-color-f { color:#fff; }
-.server-motd .mc-bold { font-weight:700; }
-.server-motd .mc-italic { font-style:italic; }
-.server-motd .mc-underline { text-decoration:underline; }
-.server-motd .mc-strikethrough { text-decoration:line-through; }
-
-/* Dark mode: brighten dark MC colors for readability */
-[data-theme="dark"] .server-motd .mc-color-0 { color:#aaa; }
-[data-theme="dark"] .server-motd .mc-color-1 { color:#55f; }
-[data-theme="dark"] .server-motd .mc-color-2 { color:#5f5; }
-[data-theme="dark"] .server-motd .mc-color-3 { color:#5ff; }
-[data-theme="dark"] .server-motd .mc-color-4 { color:#f55; }
-[data-theme="dark"] .server-motd .mc-color-8 { color:#888; }
-[data-theme="dark"] .server-motd .mc-color-9 { color:#77f; }
-[data-theme="dark"] .server-motd .mc-color-f { color:#fff; }
-.server-stats { display:flex; gap:var(--space-md); flex-wrap:wrap; margin-left:auto; }
-.server-stat { display:flex; align-items:baseline; gap:.35em; flex-shrink:0; }
-.server-stat .sval { font-family:var(--font-mono); font-size:1rem; font-weight:700; color:var(--c-heading); }
-.server-stat .slbl { font-size:var(--fs-xs); color:var(--c-text-muted); }
-
-/* Server favicon */
-.server-favicon {
-  width:40px; height:40px;
+.server-card-favicon {
+  width:48px; height:48px;
   border-radius:var(--radius);
   border:2px solid var(--c-border);
   image-rendering:pixelated;
   flex-shrink:0;
   background:var(--c-surface-2);
 }
+.server-card-favicon-empty {
+  background:var(--c-surface-2) var(--pixel-grid);
+}
+.server-card-title-area {
+  flex:1;
+  min-width:0;
+}
+.server-card-name-row {
+  display:flex;
+  align-items:center;
+  gap:var(--space-sm);
+  flex-wrap:wrap;
+}
+.server-card-name {
+  margin:0;
+  font-size:var(--fs-lg);
+  font-weight:700;
+  color:var(--c-heading);
+  line-height:var(--lh-heading);
+}
+.server-card-note {
+  font-size:var(--fs-xs);
+  font-weight:400;
+  color:var(--c-text-muted);
+}
+.server-card-badge {
+  display:inline-flex;
+  align-items:center;
+  gap:.35em;
+  font-family:var(--font-mono);
+  font-size:var(--fs-xs);
+  font-weight:700;
+  padding:.2em .7em;
+  border-radius:var(--radius);
+  line-height:1;
+  flex-shrink:0;
+}
+.server-card-badge::before {
+  content:'';
+  width:8px; height:8px;
+  border-radius:50%;
+  flex-shrink:0;
+}
+.server-card-badge.is-online {
+  background:rgba(39,174,96,.12);
+  color:var(--c-ok);
+}
+.server-card-badge.is-online::before {
+  background:var(--c-ok);
+  box-shadow:0 0 6px var(--c-ok);
+  animation:pulse-dot 2s infinite;
+}
+.server-card-badge.is-offline {
+  background:rgba(192,57,43,.12);
+  color:var(--c-red);
+}
+.server-card-badge.is-offline::before {
+  background:var(--c-red);
+}
+@keyframes pulse-dot {
+  0%,100% { box-shadow:0 0 4px var(--c-ok); }
+  50%     { box-shadow:0 0 10px var(--c-ok), 0 0 20px rgba(39,174,96,.3); }
+}
 
-/* Latency indicator */
+/* Address row */
+.server-card-addr {
+  display:flex;
+  align-items:center;
+  gap:var(--space-sm);
+  margin-top:.3em;
+}
+.server-card-address {
+  font-family:var(--font-mono);
+  font-size:var(--fs-sm);
+  background:var(--c-surface-2);
+  border:1px solid var(--c-border);
+  border-radius:var(--radius);
+  padding:.25rem .6rem;
+  user-select:all;
+  color:var(--c-text-muted);
+}
+.server-card-copy {
+  font-family:var(--font-mono);
+  font-size:var(--fs-xs);
+  font-weight:700;
+  color:var(--c-primary);
+  background:transparent;
+  border:1px solid var(--c-primary);
+  border-radius:var(--radius);
+  padding:.2rem .55rem;
+  cursor:pointer;
+  transition:background var(--duration) var(--ease), color var(--duration) var(--ease);
+  line-height:1;
+}
+.server-card-copy:hover {
+  background:var(--c-primary);
+  color:#fff;
+}
+.server-card-copy.is-copied {
+  background:var(--c-ok);
+  border-color:var(--c-ok);
+  color:#fff;
+}
+
+/* MOTD area */
+.server-card-motd {
+  margin:var(--space-md) var(--space-lg);
+  padding:var(--space-sm) var(--space-md);
+  font-family:"Minecraft AE","Fusion Pixel",var(--font-mono);
+  font-size:var(--fs-sm);
+  color:var(--c-text);
+  line-height:1.7;
+  background:var(--c-surface-2);
+  border:1px solid var(--c-border);
+  border-radius:var(--radius);
+}
+.server-card-motd-empty {
+  color:var(--c-text-muted);
+  font-style:italic;
+  font-family:var(--font-body);
+}
+.server-card-motd .mc-color-0 { color:#000; }
+.server-card-motd .mc-color-1 { color:#00a; }
+.server-card-motd .mc-color-2 { color:#0a0; }
+.server-card-motd .mc-color-3 { color:#0aa; }
+.server-card-motd .mc-color-4 { color:#a00; }
+.server-card-motd .mc-color-5 { color:#a0a; }
+.server-card-motd .mc-color-6 { color:#fa0; }
+.server-card-motd .mc-color-7 { color:#aaa; }
+.server-card-motd .mc-color-8 { color:#555; }
+.server-card-motd .mc-color-9 { color:#55f; }
+.server-card-motd .mc-color-a { color:#5f5; }
+.server-card-motd .mc-color-b { color:#5ff; }
+.server-card-motd .mc-color-c { color:#f55; }
+.server-card-motd .mc-color-d { color:#f5f; }
+.server-card-motd .mc-color-e { color:#ff5; }
+.server-card-motd .mc-color-f { color:#fff; }
+.server-card-motd .mc-bold { font-weight:700; }
+.server-card-motd .mc-italic { font-style:italic; }
+.server-card-motd .mc-underline { text-decoration:underline; }
+.server-card-motd .mc-strikethrough { text-decoration:line-through; }
+
+/* Dark mode: brighten dark MC colors for readability */
+[data-theme="dark"] .server-card-motd .mc-color-0 { color:#aaa; }
+[data-theme="dark"] .server-card-motd .mc-color-1 { color:#55f; }
+[data-theme="dark"] .server-card-motd .mc-color-2 { color:#5f5; }
+[data-theme="dark"] .server-card-motd .mc-color-3 { color:#5ff; }
+[data-theme="dark"] .server-card-motd .mc-color-4 { color:#f55; }
+[data-theme="dark"] .server-card-motd .mc-color-8 { color:#888; }
+[data-theme="dark"] .server-card-motd .mc-color-9 { color:#77f; }
+[data-theme="dark"] .server-card-motd .mc-color-f { color:#fff; }
+/* Stats footer */
+.server-card-stats {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  border-top:1px solid var(--c-border);
+}
+.server-card-stat {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:.15em;
+  padding:var(--space-md) var(--space-sm);
+  text-align:center;
+}
+.server-card-stat + .server-card-stat {
+  border-left:1px solid var(--c-border);
+}
+.stat-val {
+  font-family:var(--font-mono);
+  font-size:1rem;
+  font-weight:700;
+  color:var(--c-heading);
+  line-height:1;
+}
+.stat-label {
+  font-size:var(--fs-xs);
+  color:var(--c-text-muted);
+  line-height:1;
+}
+
+/* Latency colors */
 .server-latency.latency-good { color:var(--c-ok); }
 .server-latency.latency-ok   { color:var(--c-gold); }
 .server-latency.latency-bad  { color:var(--c-red); }
@@ -345,7 +445,20 @@
   font-style:italic;
 }
 
-#refreshServer { flex-shrink:0; margin-left:auto; }
+/* Hero server indicator dot */
+.server-indicator {
+  width:10px; height:10px;
+  border-radius:50%;
+  background:var(--c-ok);
+  box-shadow:0 0 6px var(--c-ok);
+  animation:pulse-dot 2s infinite;
+  flex-shrink:0;
+}
+.server-indicator.is-offline {
+  background:var(--c-red);
+  box-shadow:0 0 6px var(--c-red);
+  animation:none;
+}
 
 /* ---- Article hero figure (news detail header image) ---- */
 .article-hero {
@@ -1453,45 +1566,24 @@ a.contact-card:hover .cc-title {
 
 /* ---- Responsive ---- */
 @media (max-width:768px) {
-  .server-panel {
+  .server-card-header {
+    padding:var(--space-md);
+    padding-bottom:0;
     flex-direction:column;
-    align-items:stretch;
-    gap:var(--space-md);
-    padding:var(--space-lg);
+    text-align:center;
   }
-  .server-indicator { align-self:center; }
-  .server-header {
-    flex-direction:row;
-    align-items:center;
+  .server-card-name-row {
     justify-content:center;
-    gap:var(--space-md);
   }
-  .server-favicon { width:32px; height:32px; }
-  .server-title { text-align:center; }
-  .server-addr-row {
-    flex-wrap:wrap;
+  .server-card-addr {
     justify-content:center;
-    gap:var(--space-sm);
   }
-  .server-addr-row .server-address {
-    font-size:var(--fs-xs);
-    padding:.3rem .6rem;
-  }
-  .server-stats {
-    margin-left:0;
-    justify-content:center;
-    width:100%;
-    margin-top:var(--space-xs);
-    padding-top:var(--space-sm);
-    border-top:1px dashed var(--c-border);
-  }
-  .server-stat .sval { font-size:.9rem; }
-  .server-motd {
-    text-align:left;
+  .server-card-motd {
+    margin:var(--space-sm) var(--space-md);
     font-size:var(--fs-xs);
     padding:var(--space-xs) var(--space-sm);
   }
-  #refreshServer { margin-left:0; }
+  .stat-val { font-size:.9rem; }
   .hero-stats { gap:var(--space-lg); }
   .gallery-grid { grid-template-columns:repeat(2,1fr); }
   .gallery-tile { aspect-ratio:4/3; }

@@ -57,18 +57,15 @@ document.addEventListener('DOMContentLoaded', () => {
     return Promise.all(promises);
   }
 
-  // ---- 渲染首页服务器面板 ----
+  // ---- 渲染首页服务器卡片 ----
   function renderServerPanels(results) {
     if (!serverSection) return;
     const container = serverSection.querySelector('.container');
     if (!container) return;
 
-    // 保留 section-head
-    const sectionHead = container.querySelector('.section-head');
-
-    // 清空旧面板
-    const oldPanels = container.querySelectorAll('.server-panel');
-    oldPanels.forEach(p => p.remove());
+    // 清空旧卡片
+    const oldCards = container.querySelectorAll('.server-card');
+    oldCards.forEach(function(c) { c.remove(); });
 
     results.forEach(({ server, status }) => {
       const online = !!(status && status.online);
@@ -80,50 +77,58 @@ document.addEventListener('DOMContentLoaded', () => {
       const latency = online && status.latency != null ? status.latency : null;
       const favicon = online && status.favicon ? status.favicon : '';
       const addrDisplay = escapeHtml(server.address) + (server.port ? ':' + server.port : '');
+      const noteHtml = server.note ? ' <span class="server-card-note">' + escapeHtml(server.note) + '</span>' : '';
 
-      const panel = document.createElement('div');
-      panel.className = 'server-panel';
-      panel.innerHTML =
-        '<div class="server-indicator' + (online ? '' : ' is-offline') + '"></div>' +
-        '<div class="server-info">' +
-        '  <div class="server-header">' +
-        (favicon ? '    <img class="server-favicon" src="' + favicon + '" alt="" width="40" height="40">' : '') +
-        '    <span class="server-title">' + escapeHtml(server.name) + (server.note ? ' <small class="text-muted">(' + escapeHtml(server.note) + ')</small>' : '') + '</span>' +
-        '  </div>' +
-        '  <div class="server-addr-row">' +
-        '    <code class="server-address">' + addrDisplay + '</code>' +
-        '    <button class="btn btn-ghost btn-sm btn-copy" data-addr="' + escapeHtml(server.address) + (server.port ? ' -p ' + server.port : '') + '" title="复制地址">复制</button>' +
-        '    <div class="server-stats">' +
-        '      <div class="server-stat player-stat-wrap">' +
-        '        <span class="sval">' + (online ? players + ' / ' + maxPlayers : '离线') + '</span>' +
-        '        <span class="slbl">在线 / 最大</span>' +
-        '        <div class="player-tooltip"><ul class="player-list">' +
-          (playerList.length ? playerList.map(function(n) { return '<li>' + escapeHtml(typeof n === 'object' ? n.name : n) + '</li>'; }).join('') : '') +
-          '</ul></div>' +
-        '      </div>' +
-        '      <div class="server-stat">' +
-        '        <span class="sval">' + (online ? escapeHtml(version) : '--') + '</span>' +
-        '        <span class="slbl">版本</span>' +
-        '      </div>' +
-        (latency != null ? '      <div class="server-stat">' +
-        '        <span class="sval server-latency ' + latencyClass(latency) + '">' + latency + ' ms</span>' +
-        '        <span class="slbl">延迟</span>' +
-        '      </div>' : '') +
+      const card = document.createElement('div');
+      card.className = 'server-card' + (online ? '' : ' is-offline');
+      card.innerHTML =
+        '<div class="server-card-header">' +
+        (favicon
+          ? '<img class="server-card-favicon" src="' + favicon + '" alt="" width="48" height="48">'
+          : '<div class="server-card-favicon server-card-favicon-empty" aria-hidden="true"></div>') +
+        '  <div class="server-card-title-area">' +
+        '    <div class="server-card-name-row">' +
+        '      <h3 class="server-card-name">' + escapeHtml(server.name) + noteHtml + '</h3>' +
+        '      <span class="server-card-badge ' + (online ? 'is-online' : 'is-offline') + '">' +
+                 (online ? '在线' : '离线') +
+        '      </span>' +
+        '    </div>' +
+        '    <div class="server-card-addr">' +
+        '      <code class="server-card-address">' + addrDisplay + '</code>' +
+        '      <button class="server-card-copy" data-addr="' + escapeHtml(server.address) + (server.port ? ' -p ' + server.port : '') + '" title="复制地址">复制</button>' +
         '    </div>' +
         '  </div>' +
-        (motd ? '  <div class="server-motd">' + parseMotd(motd) + '</div>' : '') +
+        '</div>' +
+        (motd ? '<div class="server-card-motd">' + parseMotd(motd) + '</div>' : '<div class="server-card-motd server-card-motd-empty">暂无 MOTD</div>') +
+        '<div class="server-card-stats">' +
+        '  <div class="server-card-stat player-stat-wrap">' +
+        '    <span class="stat-val">' + (online ? players + ' / ' + maxPlayers : '--') + '</span>' +
+        '    <span class="stat-label">在线 / 最大</span>' +
+        '    <div class="player-tooltip"><ul class="player-list">' +
+           (playerList.length ? playerList.map(function(n) { return '<li>' + escapeHtml(typeof n === 'object' ? n.name : n) + '</li>'; }).join('') : '') +
+           '</ul></div>' +
+        '  </div>' +
+        '  <div class="server-card-stat">' +
+        '    <span class="stat-val ' + (latency != null ? 'server-latency ' + latencyClass(latency) : '') + '">' + (latency != null ? latency + ' ms' : '--') + '</span>' +
+        '    <span class="stat-label">延迟</span>' +
+        '  </div>' +
+        '  <div class="server-card-stat">' +
+        '    <span class="stat-val">' + (online ? escapeHtml(version) : '--') + '</span>' +
+        '    <span class="stat-label">版本</span>' +
+        '  </div>' +
         '</div>';
 
-      container.appendChild(panel);
+      container.appendChild(card);
     });
 
     // 绑定复制按钮
-    container.querySelectorAll('.btn-copy[data-addr]').forEach(function(btn) {
+    container.querySelectorAll('.server-card-copy[data-addr]').forEach(function(btn) {
       btn.addEventListener('click', function() {
         var addr = btn.getAttribute('data-addr');
         copyText(addr).then(function() {
           btn.textContent = '已复制';
-          setTimeout(function() { btn.textContent = '复制'; }, 2000);
+          btn.classList.add('is-copied');
+          setTimeout(function() { btn.textContent = '复制'; btn.classList.remove('is-copied'); }, 2000);
         }).catch(function() {
           btn.textContent = '失败';
           setTimeout(function() { btn.textContent = '复制'; }, 2000);
@@ -166,11 +171,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (serverSection) {
         var container = serverSection.querySelector('.container');
         if (container) {
-          var oldPanels = container.querySelectorAll('.server-panel');
-          oldPanels.forEach(function(p) { p.remove(); });
+          var oldCards = container.querySelectorAll('.server-card');
+          oldCards.forEach(function(c) { c.remove(); });
           var placeholder = document.createElement('div');
-          placeholder.className = 'server-panel';
-          placeholder.innerHTML = '<div class="server-info"><p class="text-muted" style="text-align:center;">暂未配置服务器，请在管理后台添加</p></div>';
+          placeholder.className = 'server-card';
+          placeholder.innerHTML = '<div class="server-card-header"><div class="server-card-favicon server-card-favicon-empty" aria-hidden="true"></div><div class="server-card-title-area"><div class="server-card-name-row"><h3 class="server-card-name">暂未配置服务器</h3></div><p class="text-muted" style="margin:var(--space-xs) 0 0;font-size:var(--fs-sm);">请在管理后台添加服务器</p></div></div>';
           container.appendChild(placeholder);
         }
       }
