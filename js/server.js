@@ -197,6 +197,10 @@ document.addEventListener('DOMContentLoaded', () => {
     return div.innerHTML;
   }
 
+  function escapeHtmlAttr(text) {
+    return String(text || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
   // ---- 延迟等级样式 ----
   function latencyClass(ms) {
     if (ms <= 100) return 'latency-good';
