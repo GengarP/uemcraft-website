@@ -156,7 +156,7 @@
   }
 
   function updateThumbActive() {
-    var thumbs = document.querySelectorAll('.detail-gallery-thumb');
+    var thumbs = document.querySelectorAll('.detail-hero-thumb');
     for (var i = 0; i < thumbs.length; i++) {
       thumbs[i].classList.toggle('is-active', i === currentGalleryIdx);
     }
@@ -214,7 +214,7 @@
       mainImg.alt = item.title;
 
       // 点击主图打开 Lightbox
-      document.getElementById('galleryMain').addEventListener('click', function () {
+      galleryEl.addEventListener('click', function () {
         openLightbox(currentGalleryIdx);
       });
 
@@ -223,7 +223,7 @@
         thumbsEl.innerHTML = '';
         galleryImages.forEach(function (url, idx) {
           var thumb = document.createElement('div');
-          thumb.className = 'detail-gallery-thumb' + (idx === 0 ? ' is-active' : '');
+          thumb.className = 'detail-hero-thumb' + (idx === 0 ? ' is-active' : '');
           thumb.innerHTML = '<img src="' + escapeHtml(url) + '" alt="图片 ' + (idx + 1) + '" loading="lazy">';
           thumb.addEventListener('click', function () {
             currentGalleryIdx = idx;

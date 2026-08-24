@@ -129,22 +129,23 @@
   </div>
 </section>
 
-<!-- Detail Layout -->
+<!-- 全宽 Hero 相册 -->
 <section class="section">
+  <div class="container">
+    <div class="detail-hero-gallery" id="detailGallery" style="display:none;">
+      <img id="galleryMainImg" src="" alt="" loading="eager">
+    </div>
+    <div class="detail-hero-thumbs" id="galleryThumbs"></div>
+  </div>
+</section>
+
+<!-- 双栏详情区 -->
+<section class="section section-alt">
   <div class="container">
     <div class="detail-layout">
 
-      <!-- 主栏：相册 + 描述 -->
+      <!-- 主栏：Markdown 描述 -->
       <div class="detail-main">
-        <!-- 相册区域 -->
-        <div class="detail-gallery" id="detailGallery" style="display:none;">
-          <div class="detail-gallery-main" id="galleryMain">
-            <img id="galleryMainImg" src="" alt="" loading="eager">
-          </div>
-          <div class="detail-gallery-thumbs" id="galleryThumbs"></div>
-        </div>
-
-        <!-- Markdown 描述 -->
         <article class="detail-body" id="detailBody"></article>
       </div>
 

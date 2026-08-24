@@ -96,19 +96,31 @@
     var author = escapeHtml(item.author || '');
     var detailUrl = 'detail.html?id=' + encodeURIComponent(item.id);
 
-    var footerHtml = '';
-    if (author) {
-      footerHtml = '<div class="works-card-footer">'
-        + '<span class="works-card-author">' + author + '</span>'
-        + '</div>';
+    // 格式化日期
+    var dateStr = '';
+    if (item.created_at) {
+      var d = new Date(item.created_at * 1000);
+      dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
 
+    // 底部信息行
+    var footerParts = [];
+    if (author) footerParts.push('<span class="works-card-author">' + author + '</span>');
+    if (dateStr) {
+      if (footerParts.length) footerParts.push('<span class="works-card-dot"></span>');
+      footerParts.push('<span class="works-card-date">' + dateStr + '</span>');
+    }
+    var footerHtml = footerParts.length
+      ? '<div class="works-card-footer">' + footerParts.join('') + '</div>'
+      : '';
+
     return '<a href="' + detailUrl + '" class="works-card" data-index="' + index + '" data-id="' + item.id + '">'
-      + '<div class="works-card-img">'
-      + (cover ? '<img src="' + escapeHtml(cover) + '" alt="' + title + '" loading="lazy">' : '')
-      + '</div>'
-      + '<div class="works-card-body">'
+      + (cover
+        ? '<img class="works-card-bg" src="' + escapeHtml(cover) + '" alt="' + title + '" loading="lazy">'
+        : '<div class="works-card-placeholder">✦</div>')
+      + '<div class="works-card-overlay"></div>'
       + (item.category ? '<span class="works-card-category">' + escapeHtml(item.category) + '</span>' : '')
+      + '<div class="works-card-info">'
       + '<h3 class="works-card-title">' + title + '</h3>'
       + (desc ? '<p class="works-card-desc">' + desc + '</p>' : '')
       + footerHtml
