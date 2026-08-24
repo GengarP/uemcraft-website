@@ -1319,10 +1319,12 @@ a.works-card { text-decoration:none; color:inherit; }
 /* Sidebar */
 .detail-sidebar {
   position: sticky;
-  top: 80px;
+  top: calc(var(--header-h-scrolled) + var(--space-lg));
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
+  z-index: 10;
+  align-self: start;
 }
 
 /* Author card */
