@@ -280,6 +280,11 @@
         metaHtml += '<div class="detail-meta-item"><span class="detail-meta-key">分类</span><span class="detail-meta-val">' + escapeHtml(item.category) + '</span></div>';
       }
       metaHtml += '<div class="detail-meta-item"><span class="detail-meta-key">状态</span><span class="detail-meta-val">' + (item.status === 'published' ? '已发布' : '草稿') + '</span></div>';
+      if (item.created_at) {
+        var d = new Date(item.created_at * 1000);
+        var dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        metaHtml += '<div class="detail-meta-item"><span class="detail-meta-key">创建时间</span><span class="detail-meta-val">' + dateStr + '</span></div>';
+      }
       metaItemsEl.innerHTML = metaHtml;
     }
   }

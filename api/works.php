@@ -34,7 +34,7 @@ try {
             $params[':category'] = $category;
         }
 
-        $stmt = $db->prepare("SELECT id, title, slug, description, cover, image, category, sort_order FROM works $where ORDER BY sort_order ASC, created_at DESC");
+        $stmt = $db->prepare("SELECT id, title, slug, description, cover, image, category, author, sort_order FROM works $where ORDER BY sort_order ASC, created_at DESC");
         $stmt->execute($params);
         $rows = $stmt->fetchAll();
 

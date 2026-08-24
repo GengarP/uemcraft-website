@@ -93,16 +93,25 @@
     var cover = item.cover || item.image || '';
     var title = escapeHtml(item.title);
     var desc = escapeHtml(item.description || '');
+    var author = escapeHtml(item.author || '');
     var detailUrl = 'detail.html?id=' + encodeURIComponent(item.id);
+
+    var footerHtml = '';
+    if (author) {
+      footerHtml = '<div class="works-card-footer">'
+        + '<span class="works-card-author">' + author + '</span>'
+        + '</div>';
+    }
 
     return '<a href="' + detailUrl + '" class="works-card" data-index="' + index + '" data-id="' + item.id + '">'
       + '<div class="works-card-img">'
       + (cover ? '<img src="' + escapeHtml(cover) + '" alt="' + title + '" loading="lazy">' : '')
       + '</div>'
       + '<div class="works-card-body">'
-      + '<h3 class="works-card-title">' + title + '</h3>'
       + (item.category ? '<span class="works-card-category">' + escapeHtml(item.category) + '</span>' : '')
+      + '<h3 class="works-card-title">' + title + '</h3>'
       + (desc ? '<p class="works-card-desc">' + desc + '</p>' : '')
+      + footerHtml
       + '</div>'
       + '</a>';
   }
