@@ -209,6 +209,7 @@ function createSiteTables($db, $driver) {
             KEY idx_works_sort (sort_order)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
         return;
+
     }
 
     // SQLite
@@ -356,21 +357,34 @@ function migrateSiteTables($db, $driver) {
     try {
         $test = $db->query("SELECT gallery_images FROM works LIMIT 0");
     } catch (PDOException $e) {
-        $db->exec("ALTER TABLE works ADD COLUMN gallery_images TEXT NOT NULL DEFAULT '[]'");
+        if ($driver === 'mysql') {
+            // MySQL: TEXT 列不能有 DEFAULT，应用层保证写入 '[]'
+            $db->exec("ALTER TABLE works ADD COLUMN gallery_images TEXT NOT NULL");
+        } else {
+            $db->exec("ALTER TABLE works ADD COLUMN gallery_images TEXT NOT NULL DEFAULT '[]'");
+        }
     }
 
     // 迁移：works 表新增 download_links 列（JSON 数组）
     try {
         $test = $db->query("SELECT download_links FROM works LIMIT 0");
     } catch (PDOException $e) {
-        $db->exec("ALTER TABLE works ADD COLUMN download_links TEXT NOT NULL DEFAULT '[]'");
+        if ($driver === 'mysql') {
+            $db->exec("ALTER TABLE works ADD COLUMN download_links TEXT NOT NULL");
+        } else {
+            $db->exec("ALTER TABLE works ADD COLUMN download_links TEXT NOT NULL DEFAULT '[]'");
+        }
     }
 
     // 迁移：works 表新增 markdown 列（详细描述 Markdown）
     try {
         $test = $db->query("SELECT markdown FROM works LIMIT 0");
     } catch (PDOException $e) {
-        $db->exec("ALTER TABLE works ADD COLUMN markdown TEXT NOT NULL DEFAULT ''");
+        if ($driver === 'mysql') {
+            $db->exec("ALTER TABLE works ADD COLUMN markdown TEXT NOT NULL");
+        } else {
+            $db->exec("ALTER TABLE works ADD COLUMN markdown TEXT NOT NULL DEFAULT ''");
+        }
     }
 
     // 迁移：新增 servers 表
