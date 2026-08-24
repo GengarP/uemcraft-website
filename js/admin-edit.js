@@ -262,6 +262,43 @@
     var msg = document.getElementById('formMessage');
     var btn = document.getElementById('saveBtn');
 
+    // 动态列表：相册图片
+    var galleryList = document.getElementById('galleryImagesList');
+    var addGalleryBtn = document.getElementById('addGalleryImage');
+    if (addGalleryBtn) {
+      addGalleryBtn.addEventListener('click', function () { addGalleryRow(''); });
+    }
+
+    // 动态列表：下载链接
+    var downloadList = document.getElementById('downloadLinksList');
+    var addDownloadBtn = document.getElementById('addDownloadLink');
+    if (addDownloadBtn) {
+      addDownloadBtn.addEventListener('click', function () { addDownloadRow('', ''); });
+    }
+
+    function addGalleryRow(url) {
+      if (!galleryList) return;
+      var item = document.createElement('div');
+      item.className = 'dynamic-list-item';
+      item.innerHTML =
+        '<input type="text" class="form-input gallery-image-url" placeholder="图片 URL" value="' + escapeHtmlAttr(url) + '">' +
+        '<button type="button" class="btn-remove" title="删除" aria-label="删除">&times;</button>';
+      item.querySelector('.btn-remove').addEventListener('click', function () { item.remove(); });
+      galleryList.appendChild(item);
+    }
+
+    function addDownloadRow(name, url) {
+      if (!downloadList) return;
+      var item = document.createElement('div');
+      item.className = 'dynamic-list-item';
+      item.innerHTML =
+        '<input type="text" class="form-input download-link-name" placeholder="名称" value="' + escapeHtmlAttr(name) + '" style="max-width:160px;">' +
+        '<input type="text" class="form-input download-link-url" placeholder="下载 URL" value="' + escapeHtmlAttr(url) + '">' +
+        '<button type="button" class="btn-remove" title="删除" aria-label="删除">&times;</button>';
+      item.querySelector('.btn-remove').addEventListener('click', function () { item.remove(); });
+      downloadList.appendChild(item);
+    }
+
     // 编辑模式：加载现有数据
     if (isEdit) {
       Auth.api(apiBase + '?action=admin_detail&id=' + editId).then(function (json) {
@@ -336,11 +373,56 @@
       setInput('inputCover', item.cover);
       setInput('inputImage', item.image);
       setInput('inputCategory', item.category || '');
+      setInput('inputAuthor', item.author || '');
       setInput('inputSortOrder', String(item.sort_order || 0));
       setInput('inputDescription', item.description || '');
+      setInput('inputMarkdown', item.markdown || item.description || '');
+
+      // 填充相册图片列表
+      var images = item.gallery_images || [];
+      if (typeof images === 'string') { try { images = JSON.parse(images); } catch (e) { images = []; } }
+      if (galleryList) {
+        galleryList.innerHTML = '';
+        if (images.length > 0) {
+          images.forEach(function (url) { addGalleryRow(url); });
+        }
+      }
+
+      // 填充下载链接列表
+      var links = item.download_links || [];
+      if (typeof links === 'string') { try { links = JSON.parse(links); } catch (e) { links = []; } }
+      if (downloadList) {
+        downloadList.innerHTML = '';
+        if (links.length > 0) {
+          links.forEach(function (link) { addDownloadRow(link.name || '', link.url || ''); });
+        }
+      }
     }
 
     function getWorkFormData() {
+      // 收集相册图片
+      var images = [];
+      if (galleryList) {
+        var urlInputs = galleryList.querySelectorAll('.gallery-image-url');
+        urlInputs.forEach(function (input) {
+          var val = input.value.trim();
+          if (val) images.push(val);
+        });
+      }
+
+      // 收集下载链接
+      var links = [];
+      if (downloadList) {
+        var items = downloadList.querySelectorAll('.dynamic-list-item');
+        items.forEach(function (item) {
+          var name = (item.querySelector('.download-link-name') || {}).value || '';
+          var url = (item.querySelector('.download-link-url') || {}).value || '';
+          name = name.trim();
+          url = url.trim();
+          if (name && url) links.push({ name: name, url: url });
+        });
+      }
+
       return {
         title: getVal('inputTitle'),
         slug: getVal('inputSlug'),
@@ -348,8 +430,12 @@
         cover: getVal('inputCover'),
         image: getVal('inputImage'),
         category: getVal('inputCategory'),
+        author: getVal('inputAuthor'),
         sort_order: parseInt(getVal('inputSortOrder')) || 0,
-        description: getVal('inputDescription')
+        description: getVal('inputDescription'),
+        markdown: getVal('inputMarkdown'),
+        gallery_images: images,
+        download_links: links
       };
     }
   }

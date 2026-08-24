@@ -480,3 +480,55 @@
   border-color: var(--c-primary);
   box-shadow: 0 0 0 3px rgba(33, 61, 135, 0.25);
 }
+
+/* ---- Dynamic List (Gallery Images / Download Links) ---- */
+.dynamic-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.dynamic-list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  background: var(--c-bg);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+}
+
+.dynamic-list-item .form-input {
+  flex: 1;
+  font-size: var(--fs-sm);
+}
+
+.dynamic-list-item .btn-remove {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+  color: var(--c-red);
+  cursor: pointer;
+  font-size: var(--fs-base);
+  line-height: 1;
+  transition: background var(--duration), border-color var(--duration);
+}
+
+.dynamic-list-item .btn-remove:hover {
+  background: var(--c-red);
+  border-color: var(--c-red);
+  color: #fff;
+}
+
+.dynamic-list-hint {
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+  text-align: center;
+  padding: var(--space-sm);
+}

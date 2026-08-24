@@ -189,6 +189,13 @@
           <small class="form-help">可输入新分类或从已有分类中选择</small>
         </div>
         <div class="form-group">
+          <label for="inputAuthor">作者</label>
+          <input type="text" id="inputAuthor" class="form-input" placeholder="作品作者">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
           <label for="inputSortOrder">排序权重</label>
           <input type="number" id="inputSortOrder" class="form-input" value="0" min="0">
           <small class="form-help">数值越小越靠前</small>
@@ -197,8 +204,36 @@
 
       <div class="form-row">
         <div class="form-group form-group--full">
-          <label for="inputDescription">作品描述</label>
-          <textarea id="inputDescription" class="form-textarea" rows="4" placeholder="作品简介" maxlength="1000"></textarea>
+          <label for="inputDescription">简短描述</label>
+          <textarea id="inputDescription" class="form-textarea" rows="3" placeholder="作品简介（卡片中显示）" maxlength="1000"></textarea>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group form-group--full">
+          <label for="inputMarkdown">详细描述（Markdown）</label>
+          <textarea id="inputMarkdown" class="form-textarea" rows="12" placeholder="支持 Markdown 格式，详情页中展示"></textarea>
+          <small class="form-help">支持 Markdown 语法，详情页中渲染为富文本</small>
+        </div>
+      </div>
+
+      <!-- 相册图片管理 -->
+      <div class="form-row">
+        <div class="form-group form-group--full">
+          <label>相册图片</label>
+          <div id="galleryImagesList" class="dynamic-list"></div>
+          <button type="button" class="btn btn-ghost btn-sm" id="addGalleryImage" style="margin-top:var(--space-sm);">+ 添加图片</button>
+          <small class="form-help">添加多张图片 URL，详情页中以相册形式展示</small>
+        </div>
+      </div>
+
+      <!-- 下载链接管理 -->
+      <div class="form-row">
+        <div class="form-group form-group--full">
+          <label>下载链接</label>
+          <div id="downloadLinksList" class="dynamic-list"></div>
+          <button type="button" class="btn btn-ghost btn-sm" id="addDownloadLink" style="margin-top:var(--space-sm);">+ 添加链接</button>
+          <small class="form-help">添加下载按钮，每个链接需要填写名称和 URL</small>
         </div>
       </div>
 

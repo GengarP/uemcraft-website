@@ -93,8 +93,9 @@
     var cover = item.cover || item.image || '';
     var title = escapeHtml(item.title);
     var desc = escapeHtml(item.description || '');
+    var detailUrl = 'detail.html?id=' + encodeURIComponent(item.id);
 
-    return '<div class="works-card" data-index="' + index + '">'
+    return '<a href="' + detailUrl + '" class="works-card" data-index="' + index + '" data-id="' + item.id + '">'
       + '<div class="works-card-img">'
       + (cover ? '<img src="' + escapeHtml(cover) + '" alt="' + title + '" loading="lazy">' : '')
       + '</div>'
@@ -103,20 +104,12 @@
       + (item.category ? '<span class="works-card-category">' + escapeHtml(item.category) + '</span>' : '')
       + (desc ? '<p class="works-card-desc">' + desc + '</p>' : '')
       + '</div>'
-      + '</div>';
+      + '</a>';
   }
 
-  // ---- 卡片点击 → Lightbox ----
+  // ---- 卡片点击 → 详情页（链接跳转，无需 JS 绑定） ----
   function bindCardClicks() {
-    var cards = gridEl.querySelectorAll('.works-card');
-    for (var i = 0; i < cards.length; i++) {
-      (function (card) {
-        card.addEventListener('click', function () {
-          var idx = parseInt(card.getAttribute('data-index'), 10);
-          openLightbox(idx);
-        });
-      })(cards[i]);
-    }
+    // 卡片已改为 <a> 标签，点击直接跳转详情页
   }
 
   // ---- Lightbox ----

@@ -191,8 +191,13 @@ function createSiteTables($db, $driver) {
             title VARCHAR(255) NOT NULL,
             slug VARCHAR(255) NOT NULL,
             description TEXT NOT NULL,
+            markdown TEXT NOT NULL,
             cover VARCHAR(500) NOT NULL DEFAULT '',
             image VARCHAR(500) NOT NULL DEFAULT '',
+            category VARCHAR(100) NOT NULL DEFAULT '',
+            author VARCHAR(100) NOT NULL DEFAULT '',
+            gallery_images TEXT NOT NULL,
+            download_links TEXT NOT NULL,
             is_featured TINYINT NOT NULL DEFAULT 0,
             sort_order INT NOT NULL DEFAULT 0,
             status VARCHAR(16) NOT NULL DEFAULT 'published',
@@ -248,17 +253,22 @@ function createSiteTables($db, $driver) {
     $db->exec("CREATE INDEX idx_events_status ON events(status)");
 
     $db->exec("CREATE TABLE works (
-        id          INTEGER PRIMARY KEY AUTOINCREMENT,
-        title       TEXT NOT NULL,
-        slug        TEXT NOT NULL UNIQUE,
-        description TEXT NOT NULL DEFAULT '',
-        cover       TEXT NOT NULL DEFAULT '',
-        image       TEXT NOT NULL DEFAULT '',
-        is_featured INTEGER NOT NULL DEFAULT 0,
-        sort_order  INTEGER NOT NULL DEFAULT 0,
-        status      TEXT NOT NULL DEFAULT 'published',
-        created_at  INTEGER NOT NULL,
-        updated_at  INTEGER NOT NULL
+        id              INTEGER PRIMARY KEY AUTOINCREMENT,
+        title           TEXT NOT NULL,
+        slug            TEXT NOT NULL UNIQUE,
+        description     TEXT NOT NULL DEFAULT '',
+        markdown        TEXT NOT NULL DEFAULT '',
+        cover           TEXT NOT NULL DEFAULT '',
+        image           TEXT NOT NULL DEFAULT '',
+        category        TEXT NOT NULL DEFAULT '',
+        author          TEXT NOT NULL DEFAULT '',
+        gallery_images  TEXT NOT NULL DEFAULT '[]',
+        download_links  TEXT NOT NULL DEFAULT '[]',
+        is_featured     INTEGER NOT NULL DEFAULT 0,
+        sort_order      INTEGER NOT NULL DEFAULT 0,
+        status          TEXT NOT NULL DEFAULT 'published',
+        created_at      INTEGER NOT NULL,
+        updated_at      INTEGER NOT NULL
     )");
     $db->exec("CREATE INDEX idx_works_slug   ON works(slug)");
     $db->exec("CREATE INDEX idx_works_status ON works(status)");
@@ -273,8 +283,13 @@ function migrateSiteTables($db, $driver) {
             title VARCHAR(255) NOT NULL,
             slug VARCHAR(255) NOT NULL,
             description TEXT NOT NULL,
+            markdown TEXT NOT NULL,
             cover VARCHAR(500) NOT NULL DEFAULT '',
             image VARCHAR(500) NOT NULL DEFAULT '',
+            category VARCHAR(100) NOT NULL DEFAULT '',
+            author VARCHAR(100) NOT NULL DEFAULT '',
+            gallery_images TEXT NOT NULL,
+            download_links TEXT NOT NULL,
             is_featured TINYINT NOT NULL DEFAULT 0,
             sort_order INT NOT NULL DEFAULT 0,
             status VARCHAR(16) NOT NULL DEFAULT 'published',
@@ -288,17 +303,22 @@ function migrateSiteTables($db, $driver) {
     } else {
         try {
             $db->exec("CREATE TABLE works (
-                id          INTEGER PRIMARY KEY AUTOINCREMENT,
-                title       TEXT NOT NULL,
-                slug        TEXT NOT NULL UNIQUE,
-                description TEXT NOT NULL DEFAULT '',
-                cover       TEXT NOT NULL DEFAULT '',
-                image       TEXT NOT NULL DEFAULT '',
-                is_featured INTEGER NOT NULL DEFAULT 0,
-                sort_order  INTEGER NOT NULL DEFAULT 0,
-                status      TEXT NOT NULL DEFAULT 'published',
-                created_at  INTEGER NOT NULL,
-                updated_at  INTEGER NOT NULL
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                title           TEXT NOT NULL,
+                slug            TEXT NOT NULL UNIQUE,
+                description     TEXT NOT NULL DEFAULT '',
+                markdown        TEXT NOT NULL DEFAULT '',
+                cover           TEXT NOT NULL DEFAULT '',
+                image           TEXT NOT NULL DEFAULT '',
+                category        TEXT NOT NULL DEFAULT '',
+                author          TEXT NOT NULL DEFAULT '',
+                gallery_images  TEXT NOT NULL DEFAULT '[]',
+                download_links  TEXT NOT NULL DEFAULT '[]',
+                is_featured     INTEGER NOT NULL DEFAULT 0,
+                sort_order      INTEGER NOT NULL DEFAULT 0,
+                status          TEXT NOT NULL DEFAULT 'published',
+                created_at      INTEGER NOT NULL,
+                updated_at      INTEGER NOT NULL
             )");
             $db->exec("CREATE INDEX IF NOT EXISTS idx_works_slug   ON works(slug)");
             $db->exec("CREATE INDEX IF NOT EXISTS idx_works_status ON works(status)");
@@ -319,6 +339,38 @@ function migrateSiteTables($db, $driver) {
         } else {
             $db->exec("ALTER TABLE works ADD COLUMN category TEXT NOT NULL DEFAULT ''");
         }
+    }
+
+    // 迁移：works 表新增 author 列
+    try {
+        $test = $db->query("SELECT author FROM works LIMIT 0");
+    } catch (PDOException $e) {
+        if ($driver === 'mysql') {
+            $db->exec("ALTER TABLE works ADD COLUMN author VARCHAR(100) NOT NULL DEFAULT ''");
+        } else {
+            $db->exec("ALTER TABLE works ADD COLUMN author TEXT NOT NULL DEFAULT ''");
+        }
+    }
+
+    // 迁移：works 表新增 gallery_images 列（JSON 数组）
+    try {
+        $test = $db->query("SELECT gallery_images FROM works LIMIT 0");
+    } catch (PDOException $e) {
+        $db->exec("ALTER TABLE works ADD COLUMN gallery_images TEXT NOT NULL DEFAULT '[]'");
+    }
+
+    // 迁移：works 表新增 download_links 列（JSON 数组）
+    try {
+        $test = $db->query("SELECT download_links FROM works LIMIT 0");
+    } catch (PDOException $e) {
+        $db->exec("ALTER TABLE works ADD COLUMN download_links TEXT NOT NULL DEFAULT '[]'");
+    }
+
+    // 迁移：works 表新增 markdown 列（详细描述 Markdown）
+    try {
+        $test = $db->query("SELECT markdown FROM works LIMIT 0");
+    } catch (PDOException $e) {
+        $db->exec("ALTER TABLE works ADD COLUMN markdown TEXT NOT NULL DEFAULT ''");
     }
 
     // 迁移：新增 servers 表

@@ -23,7 +23,8 @@
 │   ├── gallery-edit.html   作品编辑/新建
 │   └── css/admin.css       后台样式
 ├── gallery/
-│   └── index.html          作品展示（API 驱动 + Lightbox）
+│   ├── index.html          作品展示（API 驱动 + 分类筛选）
+│   └── detail.html         作品详情（?id=，Modrinth 风格双栏布局）
 ├── news/
 │   ├── index.html          新闻列表（从 API 加载）
 │   └── article.html        文章详情（从 API 加载，?slug=）
@@ -46,7 +47,8 @@
 │   ├── main.js             全局（导航/主题/滚动）
 │   ├── content.js          内容渲染（从 API 加载新闻和活动）
 │   ├── server.js           服务器状态卡片（API 查询 + MOTD 渲染）
-│   ├── gallery.js          作品展示（API 加载 + Lightbox + 下载）
+│   ├── gallery.js          作品展示（API 加载 + 分类筛选 + 卡片跳转）
+│   ├── gallery-detail.js   作品详情（Markdown + 相册 + 下载链接）
 │   ├── hero-gallery.js     Hero 背景画廊
 │   ├── admin-auth.js       统一管理认证模块
 │   ├── admin.js            后台仪表盘/列表逻辑
@@ -87,8 +89,11 @@
 通过 `/admin/gallery.html` 管理，支持：
 - 创建/编辑/删除作品
 - 封面图 + 大图，分类筛选
+- 作者、简短描述、详细描述（Markdown）
+- 相册多图管理、动态下载链接（名称 + URL）
 - 状态：已发布 / 草稿
-- 前端 `/gallery/` 以卡片网格展示，点击弹出 Lightbox 查看大图并提供下载
+- 前端 `/gallery/` 以卡片网格展示，点击跳转详情页
+- 详情页 `/gallery/detail.html?id=` — Modrinth 风格双栏布局：相册 + Markdown 描述 + 作者 + 下载按钮
 
 ### 服务器
 
@@ -116,7 +121,7 @@
 | `api/events.php` | `?action=list` / `?action=upcoming` / `?action=past` | 公开：活动列表 |
 | `api/events.php` | `?action=admin_list` / `?action=admin_detail&id=xxx` | 管理：活动列表/详情 |
 | `api/events.php` | `?action=create` / `?action=update` / `?action=delete` | 管理：CRUD |
-| `api/works.php` | `?action=list` / `?action=detail&slug=xxx` | 公开：作品列表/详情 |
+| `api/works.php` | `?action=list` / `?action=detail&id=xxx` / `?action=detail&slug=xxx` | 公开：作品列表/详情 |
 | `api/works.php` | `?action=admin_list` / `?action=admin_detail&id=xxx` | 管理：作品列表/详情 |
 | `api/works.php` | `?action=create` / `?action=update` / `?action=delete` | 管理：CRUD |
 | `api/servers.php` | `?action=list` / `?action=featured` | 公开：服务器列表/置顶 |

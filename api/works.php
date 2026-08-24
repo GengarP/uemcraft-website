@@ -55,15 +55,22 @@ try {
         json_response(['success' => true, 'data' => $categories]);
     }
 
-    // ---- 公开：作品详情 ----
+    // ---- 公开：作品详情（支持 ?id= 或 ?slug=） ----
     if ($action === 'detail') {
+        $id   = intval($_GET['id'] ?? 0);
         $slug = trim($_GET['slug'] ?? '');
-        if ($slug === '') {
-            json_response(['success' => false, 'error' => '缺少 slug 参数'], 400);
+
+        if ($id <= 0 && $slug === '') {
+            json_response(['success' => false, 'error' => '缺少 id 或 slug 参数'], 400);
         }
 
-        $stmt = $db->prepare("SELECT * FROM works WHERE slug = ? AND status = 'published'");
-        $stmt->execute([$slug]);
+        if ($id > 0) {
+            $stmt = $db->prepare("SELECT * FROM works WHERE id = ? AND status = 'published'");
+            $stmt->execute([$id]);
+        } else {
+            $stmt = $db->prepare("SELECT * FROM works WHERE slug = ? AND status = 'published'");
+            $stmt->execute([$slug]);
+        }
         $row = $stmt->fetch();
 
         if (!$row) {
@@ -72,6 +79,9 @@ try {
 
         $row['id'] = (int) $row['id'];
         $row['sort_order'] = (int) $row['sort_order'];
+        // 解析 JSON 字段
+        $row['gallery_images'] = json_decode($row['gallery_images'] ?? '[]', true) ?: [];
+        $row['download_links'] = json_decode($row['download_links'] ?? '[]', true) ?: [];
 
         json_response(['success' => true, 'data' => $row]);
     }
@@ -95,6 +105,9 @@ try {
 
         $row['id'] = (int) $row['id'];
         $row['sort_order'] = (int) $row['sort_order'];
+        // 解析 JSON 字段
+        $row['gallery_images'] = json_decode($row['gallery_images'] ?? '[]', true) ?: [];
+        $row['download_links'] = json_decode($row['download_links'] ?? '[]', true) ?: [];
 
         json_response(['success' => true, 'data' => $row]);
     }
@@ -154,14 +167,18 @@ try {
 
         $input = readInput();
 
-        $title       = trim($input['title'] ?? '');
-        $slug        = trim($input['slug'] ?? '');
-        $description = trim($input['description'] ?? '');
-        $cover       = trim($input['cover'] ?? '');
-        $image       = trim($input['image'] ?? '');
-        $category    = trim($input['category'] ?? '');
-        $sort_order  = intval($input['sort_order'] ?? 0);
-        $status      = trim($input['status'] ?? 'published');
+        $title          = trim($input['title'] ?? '');
+        $slug           = trim($input['slug'] ?? '');
+        $description    = trim($input['description'] ?? '');
+        $markdown       = trim($input['markdown'] ?? '');
+        $cover          = trim($input['cover'] ?? '');
+        $image          = trim($input['image'] ?? '');
+        $category       = trim($input['category'] ?? '');
+        $author         = trim($input['author'] ?? '');
+        $gallery_images = json_encode($input['gallery_images'] ?? [], JSON_UNESCAPED_UNICODE);
+        $download_links = json_encode($input['download_links'] ?? [], JSON_UNESCAPED_UNICODE);
+        $sort_order     = intval($input['sort_order'] ?? 0);
+        $status         = trim($input['status'] ?? 'published');
 
         // 校验
         if ($title === '') {
@@ -186,8 +203,8 @@ try {
 
         $ts = now();
 
-        $stmt = $db->prepare("INSERT INTO works (title, slug, description, cover, image, category, sort_order, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$title, $slug, $description, $cover, $image, $category, $sort_order, $status, $ts, $ts]);
+        $stmt = $db->prepare("INSERT INTO works (title, slug, description, markdown, cover, image, category, author, gallery_images, download_links, sort_order, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$title, $slug, $description, $markdown, $cover, $image, $category, $author, $gallery_images, $download_links, $sort_order, $status, $ts, $ts]);
 
         json_response([
             'success' => true,
@@ -221,9 +238,13 @@ try {
         $title       = array_key_exists('title', $input)       ? trim($input['title'])       : $existing['title'];
         $slug        = array_key_exists('slug', $input)        ? trim($input['slug'])        : $existing['slug'];
         $description = array_key_exists('description', $input) ? trim($input['description']) : $existing['description'];
+        $markdown    = array_key_exists('markdown', $input)    ? trim($input['markdown'])    : ($existing['markdown'] ?? '');
         $cover       = array_key_exists('cover', $input)       ? trim($input['cover'])       : $existing['cover'];
         $image       = array_key_exists('image', $input)       ? trim($input['image'])       : $existing['image'];
         $category    = array_key_exists('category', $input)    ? trim($input['category'])    : $existing['category'];
+        $author      = array_key_exists('author', $input)      ? trim($input['author'])      : ($existing['author'] ?? '');
+        $gallery_images = array_key_exists('gallery_images', $input) ? json_encode($input['gallery_images'], JSON_UNESCAPED_UNICODE) : ($existing['gallery_images'] ?? '[]');
+        $download_links = array_key_exists('download_links', $input) ? json_encode($input['download_links'], JSON_UNESCAPED_UNICODE) : ($existing['download_links'] ?? '[]');
         $sort_order  = array_key_exists('sort_order', $input)  ? intval($input['sort_order'])  : (int) $existing['sort_order'];
         $status      = array_key_exists('status', $input)      ? trim($input['status'])      : $existing['status'];
 
@@ -245,8 +266,8 @@ try {
             $status = $existing['status'];
         }
 
-        $stmt = $db->prepare("UPDATE works SET title=?, slug=?, description=?, cover=?, image=?, category=?, sort_order=?, status=?, updated_at=? WHERE id=?");
-        $stmt->execute([$title, $slug, $description, $cover, $image, $category, $sort_order, $status, now(), $id]);
+        $stmt = $db->prepare("UPDATE works SET title=?, slug=?, description=?, markdown=?, cover=?, image=?, category=?, author=?, gallery_images=?, download_links=?, sort_order=?, status=?, updated_at=? WHERE id=?");
+        $stmt->execute([$title, $slug, $description, $markdown, $cover, $image, $category, $author, $gallery_images, $download_links, $sort_order, $status, now(), $id]);
 
         json_response([
             'success' => true,
