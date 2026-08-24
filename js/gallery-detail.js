@@ -315,10 +315,27 @@
           return;
         }
         renderDetail(json.data);
+        positionSidebar();
       })
       .catch(function () {
         renderError('加载作品时发生错误');
       });
+  }
+
+  /* ---- 侧栏 fixed 定位：JS 动态计算 right 值，对齐 grid 列 ---- */
+  function positionSidebar() {
+    var sidebar = document.querySelector('.detail-sidebar');
+    var inner = document.querySelector('.detail-sidebar-inner');
+    if (!sidebar || !inner) return;
+
+    function update() {
+      var rect = sidebar.getBoundingClientRect();
+      inner.style.right = (window.innerWidth - rect.right) + 'px';
+    }
+
+    update();
+    window.addEventListener('resize', update);
+    window.addEventListener('scroll', update, { passive: true });
   }
 
   document.addEventListener('DOMContentLoaded', init);

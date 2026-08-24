@@ -150,26 +150,28 @@
 
       <!-- 侧栏：作者 + 下载 + 元信息 -->
       <aside class="detail-sidebar">
-        <!-- 作者卡片 -->
-        <div class="detail-author-card" id="detailAuthor" style="display:none;">
-          <div class="detail-author-label">作者</div>
-          <div class="detail-author-name" id="authorName"></div>
-        </div>
+        <div class="detail-sidebar-inner">
+          <!-- 作者卡片 -->
+          <div class="detail-author-card" id="detailAuthor" style="display:none;">
+            <div class="detail-author-label">作者</div>
+            <div class="detail-author-name" id="authorName"></div>
+          </div>
 
-        <!-- 下载按钮 -->
-        <div class="detail-downloads" id="detailDownloads" style="display:none;">
-          <div class="detail-downloads-label">下载</div>
-          <div id="downloadButtons"></div>
-        </div>
+          <!-- 下载按钮 -->
+          <div class="detail-downloads" id="detailDownloads" style="display:none;">
+            <div class="detail-downloads-label">下载</div>
+            <div id="downloadButtons"></div>
+          </div>
 
-        <!-- 元信息 -->
-        <div class="detail-meta-card">
-          <div class="detail-meta-label">信息</div>
-          <div class="detail-meta-items" id="detailMetaItems"></div>
-        </div>
+          <!-- 元信息 -->
+          <div class="detail-meta-card">
+            <div class="detail-meta-label">信息</div>
+            <div class="detail-meta-items" id="detailMetaItems"></div>
+          </div>
 
-        <!-- 返回按钮 -->
-        <a href="/gallery/" class="btn btn-outline detail-back-btn">← 返回作品列表</a>
+          <!-- 返回按钮 -->
+          <a href="/gallery/" class="btn btn-outline detail-back-btn">← 返回作品列表</a>
+        </div>
       </aside>
 
     </div>
@@ -181,10 +183,10 @@
 <!-- Lightbox -->
 <div class="lightbox" id="worksLightbox" role="dialog" aria-modal="true" aria-label="图片预览" aria-hidden="true">
   <button class="lightbox-close" aria-label="关闭">&times;</button>
-  <button class="lightbox-prev" aria-label="上一张">‹</button>
-  <button class="lightbox-next" aria-label="下一张">›</button>
-  <div class="lightbox-content">
-    <img id="lightboxImg" src="" alt="">
+  <button class="lightbox-prev lightbox-nav" aria-label="上一张">&lt;</button>
+  <button class="lightbox-next lightbox-nav" aria-label="下一张">&gt;</button>
+  <div class="lightbox-body">
+    <img class="lightbox-img" id="lightboxImg" src="" alt="">
   </div>
 </div>
 
