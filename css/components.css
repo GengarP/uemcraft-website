@@ -1317,18 +1317,11 @@ a.works-card { text-decoration:none; color:inherit; }
 .detail-body th, .detail-body td { padding: var(--space-sm); border: 1px solid var(--c-border); text-align: left; }
 .detail-body th { background: var(--c-bg); font-weight: 700; }
 
-/* Sidebar — outer wrapper stays in grid flow, inner content is fixed */
-.detail-sidebar {
-  position: relative;
-}
+/* Sidebar — normal flow, scrolls with content */
 .detail-sidebar-inner {
-  position: fixed;
-  top: calc(var(--header-h-scrolled) + var(--space-lg));
-  width: 320px;
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
-  z-index: 50;
 }
 
 /* Author card */
@@ -1394,10 +1387,6 @@ a.works-card { text-decoration:none; color:inherit; }
     gap: var(--space-xl);
   }
   .detail-sidebar {
-    width: 100%;
-  }
-  .detail-sidebar-inner {
-    position: static;
     width: 100%;
   }
   .detail-gallery-main img {
