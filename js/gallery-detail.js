@@ -183,13 +183,9 @@
     var titleEl = document.getElementById('detailTitle');
     var subEl = document.getElementById('detailSub');
     var crumbEl = document.getElementById('detailCrumb');
-    var galleryEl = document.getElementById('detailGallery');
     var bodyEl = document.getElementById('detailBody');
-    var authorEl = document.getElementById('detailAuthor');
-    var authorNameEl = document.getElementById('authorName');
     var downloadsEl = document.getElementById('detailDownloads');
     var downloadBtnsEl = document.getElementById('downloadButtons');
-    var metaItemsEl = document.getElementById('detailMetaItems');
 
     // 标题 & 面包屑
     document.title = item.title + ' — 作品详情 — UEMCraft';
@@ -325,10 +321,19 @@
       }
     }
 
-    // 作者
-    if (item.author && authorEl && authorNameEl) {
-      authorNameEl.textContent = item.author;
-      authorEl.style.display = '';
+    // 侧栏头部：标题 + 作者 + 分类
+    var sidebarTitle = document.getElementById('sidebarTitle');
+    var sidebarAuthor = document.getElementById('sidebarAuthor');
+    var sidebarCategory = document.getElementById('sidebarCategory');
+    if (sidebarTitle) sidebarTitle.textContent = item.title;
+    if (sidebarAuthor) sidebarAuthor.textContent = item.author ? 'by ' + item.author : '';
+    if (sidebarCategory) {
+      if (item.category) {
+        sidebarCategory.textContent = item.category;
+        sidebarCategory.style.display = '';
+      } else {
+        sidebarCategory.style.display = 'none';
+      }
     }
 
     // 下载链接
@@ -344,15 +349,6 @@
         downloadBtnsEl.appendChild(a);
       });
       downloadsEl.style.display = '';
-    }
-
-    // 元信息
-    if (metaItemsEl) {
-      var metaHtml = '';
-      if (item.category) {
-        metaHtml += '<div class="detail-meta-item"><span class="detail-meta-key">分类</span><span class="detail-meta-val">' + escapeHtml(item.category) + '</span></div>';
-      }
-      metaItemsEl.innerHTML = metaHtml;
     }
 
     // 简短描述（侧栏）
@@ -391,12 +387,16 @@
 
     function checkScroll() {
       var sidebarRect = sidebar.getBoundingClientRect();
-      var btnHeight = btn.offsetHeight;
-      // 侧栏底部滚出视口时，按钮固定到右下角
+      // 侧栏底部滚出视口下方时，按钮固定在侧栏列内
       if (sidebarRect.bottom < window.innerHeight - 20) {
         btn.classList.add('is-fixed');
+        // 计算侧栏列的左边缘位置，保持按钮在侧栏内
+        btn.style.left = sidebarRect.left + 'px';
+        btn.style.width = sidebarRect.width + 'px';
       } else {
         btn.classList.remove('is-fixed');
+        btn.style.left = '';
+        btn.style.width = '';
       }
     }
 

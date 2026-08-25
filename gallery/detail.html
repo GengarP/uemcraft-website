@@ -160,32 +160,32 @@
       <!-- 侧栏 -->
       <aside class="detail-sidebar">
         <div class="detail-sidebar-inner">
-          <!-- 作者卡片 -->
-          <div class="detail-author-card" id="detailAuthor" style="display:none;">
-            <div class="detail-author-label">作者</div>
-            <div class="detail-author-name" id="authorName"></div>
+          <!-- 头部信息 -->
+          <div class="detail-sidebar-header">
+            <h2 class="detail-sidebar-title" id="sidebarTitle"></h2>
+            <div class="detail-sidebar-meta">
+              <span class="detail-sidebar-author" id="sidebarAuthor"></span>
+              <span class="detail-sidebar-category badge" id="sidebarCategory"></span>
+            </div>
           </div>
 
           <!-- 简短描述 -->
-          <div class="detail-desc-card" id="detailDescCard" style="display:none;">
-            <div class="detail-desc-label">简介</div>
+          <div class="detail-sidebar-desc" id="detailDescCard" style="display:none;">
             <p class="detail-desc-text" id="detailDescText"></p>
           </div>
 
-          <!-- 下载按钮 -->
-          <div class="detail-downloads" id="detailDownloads" style="display:none;">
-            <div class="detail-downloads-label">下载</div>
-            <div id="downloadButtons"></div>
-          </div>
+          <!-- 弹性间隔，将底部操作推到底部 -->
+          <div class="detail-sidebar-spacer"></div>
 
-          <!-- 元信息 -->
-          <div class="detail-meta-card">
-            <div class="detail-meta-label">信息</div>
-            <div class="detail-meta-items" id="detailMetaItems"></div>
+          <!-- 底部操作区 -->
+          <div class="detail-sidebar-actions">
+            <!-- 下载按钮 -->
+            <div class="detail-downloads" id="detailDownloads" style="display:none;">
+              <div id="downloadButtons"></div>
+            </div>
+            <!-- 返回按钮 -->
+            <a href="/gallery/" class="btn btn-outline btn-block detail-back-btn" id="detailBackBtn">← 返回作品列表</a>
           </div>
-
-          <!-- 返回按钮（侧栏底部，滚动时固定） -->
-          <a href="/gallery/" class="btn btn-outline detail-back-btn" id="detailBackBtn">← 返回作品列表</a>
         </div>
       </aside>
 

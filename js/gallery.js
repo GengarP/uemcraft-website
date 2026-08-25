@@ -90,6 +90,7 @@
   function renderWorkCard(item, index) {
     var cover = item.cover || item.image || '';
     var title = escapeHtml(item.title);
+    var desc = escapeHtml(item.description || '');
     var author = escapeHtml(item.author || '');
     var category = escapeHtml(item.category || '');
     var detailUrl = 'detail.html?id=' + encodeURIComponent(item.id);
@@ -102,6 +103,11 @@
       ? '<div class="works-card-footer">' + footerParts.join('') + '</div>'
       : '';
 
+    // 简短描述（2行省略）
+    var descHtml = desc
+      ? '<p class="works-card-desc">' + desc + '</p>'
+      : '';
+
     return '<a href="' + detailUrl + '" class="works-card" data-index="' + index + '" data-id="' + item.id + '">'
       + (cover
         ? '<img class="works-card-bg" src="' + escapeHtml(cover) + '" alt="' + title + '" loading="lazy">'
@@ -109,6 +115,7 @@
       + '<div class="works-card-overlay"></div>'
       + '<div class="works-card-info">'
       + '<h3 class="works-card-title">' + title + '</h3>'
+      + descHtml
       + footerHtml
       + '</div>'
       + '</a>';
