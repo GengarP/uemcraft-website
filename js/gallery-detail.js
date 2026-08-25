@@ -358,6 +358,68 @@
         descCard.style.display = '';
       }
     }
+
+    // 返回按钮滚动跟随效果（仅桌面端）
+    initBackBtnScrollEffect();
+  }
+
+  /* ---- 返回按钮滚动跟随效果 ---- */
+  function initBackBtnScrollEffect() {
+    var btn = document.getElementById('detailBackBtn');
+    if (!btn) return;
+
+    var isDesktop = window.matchMedia('(min-width:769px)');
+    var lastOffset = 0;
+
+    function update() {
+      if (!isDesktop.matches) {
+        if (lastOffset !== 0) { btn.style.transform = ''; lastOffset = 0; }
+        return;
+      }
+
+      var btnRect = btn.getBoundingClientRect();
+      var container = btn.closest('.container');
+      if (!container) return;
+
+      // 计算按钮原始底部位置（文档坐标，不含 transform）
+      var originalBtnBottom = btnRect.bottom + window.scrollY - lastOffset;
+      var btnHeight = btnRect.height;
+      var originalBtnTop = originalBtnBottom - btnHeight;
+
+      var winH = window.innerHeight;
+      var containerRect = container.getBoundingClientRect();
+      var containerBottomDoc = containerRect.bottom + window.scrollY;
+
+      // 按钮原始顶部在视口下方 → 还未到达，无需处理
+      if (originalBtnTop - window.scrollY > winH) {
+        if (lastOffset !== 0) { btn.style.transform = ''; lastOffset = 0; }
+        return;
+      }
+
+      // 计算按钮视觉底部位置（视口坐标）
+      var btnVisualBottom = originalBtnBottom - window.scrollY;
+      // 按钮需要保持在视口内，最小底部 = 按钮高度
+      var minBottom = btnHeight;
+      var maxTranslate = containerBottomDoc - originalBtnBottom;
+      var offset = Math.min(0, Math.max(minBottom - btnVisualBottom, -maxTranslate));
+
+      if (offset !== lastOffset) {
+        btn.style.transform = 'translateY(' + offset + 'px)';
+        lastOffset = offset;
+      }
+    }
+
+    var ticking = false;
+    function onScroll() {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(function () { update(); ticking = false; });
+      }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', function () { lastOffset = 0; btn.style.transform = ''; update(); }, { passive: true });
+    update();
   }
 
   function renderError(msg) {
