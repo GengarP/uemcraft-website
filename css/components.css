@@ -1573,13 +1573,13 @@ a.works-card { text-decoration:none; color:inherit; }
 }
 .detail-download-btn:last-child { margin-bottom:0; }
 
-/* Back button — 滚动跟随效果由 JS 驱动，保持在屏幕内且不超出 container */
+/* Back button — sticky，始终在侧栏内，不超出 container */
 .detail-back-btn {
   text-align:center;
-  position:relative;
+  position:sticky;
+  bottom:var(--space-lg);
   width:100%;
   box-shadow:var(--shadow-hard);
-  will-change:transform;
 }
 
 /* Responsive */
