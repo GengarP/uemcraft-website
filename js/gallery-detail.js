@@ -385,18 +385,31 @@
     // 仅桌面端生效
     if (window.matchMedia('(max-width: 768px)').matches) return;
 
+    var sidebarInner = sidebar.querySelector('.detail-sidebar-inner');
+    // 让侧栏在滚动时保持在视口内
+    if (sidebarInner) sidebarInner.style.position = 'sticky';
+    if (sidebarInner) sidebarInner.style.top = '80px';
+
     function checkScroll() {
       var sidebarRect = sidebar.getBoundingClientRect();
-      // 侧栏底部滚出视口下方时，按钮固定在侧栏列内
+      // 侧栏底部滚出视口时，按钮固定在侧栏列内
       if (sidebarRect.bottom < window.innerHeight - 20) {
-        btn.classList.add('is-fixed');
-        // 计算侧栏列的左边缘位置，保持按钮在侧栏内
-        btn.style.left = sidebarRect.left + 'px';
-        btn.style.width = sidebarRect.width + 'px';
+        if (!btn.classList.contains('is-fixed')) {
+          // 首次切换：先计算宽度再添加 class，避免视觉跳动
+          btn.style.width = sidebarRect.width + 'px';
+          btn.style.left = sidebarRect.left + 'px';
+          btn.classList.add('is-fixed');
+        } else {
+          // 已固定：持续更新位置
+          btn.style.left = sidebarRect.left + 'px';
+          btn.style.width = sidebarRect.width + 'px';
+        }
       } else {
-        btn.classList.remove('is-fixed');
-        btn.style.left = '';
-        btn.style.width = '';
+        if (btn.classList.contains('is-fixed')) {
+          btn.classList.remove('is-fixed');
+          btn.style.left = '';
+          btn.style.width = '';
+        }
       }
     }
 
