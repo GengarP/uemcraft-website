@@ -302,9 +302,6 @@
       galleryWrap.style.display = '';
     }
 
-    // 返回按钮：滚动时固定到右下角
-    initBackBtnScroll();
-
     // Markdown 描述
     if (bodyEl) {
       var md = item.markdown || item.description || '';
@@ -374,38 +371,6 @@
     if (subEl) subEl.textContent = msg || '你访问的作品可能已被移动或删除。';
     if (crumbEl) crumbEl.textContent = '作品不存在';
     if (bodyEl) bodyEl.innerHTML = '<p>' + escapeHtml(msg || '没有找到对应的作品。') + '，<a href="/gallery/">返回作品列表</a>。</p>';
-  }
-
-  /* ---- 返回按钮滚动固定 ---- */
-  function initBackBtnScroll() {
-    var btn = document.getElementById('detailBackBtn');
-    var sidebar = document.querySelector('.detail-sidebar');
-    if (!btn || !sidebar) return;
-
-    // 仅桌面端生效
-    if (window.matchMedia('(max-width: 768px)').matches) return;
-
-    var sidebarInner = sidebar.querySelector('.detail-sidebar-inner');
-    // 让侧栏在滚动时保持在视口内
-    if (sidebarInner) sidebarInner.style.position = 'sticky';
-    if (sidebarInner) sidebarInner.style.top = '80px';
-
-    function checkScroll() {
-      var sidebarRect = sidebar.getBoundingClientRect();
-      // 始终更新 CSS 变量，让 CSS 声明式处理宽度和位置
-      sidebar.style.setProperty('--sidebar-left', sidebarRect.left + 'px');
-      sidebar.style.setProperty('--sidebar-width', sidebarRect.width + 'px');
-
-      if (sidebarRect.bottom < window.innerHeight - 20) {
-        btn.classList.add('is-fixed');
-      } else {
-        btn.classList.remove('is-fixed');
-      }
-    }
-
-    window.addEventListener('scroll', checkScroll, { passive: true });
-    window.addEventListener('resize', checkScroll, { passive: true });
-    checkScroll();
   }
 
   /* ---- 初始化 ---- */

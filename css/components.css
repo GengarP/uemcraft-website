@@ -1497,9 +1497,11 @@ a.works-card { text-decoration:none; color:inherit; }
   display:flex;
   flex-direction:column;
   gap:0;
+  position:sticky;
+  top:80px;
 }
 
-/* Sidebar header: title + author + category */
+/* Sidebar header: title + category + author */
 .detail-sidebar-header {
   padding-bottom:var(--space-lg);
   border-bottom:1px solid var(--c-border);
@@ -1514,20 +1516,8 @@ a.works-card { text-decoration:none; color:inherit; }
 }
 .detail-sidebar-meta {
   display:flex;
-  align-items:center;
-  gap:var(--space-sm);
-  flex-wrap:wrap;
-}
-.detail-sidebar-meta .detail-sidebar-category + .detail-sidebar-author::before {
-  content:'';
-  display:inline-block;
-  width:4px;
-  height:4px;
-  background:var(--c-border);
-  border-radius:1px;
-  transform:rotate(45deg);
-  margin-right:var(--space-sm);
-  vertical-align:middle;
+  flex-direction:column;
+  gap:var(--space-xs);
 }
 .detail-sidebar-author {
   font-size:var(--fs-sm);
@@ -1536,6 +1526,7 @@ a.works-card { text-decoration:none; color:inherit; }
 }
 .detail-sidebar-category {
   font-size:.7rem;
+  align-self:flex-start;
 }
 
 /* Description */
@@ -1582,18 +1573,12 @@ a.works-card { text-decoration:none; color:inherit; }
 }
 .detail-download-btn:last-child { margin-bottom:0; }
 
-/* Back button */
-/* 返回按钮：侧栏底部，滚动时固定在侧栏列内 */
+/* Back button — sticky，始终在侧栏内，不超出 container */
 .detail-back-btn {
   text-align:center;
-  width:100%;
-}
-.detail-back-btn.is-fixed {
-  position:fixed;
+  position:sticky;
   bottom:var(--space-lg);
-  left:var(--sidebar-left);
-  width:var(--sidebar-width);
-  z-index:900;
+  width:100%;
   box-shadow:var(--shadow-hard);
 }
 
@@ -1613,13 +1598,9 @@ a.works-card { text-decoration:none; color:inherit; }
   .detail-sidebar-inner {
     position:static;
   }
-  .detail-back-btn,
-  .detail-back-btn.is-fixed {
-    grid-column: 1 / -1;
+  .detail-back-btn {
     position:static;
     width:100%;
-    left:auto;
-    bottom:auto;
     box-shadow:none;
   }
 }
