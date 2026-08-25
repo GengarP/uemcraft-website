@@ -1364,8 +1364,8 @@ a.works-card { text-decoration:none; color:inherit; }
   min-width:0;
   overflow:hidden;
   border-radius:var(--radius);
-  background:var(--c-bg-2);
   cursor:pointer;
+  /* aspect-ratio 由 JS 根据首张图片计算后写入 */
 }
 
 /* 滑动轨道 */
@@ -1376,9 +1376,8 @@ a.works-card { text-decoration:none; color:inherit; }
 .detail-gallery-track img {
   flex:0 0 100%;
   width:100%;
-  height:auto;
-  max-height:560px;
-  object-fit:contain;
+  height:100%;
+  object-fit:cover;
   display:block;
   cursor:pointer;
 }
@@ -1426,10 +1425,13 @@ a.works-card { text-decoration:none; color:inherit; }
   gap:var(--space-sm);
   margin-top:var(--space-md);
   overflow-x:auto;
-  padding-bottom:var(--space-xs);
+  padding:var(--space-sm);
   -webkit-overflow-scrolling:touch;
   position:relative;
   z-index:2;
+  background:var(--c-surface-2);
+  border-radius:var(--radius);
+  border:1px solid var(--c-border);
 }
 .detail-hero-thumb {
   flex:0 0 72px;
@@ -1438,15 +1440,13 @@ a.works-card { text-decoration:none; color:inherit; }
   border-radius:var(--radius);
   overflow:hidden;
   cursor:pointer;
-  border:2px solid var(--c-border);
+  border:2px solid transparent;
   transition:border-color var(--duration),box-shadow var(--duration);
-  background:var(--c-surface-2);
-  padding:3px;
+  padding:2px;
   box-sizing:border-box;
 }
 .detail-hero-thumb:hover {
   border-color:var(--c-primary);
-  box-shadow:0 -2px 8px rgba(33,61,135,.2);
 }
 .detail-hero-thumb.is-active { border-color:var(--c-primary); box-shadow:0 0 0 1px var(--c-primary); }
 .detail-hero-thumb img { width:100%; height:100%; object-fit:contain; display:block; }
@@ -1590,7 +1590,7 @@ a.works-card { text-decoration:none; color:inherit; }
 @media (max-width:768px) {
   .detail-gallery-arrow { display:none; }
   .detail-gallery-wrap { gap:0; }
-  .detail-gallery-track img { max-height:320px; }
+  .detail-gallery-track img { object-fit:cover; }
   .detail-layout {
     grid-template-columns:1fr;
     gap:var(--space-xl);

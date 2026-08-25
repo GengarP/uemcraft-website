@@ -222,6 +222,19 @@
         track.appendChild(img);
       });
 
+      // 根据首张图片计算相册宽高比，撑满宽度、消除黑边
+      var firstImg = track.querySelector('img');
+      if (firstImg) {
+        function applyAspect() {
+          var nw = firstImg.naturalWidth, nh = firstImg.naturalHeight;
+          if (nw && nh) {
+            document.getElementById('detailGallery').style.aspectRatio = nw + ' / ' + nh;
+          }
+        }
+        if (firstImg.complete) applyAspect();
+        else firstImg.addEventListener('load', applyAspect);
+      }
+
       // 滑动定位
       function setTrackPos(idx, animate) {
         if (!animate) track.style.transition = 'none';
