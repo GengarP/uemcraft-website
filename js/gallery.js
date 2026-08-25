@@ -86,7 +86,24 @@
       html += renderWorkCard(works[i], i);
     }
     gridEl.innerHTML = html;
+    revealExpandButtons();
     bindCardClicks();
+  }
+
+  // ---- 检测描述溢出，仅在需要时显示展开按钮 ----
+  function revealExpandButtons() {
+    var descs = gridEl.querySelectorAll('.works-card-desc-wrap');
+    for (var i = 0; i < descs.length; i++) {
+      var p = descs[i].querySelector('.works-card-desc');
+      var btn = descs[i].querySelector('.works-card-expand');
+      if (!p || !btn) continue;
+      // 空描述（占位符）无需按钮
+      if (p.innerHTML === '&nbsp;') continue;
+      // scrollHeight > clientHeight 表示文本被截断
+      if (p.scrollHeight > p.clientHeight + 1) {
+        btn.style.display = '';
+      }
+    }
   }
 
   function renderWorkCard(item, index) {
@@ -97,13 +114,6 @@
     var category = escapeHtml(item.category || '');
     var detailUrl = 'detail.html?id=' + encodeURIComponent(item.id);
 
-    // 格式化日期
-    var dateStr = '';
-    if (item.created_at) {
-      var d = new Date(item.created_at * 1000);
-      dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-    }
-
     // 底部信息行：作者 + 分类徽章（右侧）
     var footerParts = [];
     if (author) footerParts.push('<span class="works-card-author">' + author + '</span>');
@@ -112,14 +122,11 @@
       ? '<div class="works-card-footer">' + footerParts.join('') + '</div>'
       : '';
 
-    // 描述展开按钮
-    var descHtml = '';
-    if (desc) {
-      descHtml = '<div class="works-card-desc-wrap">'
-        + '<p class="works-card-desc">' + desc + '</p>'
-        + '<button class="works-card-expand" type="button" aria-label="展开描述" data-action="expand">⋯</button>'
-        + '</div>';
-    }
+    // 描述区：始终渲染以保持卡片等高，按钮在渲染后按需显示
+    var descHtml = '<div class="works-card-desc-wrap">'
+      + '<p class="works-card-desc">' + (desc || '&nbsp;') + '</p>'
+      + '<button class="works-card-expand" type="button" aria-label="展开描述" data-action="expand" style="display:none;">⋯</button>'
+      + '</div>';
 
     return '<a href="' + detailUrl + '" class="works-card" data-index="' + index + '" data-id="' + item.id + '">'
       + (cover

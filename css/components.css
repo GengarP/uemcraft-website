@@ -1286,9 +1286,10 @@ a.works-card { text-decoration:none; color:inherit; }
   flex-shrink:0;
 }
 
-/* 描述展开 */
+/* 描述展开：始终占两行高度以保证卡片等高 */
 .works-card-desc-wrap {
   position:relative;
+  min-height:calc(var(--fs-sm) * 1.5 * 2);
 }
 .works-card-desc {
   font-size:var(--fs-sm);
