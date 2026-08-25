@@ -1518,6 +1518,17 @@ a.works-card { text-decoration:none; color:inherit; }
   gap:var(--space-sm);
   flex-wrap:wrap;
 }
+.detail-sidebar-meta .detail-sidebar-category + .detail-sidebar-author::before {
+  content:'';
+  display:inline-block;
+  width:4px;
+  height:4px;
+  background:var(--c-border);
+  border-radius:1px;
+  transform:rotate(45deg);
+  margin-right:var(--space-sm);
+  vertical-align:middle;
+}
 .detail-sidebar-author {
   font-size:var(--fs-sm);
   color:var(--c-text-muted);
@@ -1575,10 +1586,13 @@ a.works-card { text-decoration:none; color:inherit; }
 /* 返回按钮：侧栏底部，滚动时固定在侧栏列内 */
 .detail-back-btn {
   text-align:center;
+  width:100%;
 }
 .detail-back-btn.is-fixed {
   position:fixed;
   bottom:var(--space-lg);
+  left:var(--sidebar-left);
+  width:var(--sidebar-width);
   z-index:900;
   box-shadow:var(--shadow-hard);
 }

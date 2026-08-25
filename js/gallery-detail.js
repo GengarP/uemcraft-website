@@ -321,12 +321,11 @@
       }
     }
 
-    // 侧栏头部：标题 + 作者 + 分类
+    // 侧栏头部：标题 + 分类 + 作者
     var sidebarTitle = document.getElementById('sidebarTitle');
     var sidebarAuthor = document.getElementById('sidebarAuthor');
     var sidebarCategory = document.getElementById('sidebarCategory');
     if (sidebarTitle) sidebarTitle.textContent = item.title;
-    if (sidebarAuthor) sidebarAuthor.textContent = item.author ? 'by ' + item.author : '';
     if (sidebarCategory) {
       if (item.category) {
         sidebarCategory.textContent = item.category;
@@ -335,6 +334,7 @@
         sidebarCategory.style.display = 'none';
       }
     }
+    if (sidebarAuthor) sidebarAuthor.textContent = item.author ? 'by ' + item.author : '';
 
     // 下载链接
     if (item.download_links && item.download_links.length > 0 && downloadsEl && downloadBtnsEl) {
@@ -392,24 +392,14 @@
 
     function checkScroll() {
       var sidebarRect = sidebar.getBoundingClientRect();
-      // 侧栏底部滚出视口时，按钮固定在侧栏列内
+      // 始终更新 CSS 变量，让 CSS 声明式处理宽度和位置
+      sidebar.style.setProperty('--sidebar-left', sidebarRect.left + 'px');
+      sidebar.style.setProperty('--sidebar-width', sidebarRect.width + 'px');
+
       if (sidebarRect.bottom < window.innerHeight - 20) {
-        if (!btn.classList.contains('is-fixed')) {
-          // 首次切换：先计算宽度再添加 class，避免视觉跳动
-          btn.style.width = sidebarRect.width + 'px';
-          btn.style.left = sidebarRect.left + 'px';
-          btn.classList.add('is-fixed');
-        } else {
-          // 已固定：持续更新位置
-          btn.style.left = sidebarRect.left + 'px';
-          btn.style.width = sidebarRect.width + 'px';
-        }
+        btn.classList.add('is-fixed');
       } else {
-        if (btn.classList.contains('is-fixed')) {
-          btn.classList.remove('is-fixed');
-          btn.style.left = '';
-          btn.style.width = '';
-        }
+        btn.classList.remove('is-fixed');
       }
     }
 
