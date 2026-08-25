@@ -118,12 +118,9 @@
 <!-- ====== Main ====== -->
 <main id="main">
 
-<!-- Page Hero + 返回按钮 -->
+<!-- Page Hero -->
 <section class="page-hero">
   <div class="container">
-    <div class="detail-hero-top">
-      <a href="/gallery/" class="btn btn-ghost btn-sm detail-back-top">← 返回作品列表</a>
-    </div>
     <h1 id="detailTitle">作品详情</h1>
     <p class="hero-sub" id="detailSub">加载中…</p>
     <nav class="breadcrumb" aria-label="面包屑">
@@ -135,15 +132,18 @@
 <!-- 全宽相册浏览 -->
 <section class="section">
   <div class="container">
-    <div class="detail-gallery-wrap">
-      <div class="detail-gallery-main" id="detailGallery" style="display:none;">
-        <button class="detail-gallery-arrow detail-gallery-prev" id="galleryPrev" aria-label="上一张">&lt;</button>
-        <img id="galleryMainImg" src="" alt="" loading="eager">
-        <button class="detail-gallery-arrow detail-gallery-next" id="galleryNext" aria-label="下一张">&gt;</button>
+    <div class="detail-gallery-wrap" id="detailGalleryWrap" style="display:none;">
+      <!-- 左箭头（画廊外部） -->
+      <button class="detail-gallery-arrow detail-gallery-prev" id="galleryPrev" aria-label="上一张">&lt;</button>
+      <!-- 主图画廊 -->
+      <div class="detail-gallery-main" id="detailGallery">
+        <div class="detail-gallery-track" id="galleryTrack"></div>
         <div class="detail-gallery-counter" id="galleryCounter"></div>
       </div>
-      <div class="detail-hero-thumbs" id="galleryThumbs"></div>
+      <!-- 右箭头（画廊外部） -->
+      <button class="detail-gallery-arrow detail-gallery-next" id="galleryNext" aria-label="下一张">&gt;</button>
     </div>
+    <div class="detail-hero-thumbs" id="galleryThumbs"></div>
   </div>
 </section>
 
@@ -183,6 +183,9 @@
             <div class="detail-meta-label">信息</div>
             <div class="detail-meta-items" id="detailMetaItems"></div>
           </div>
+
+          <!-- 返回按钮（侧栏底部，滚动时固定） -->
+          <a href="/gallery/" class="btn btn-outline detail-back-btn" id="detailBackBtn">← 返回作品列表</a>
         </div>
       </aside>
 

@@ -1252,8 +1252,6 @@ a.works-card { text-decoration:none; color:inherit; }
   text-shadow:0 1px 4px rgba(0,0,0,.3);
 }
 
-/* .works-card-desc 已移至 .works-card-desc-wrap 区块 */
-
 .works-card-footer {
   display:flex;
   align-items:center;
@@ -1284,57 +1282,6 @@ a.works-card { text-decoration:none; color:inherit; }
   text-overflow:ellipsis;
   white-space:nowrap;
   flex-shrink:0;
-}
-
-/* 描述展开：始终占两行高度以保证卡片等高 */
-.works-card-desc-wrap {
-  position:relative;
-  min-height:calc(var(--fs-sm) * 1.5 * 2);
-}
-.works-card-desc {
-  font-size:var(--fs-sm);
-  color:rgba(255,255,255,.82);
-  margin:0;
-  line-height:1.5;
-  /* 两行省略 */
-  display:-webkit-box;
-  -webkit-line-clamp:2;
-  -webkit-box-orient:vertical;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  text-shadow:0 1px 3px rgba(0,0,0,.25);
-}
-.works-card-desc-wrap.is-expanded .works-card-desc {
-  -webkit-line-clamp:unset;
-  display:block;
-}
-.works-card-expand {
-  position:absolute;
-  right:0;
-  bottom:0;
-  width:24px;
-  height:20px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:rgba(0,0,0,.5);
-  border:1px solid rgba(255,255,255,.15);
-  border-radius:3px;
-  color:rgba(255,255,255,.8);
-  font-size:14px;
-  line-height:1;
-  cursor:pointer;
-  padding:0;
-  transition:background var(--duration),color var(--duration);
-  z-index:3;
-}
-.works-card-expand:hover {
-  background:rgba(255,255,255,.2);
-  color:#fff;
-}
-.works-card-desc-wrap.is-expanded .works-card-expand {
-  position:static;
-  margin-top:var(--space-xs);
 }
 
 /* 无封面图时的兜底 */
@@ -1388,76 +1335,67 @@ a.works-card { text-decoration:none; color:inherit; }
 
 /* ---- Works Detail Page (Full-width Gallery Style) ---- */
 
-/* 返回按钮区（Hero 顶部） */
-.detail-hero-top {
-  display:flex;
-  justify-content:flex-start;
-  margin-bottom:var(--space-md);
-}
-.detail-back-top {
-  font-family:var(--font-mono);
-  font-size:var(--fs-xs);
-}
-
-/* 相册容器 */
+/* 相册外层容器：主图 + 左右箭头 */
 .detail-gallery-wrap {
   display:flex;
-  flex-direction:column;
-  gap:var(--space-md);
-  margin-bottom:var(--space-xl);
+  align-items:center;
+  gap:var(--space-sm);
+  margin-bottom:var(--space-lg);
 }
 
 /* 主图区域 */
 .detail-gallery-main {
   position:relative;
-  width:100%;
-  max-height:520px;
+  flex:1;
+  min-width:0;
   overflow:hidden;
   border-radius:var(--radius);
-  border:2px solid var(--c-border);
-  background:var(--c-bg);
+  background:var(--c-bg-2);
   cursor:pointer;
-  transition:border-color var(--duration),box-shadow var(--duration);
-}
-.detail-gallery-main:hover { border-color:var(--c-primary); box-shadow:var(--shadow-hover); }
-.detail-gallery-main img {
-  width:100%;
-  max-height:520px;
-  object-fit:contain;
-  display:block;
-  margin:0 auto;
 }
 
-/* 相册箭头 */
+/* 滑动轨道 */
+.detail-gallery-track {
+  display:flex;
+  transition:transform .45s cubic-bezier(.4,0,.2,1);
+}
+.detail-gallery-track img {
+  flex:0 0 100%;
+  width:100%;
+  height:auto;
+  max-height:560px;
+  object-fit:contain;
+  display:block;
+  cursor:pointer;
+}
+
+/* 相册箭头（画廊外部） */
 .detail-gallery-arrow {
-  position:absolute;
-  top:50%;
-  transform:translateY(-50%);
+  flex-shrink:0;
   width:40px;
   height:40px;
-  border:2px solid rgba(255,255,255,.25);
+  border:2px solid var(--c-border);
   border-radius:var(--radius);
-  background:rgba(0,0,0,.4);
-  color:#fff;
+  background:var(--c-surface);
+  color:var(--c-text);
   font-size:1.2rem;
   cursor:pointer;
   display:flex;
   align-items:center;
   justify-content:center;
-  z-index:3;
-  opacity:0;
-  transition:opacity .2s,background .2s;
+  transition:background var(--duration),border-color var(--duration),color var(--duration);
 }
-.detail-gallery-main:hover .detail-gallery-arrow { opacity:1; }
-.detail-gallery-arrow:hover { background:rgba(0,0,0,.65); }
-.detail-gallery-prev { left:var(--space-md); }
-.detail-gallery-next { right:var(--space-md); }
+.detail-gallery-arrow:hover {
+  background:var(--c-primary);
+  border-color:var(--c-primary);
+  color:#fff;
+}
 
 /* 计数器 */
 .detail-gallery-counter {
   position:absolute;
-  bottom:var(--space-md);
-  right:var(--space-md);
+  bottom:var(--space-sm);
+  right:var(--space-sm);
   font-family:var(--font-mono);
   font-size:var(--fs-xs);
   color:#fff;
@@ -1465,6 +1403,7 @@ a.works-card { text-decoration:none; color:inherit; }
   padding:2px 8px;
   border-radius:var(--radius);
   z-index:3;
+  pointer-events:none;
 }
 
 /* 缩略图网格（主图下方） */
@@ -1485,7 +1424,7 @@ a.works-card { text-decoration:none; color:inherit; }
   cursor:pointer;
   border:2px solid var(--c-border);
   transition:border-color var(--duration),transform var(--duration);
-  background:var(--c-bg);
+  background:var(--c-surface-2);
 }
 .detail-hero-thumb:hover { border-color:var(--c-primary); transform:translateY(-2px); }
 .detail-hero-thumb.is-active { border-color:var(--c-primary); box-shadow:0 0 0 1px var(--c-primary); }
@@ -1601,16 +1540,25 @@ a.works-card { text-decoration:none; color:inherit; }
 .detail-meta-val { font-weight:600; color:var(--c-heading); }
 
 /* Back button */
+/* 返回按钮：侧栏底部，滚动时固定到右下角 */
 .detail-back-btn {
   width:100%;
   text-align:center;
+  margin-top:auto;
+}
+.detail-back-btn.is-fixed {
+  position:fixed;
+  bottom:var(--space-lg);
+  right:var(--space-lg);
+  width:auto;
+  z-index:900;
+  box-shadow:var(--shadow-hard);
 }
 
 /* Responsive */
 @media (max-width:768px) {
-  .detail-gallery-main { max-height:320px; }
-  .detail-gallery-main img { max-height:320px; }
-  .detail-hero-thumb { flex:0 0 56px; width:56px; height:56px; }
+  .detail-gallery-arrow { display:none; }
+  .detail-gallery-wrap { gap:0; }
   .detail-layout {
     grid-template-columns:1fr;
     gap:var(--space-xl);
@@ -1624,8 +1572,14 @@ a.works-card { text-decoration:none; color:inherit; }
     grid-template-columns: 1fr 1fr;
     gap: var(--space-md);
   }
-  .detail-back-btn {
+  .detail-back-btn,
+  .detail-back-btn.is-fixed {
     grid-column: 1 / -1;
+    position:static;
+    width:100%;
+    right:auto;
+    bottom:auto;
+    box-shadow:none;
   }
 }
 

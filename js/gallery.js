@@ -86,30 +86,10 @@
       html += renderWorkCard(works[i], i);
     }
     gridEl.innerHTML = html;
-    revealExpandButtons();
-    bindCardClicks();
   }
-
-  // ---- 检测描述溢出，仅在需要时显示展开按钮 ----
-  function revealExpandButtons() {
-    var descs = gridEl.querySelectorAll('.works-card-desc-wrap');
-    for (var i = 0; i < descs.length; i++) {
-      var p = descs[i].querySelector('.works-card-desc');
-      var btn = descs[i].querySelector('.works-card-expand');
-      if (!p || !btn) continue;
-      // 空描述（占位符）无需按钮
-      if (p.innerHTML === '&nbsp;') continue;
-      // scrollHeight > clientHeight 表示文本被截断
-      if (p.scrollHeight > p.clientHeight + 1) {
-        btn.style.display = '';
-      }
-    }
-  }
-
   function renderWorkCard(item, index) {
     var cover = item.cover || item.image || '';
     var title = escapeHtml(item.title);
-    var desc = escapeHtml(item.description || '');
     var author = escapeHtml(item.author || '');
     var category = escapeHtml(item.category || '');
     var detailUrl = 'detail.html?id=' + encodeURIComponent(item.id);
@@ -122,12 +102,6 @@
       ? '<div class="works-card-footer">' + footerParts.join('') + '</div>'
       : '';
 
-    // 描述区：始终渲染以保持卡片等高，按钮在渲染后按需显示
-    var descHtml = '<div class="works-card-desc-wrap">'
-      + '<p class="works-card-desc">' + (desc || '&nbsp;') + '</p>'
-      + '<button class="works-card-expand" type="button" aria-label="展开描述" data-action="expand" style="display:none;">⋯</button>'
-      + '</div>';
-
     return '<a href="' + detailUrl + '" class="works-card" data-index="' + index + '" data-id="' + item.id + '">'
       + (cover
         ? '<img class="works-card-bg" src="' + escapeHtml(cover) + '" alt="' + title + '" loading="lazy">'
@@ -135,25 +109,11 @@
       + '<div class="works-card-overlay"></div>'
       + '<div class="works-card-info">'
       + '<h3 class="works-card-title">' + title + '</h3>'
-      + descHtml
       + footerHtml
       + '</div>'
       + '</a>';
   }
 
-  // ---- 卡片展开按钮 ----
-  function bindCardClicks() {
-    gridEl.addEventListener('click', function (e) {
-      var btn = e.target.closest('.works-card-expand');
-      if (!btn) return;
-      e.preventDefault();
-      e.stopPropagation();
-      var wrap = btn.closest('.works-card-desc-wrap');
-      if (!wrap) return;
-      wrap.classList.toggle('is-expanded');
-      btn.setAttribute('aria-label', wrap.classList.contains('is-expanded') ? '收起描述' : '展开描述');
-    });
-  }
 
   // ---- Lightbox ----
   var lightbox = document.getElementById('worksLightbox');

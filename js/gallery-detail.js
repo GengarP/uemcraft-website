@@ -207,36 +207,55 @@
       galleryImages = [item.cover];
     }
 
-    if (galleryEl && galleryImages.length > 0) {
-      var mainImg = document.getElementById('galleryMainImg');
+    var galleryWrap = document.getElementById('detailGalleryWrap');
+    if (galleryWrap && galleryImages.length > 0) {
+      var track = document.getElementById('galleryTrack');
       var thumbsEl = document.getElementById('galleryThumbs');
       var counterEl = document.getElementById('galleryCounter');
       var prevBtn = document.getElementById('galleryPrev');
       var nextBtn = document.getElementById('galleryNext');
-      mainImg.src = galleryImages[0];
-      mainImg.alt = item.title;
       currentGalleryIdx = 0;
 
-      // 计数器
+      // 构建滑动轨道
+      track.innerHTML = '';
+      galleryImages.forEach(function (url, idx) {
+        var img = document.createElement('img');
+        img.src = url;
+        img.alt = item.title + ' (' + (idx + 1) + ')';
+        img.loading = idx === 0 ? 'eager' : 'lazy';
+        track.appendChild(img);
+      });
+
+      // 滑动定位
+      function setTrackPos(idx, animate) {
+        if (!animate) track.style.transition = 'none';
+        track.style.transform = 'translateX(-' + (idx * 100) + '%)';
+        if (!animate) {
+          void track.offsetWidth;
+          track.style.transition = '';
+        }
+      }
+
       function updateCounter() {
         if (counterEl) counterEl.textContent = (currentGalleryIdx + 1) + ' / ' + galleryImages.length;
       }
       updateCounter();
 
-      // 箭头按钮
       function galleryNav(dir) {
         currentGalleryIdx = (currentGalleryIdx + dir + galleryImages.length) % galleryImages.length;
-        mainImg.src = galleryImages[currentGalleryIdx];
+        setTrackPos(currentGalleryIdx, true);
         updateCounter();
         updateThumbActive();
+        // 同步缩略图滚动
+        scrollThumbIntoView(currentGalleryIdx);
       }
 
       if (prevBtn) prevBtn.addEventListener('click', function () { galleryNav(-1); });
       if (nextBtn) nextBtn.addEventListener('click', function () { galleryNav(1); });
 
       // 点击主图打开 Lightbox
-      mainImg.addEventListener('click', function () {
-        openLightbox(currentGalleryIdx);
+      track.addEventListener('click', function (e) {
+        if (e.target.tagName === 'IMG') openLightbox(currentGalleryIdx);
       });
 
       // 渲染缩略图
@@ -248,15 +267,47 @@
           thumb.innerHTML = '<img src="' + escapeHtml(url) + '" alt="图片 ' + (idx + 1) + '" loading="lazy">';
           thumb.addEventListener('click', function () {
             currentGalleryIdx = idx;
-            mainImg.src = galleryImages[idx];
+            setTrackPos(idx, true);
             updateCounter();
             updateThumbActive();
           });
           thumbsEl.appendChild(thumb);
         });
       }
-      galleryEl.style.display = '';
+
+      // 缩略图滚动到可见
+      function scrollThumbIntoView(idx) {
+        if (!thumbsEl) return;
+        var thumb = thumbsEl.children[idx];
+        if (thumb) thumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+
+      // 触摸滑动
+      var touchStartX = 0, touchDeltaX = 0, touchTracking = false;
+      galleryWrap.addEventListener('touchstart', function (e) {
+        touchStartX = e.touches[0].clientX;
+        touchTracking = true;
+      }, { passive: true });
+      galleryWrap.addEventListener('touchmove', function (e) {
+        if (!touchTracking) return;
+        touchDeltaX = e.touches[0].clientX - touchStartX;
+      }, { passive: true });
+      galleryWrap.addEventListener('touchend', function () {
+        if (!touchTracking) return;
+        touchTracking = false;
+        if (Math.abs(touchDeltaX) > 40) {
+          galleryNav(touchDeltaX < 0 ? 1 : -1);
+        }
+        touchDeltaX = 0;
+      });
+
+      // 初次定位不播放动画
+      setTrackPos(0, false);
+      galleryWrap.style.display = '';
     }
+
+    // 返回按钮：滚动时固定到右下角
+    initBackBtnScroll();
 
     // Markdown 描述
     if (bodyEl) {
@@ -327,6 +378,31 @@
     if (subEl) subEl.textContent = msg || '你访问的作品可能已被移动或删除。';
     if (crumbEl) crumbEl.textContent = '作品不存在';
     if (bodyEl) bodyEl.innerHTML = '<p>' + escapeHtml(msg || '没有找到对应的作品。') + '，<a href="/gallery/">返回作品列表</a>。</p>';
+  }
+
+  /* ---- 返回按钮滚动固定 ---- */
+  function initBackBtnScroll() {
+    var btn = document.getElementById('detailBackBtn');
+    var sidebar = document.querySelector('.detail-sidebar');
+    if (!btn || !sidebar) return;
+
+    // 仅桌面端生效
+    if (window.matchMedia('(max-width: 768px)').matches) return;
+
+    function checkScroll() {
+      var sidebarRect = sidebar.getBoundingClientRect();
+      var btnHeight = btn.offsetHeight;
+      // 侧栏底部滚出视口时，按钮固定到右下角
+      if (sidebarRect.bottom < window.innerHeight - 20) {
+        btn.classList.add('is-fixed');
+      } else {
+        btn.classList.remove('is-fixed');
+      }
+    }
+
+    window.addEventListener('scroll', checkScroll, { passive: true });
+    window.addEventListener('resize', checkScroll, { passive: true });
+    checkScroll();
   }
 
   /* ---- 初始化 ---- */
