@@ -334,6 +334,7 @@
     if (sidebarAuthor) sidebarAuthor.textContent = item.author ? 'by ' + item.author : '';
 
     // 下载链接
+    var actionsEl = document.querySelector('.detail-sidebar-actions');
     if (item.download_links && item.download_links.length > 0 && downloadsEl && downloadBtnsEl) {
       downloadBtnsEl.innerHTML = '';
       item.download_links.forEach(function (link) {
@@ -346,6 +347,8 @@
         downloadBtnsEl.appendChild(a);
       });
       downloadsEl.style.display = '';
+    } else if (actionsEl) {
+      actionsEl.classList.add('no-downloads');
     }
 
     // 简短描述（侧栏）

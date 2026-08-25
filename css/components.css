@@ -1556,6 +1556,10 @@ a.works-card { text-decoration:none; color:inherit; }
   padding-top:var(--space-lg);
   border-top:1px solid var(--c-border);
 }
+.detail-sidebar-actions.no-downloads {
+  padding-top:0;
+  border-top:none;
+}
 
 /* Downloads */
 .detail-downloads {
