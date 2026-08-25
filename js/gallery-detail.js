@@ -390,8 +390,8 @@
       var containerRect = container.getBoundingClientRect();
       var containerBottomDoc = containerRect.bottom + window.scrollY;
 
-      // 按钮原始顶部在视口下方 → 还未到达，无需处理
-      if (originalBtnTop - window.scrollY > winH) {
+      // 按钮当前视觉顶部在视口下方 → 还未到达，无需处理
+      if (btnRect.top > winH) {
         if (lastOffset !== 0) { btn.style.transform = ''; lastOffset = 0; }
         return;
       }
@@ -400,8 +400,9 @@
       var btnVisualBottom = originalBtnBottom - window.scrollY;
       // 按钮需要保持在视口内，最小底部 = 按钮高度
       var minBottom = btnHeight;
-      var maxTranslate = containerBottomDoc - originalBtnBottom;
-      var offset = Math.min(0, Math.max(minBottom - btnVisualBottom, -maxTranslate));
+      // 计算偏移：同时约束"不超出视口底部"和"不超出 container 底部"
+      var containerBottomVp = containerBottomDoc - window.scrollY;
+      var offset = Math.min(0, Math.max(minBottom - btnVisualBottom, containerBottomVp - originalBtnBottom));
 
       if (offset !== lastOffset) {
         btn.style.transform = 'translateY(' + offset + 'px)';
