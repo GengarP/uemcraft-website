@@ -210,11 +210,32 @@
     if (galleryEl && galleryImages.length > 0) {
       var mainImg = document.getElementById('galleryMainImg');
       var thumbsEl = document.getElementById('galleryThumbs');
+      var counterEl = document.getElementById('galleryCounter');
+      var prevBtn = document.getElementById('galleryPrev');
+      var nextBtn = document.getElementById('galleryNext');
       mainImg.src = galleryImages[0];
       mainImg.alt = item.title;
+      currentGalleryIdx = 0;
+
+      // 计数器
+      function updateCounter() {
+        if (counterEl) counterEl.textContent = (currentGalleryIdx + 1) + ' / ' + galleryImages.length;
+      }
+      updateCounter();
+
+      // 箭头按钮
+      function galleryNav(dir) {
+        currentGalleryIdx = (currentGalleryIdx + dir + galleryImages.length) % galleryImages.length;
+        mainImg.src = galleryImages[currentGalleryIdx];
+        updateCounter();
+        updateThumbActive();
+      }
+
+      if (prevBtn) prevBtn.addEventListener('click', function () { galleryNav(-1); });
+      if (nextBtn) nextBtn.addEventListener('click', function () { galleryNav(1); });
 
       // 点击主图打开 Lightbox
-      galleryEl.addEventListener('click', function () {
+      mainImg.addEventListener('click', function () {
         openLightbox(currentGalleryIdx);
       });
 
@@ -228,6 +249,7 @@
           thumb.addEventListener('click', function () {
             currentGalleryIdx = idx;
             mainImg.src = galleryImages[idx];
+            updateCounter();
             updateThumbActive();
           });
           thumbsEl.appendChild(thumb);
@@ -279,13 +301,18 @@
       if (item.category) {
         metaHtml += '<div class="detail-meta-item"><span class="detail-meta-key">分类</span><span class="detail-meta-val">' + escapeHtml(item.category) + '</span></div>';
       }
-      metaHtml += '<div class="detail-meta-item"><span class="detail-meta-key">状态</span><span class="detail-meta-val">' + (item.status === 'published' ? '已发布' : '草稿') + '</span></div>';
-      if (item.created_at) {
-        var d = new Date(item.created_at * 1000);
-        var dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-        metaHtml += '<div class="detail-meta-item"><span class="detail-meta-key">创建时间</span><span class="detail-meta-val">' + dateStr + '</span></div>';
-      }
       metaItemsEl.innerHTML = metaHtml;
+    }
+
+    // 简短描述（侧栏）
+    var descCard = document.getElementById('detailDescCard');
+    var descText = document.getElementById('detailDescText');
+    if (descCard && descText) {
+      var shortDesc = item.description || '';
+      if (shortDesc) {
+        descText.textContent = shortDesc;
+        descCard.style.display = '';
+      }
     }
   }
 

@@ -94,6 +94,7 @@
     var title = escapeHtml(item.title);
     var desc = escapeHtml(item.description || '');
     var author = escapeHtml(item.author || '');
+    var category = escapeHtml(item.category || '');
     var detailUrl = 'detail.html?id=' + encodeURIComponent(item.id);
 
     // 格式化日期
@@ -103,34 +104,48 @@
       dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
 
-    // 底部信息行
+    // 底部信息行：作者 + 分类徽章（右侧）
     var footerParts = [];
     if (author) footerParts.push('<span class="works-card-author">' + author + '</span>');
-    if (dateStr) {
-      if (footerParts.length) footerParts.push('<span class="works-card-dot"></span>');
-      footerParts.push('<span class="works-card-date">' + dateStr + '</span>');
-    }
+    if (category) footerParts.push('<span class="works-card-badge">' + category + '</span>');
     var footerHtml = footerParts.length
       ? '<div class="works-card-footer">' + footerParts.join('') + '</div>'
       : '';
+
+    // 描述展开按钮
+    var descHtml = '';
+    if (desc) {
+      descHtml = '<div class="works-card-desc-wrap">'
+        + '<p class="works-card-desc">' + desc + '</p>'
+        + '<button class="works-card-expand" type="button" aria-label="展开描述" data-action="expand">⋯</button>'
+        + '</div>';
+    }
 
     return '<a href="' + detailUrl + '" class="works-card" data-index="' + index + '" data-id="' + item.id + '">'
       + (cover
         ? '<img class="works-card-bg" src="' + escapeHtml(cover) + '" alt="' + title + '" loading="lazy">'
         : '<div class="works-card-placeholder">✦</div>')
       + '<div class="works-card-overlay"></div>'
-      + (item.category ? '<span class="works-card-category">' + escapeHtml(item.category) + '</span>' : '')
       + '<div class="works-card-info">'
       + '<h3 class="works-card-title">' + title + '</h3>'
-      + (desc ? '<p class="works-card-desc">' + desc + '</p>' : '')
+      + descHtml
       + footerHtml
       + '</div>'
       + '</a>';
   }
 
-  // ---- 卡片点击 → 详情页（链接跳转，无需 JS 绑定） ----
+  // ---- 卡片展开按钮 ----
   function bindCardClicks() {
-    // 卡片已改为 <a> 标签，点击直接跳转详情页
+    gridEl.addEventListener('click', function (e) {
+      var btn = e.target.closest('.works-card-expand');
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var wrap = btn.closest('.works-card-desc-wrap');
+      if (!wrap) return;
+      wrap.classList.toggle('is-expanded');
+      btn.setAttribute('aria-label', wrap.classList.contains('is-expanded') ? '收起描述' : '展开描述');
+    });
   }
 
   // ---- Lightbox ----

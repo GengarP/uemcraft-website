@@ -1113,22 +1113,7 @@ img.member-avatar { object-fit:cover; }
   opacity:.7;
 }
 
-/* ---- Works Card Category Badge ---- */
-.works-card-category {
-  display:inline-block;
-  font-family:var(--font-mono);
-  font-size:var(--fs-xs);
-  padding:2px 10px;
-  border-radius:var(--radius);
-  background:color-mix(in srgb,var(--c-primary) 10%,transparent);
-  color:var(--c-primary);
-  font-weight:500;
-  margin-bottom:var(--space-sm);
-  max-width:100%;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
+/* ---- Works Card Category Badge (已迁移至 .works-card-badge) ---- */
 
 /* ---- Lightbox ---- */
 .lightbox {
@@ -1237,28 +1222,7 @@ a.works-card { text-decoration:none; color:inherit; }
   );
 }
 
-/* 分类标签 — 浮在左上角 */
-.works-card-category {
-  position:absolute;
-  top:var(--space-md);
-  left:var(--space-md);
-  z-index:2;
-  display:inline-block;
-  font-family:var(--font-mono);
-  font-size:var(--fs-xs);
-  padding:3px 10px;
-  border-radius:var(--radius);
-  background:rgba(0,0,0,.45);
-  backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);
-  color:#fff;
-  font-weight:600;
-  border:1px solid rgba(255,255,255,.18);
-  max-width:calc(100% - var(--space-2xl));
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
+/* 分类标签 — 旧样式已废弃，改为 footer 内联徽章 */
 
 /* 底部信息区 — 叠加在遮罩上 */
 .works-card-info {
@@ -1288,6 +1252,44 @@ a.works-card { text-decoration:none; color:inherit; }
   text-shadow:0 1px 4px rgba(0,0,0,.3);
 }
 
+/* .works-card-desc 已移至 .works-card-desc-wrap 区块 */
+
+.works-card-footer {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:var(--space-sm);
+  margin-top:4px;
+  font-family:var(--font-mono);
+  font-size:var(--fs-xs);
+  color:rgba(255,255,255,.7);
+}
+.works-card-author {
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.works-card-badge {
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:var(--radius);
+  background:rgba(255,255,255,.15);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  color:rgba(255,255,255,.9);
+  font-weight:600;
+  border:1px solid rgba(255,255,255,.12);
+  max-width:50%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+
+/* 描述展开 */
+.works-card-desc-wrap {
+  position:relative;
+}
 .works-card-desc {
   font-size:var(--fs-sm);
   color:rgba(255,255,255,.82);
@@ -1301,32 +1303,37 @@ a.works-card { text-decoration:none; color:inherit; }
   text-overflow:ellipsis;
   text-shadow:0 1px 3px rgba(0,0,0,.25);
 }
-
-.works-card-footer {
+.works-card-desc-wrap.is-expanded .works-card-desc {
+  -webkit-line-clamp:unset;
+  display:block;
+}
+.works-card-expand {
+  position:absolute;
+  right:0;
+  bottom:0;
+  width:24px;
+  height:20px;
   display:flex;
   align-items:center;
-  gap:var(--space-sm);
-  margin-top:4px;
-  font-family:var(--font-mono);
-  font-size:var(--fs-xs);
-  color:rgba(255,255,255,.7);
+  justify-content:center;
+  background:rgba(0,0,0,.5);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:3px;
+  color:rgba(255,255,255,.8);
+  font-size:14px;
+  line-height:1;
+  cursor:pointer;
+  padding:0;
+  transition:background var(--duration),color var(--duration);
+  z-index:3;
 }
-.works-card-author {
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
+.works-card-expand:hover {
+  background:rgba(255,255,255,.2);
+  color:#fff;
 }
-.works-card-dot {
-  width:3px;
-  height:3px;
-  border-radius:50%;
-  background:rgba(255,255,255,.4);
-  flex-shrink:0;
-}
-.works-card-date {
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
+.works-card-desc-wrap.is-expanded .works-card-expand {
+  position:static;
+  margin-top:var(--space-xs);
 }
 
 /* 无封面图时的兜底 */
@@ -1380,25 +1387,83 @@ a.works-card { text-decoration:none; color:inherit; }
 
 /* ---- Works Detail Page (Full-width Gallery Style) ---- */
 
-/* 全宽 Hero 相册区 */
-.detail-hero-gallery {
+/* 返回按钮区（Hero 顶部） */
+.detail-hero-top {
+  display:flex;
+  justify-content:flex-start;
+  margin-bottom:var(--space-md);
+}
+.detail-back-top {
+  font-family:var(--font-mono);
+  font-size:var(--fs-xs);
+}
+
+/* 相册容器 */
+.detail-gallery-wrap {
+  display:flex;
+  flex-direction:column;
+  gap:var(--space-md);
+  margin-bottom:var(--space-xl);
+}
+
+/* 主图区域 */
+.detail-gallery-main {
   position:relative;
   width:100%;
-  max-height:480px;
+  max-height:520px;
   overflow:hidden;
   border-radius:var(--radius);
   border:2px solid var(--c-border);
   background:var(--c-bg);
   cursor:pointer;
   transition:border-color var(--duration),box-shadow var(--duration);
-  margin-bottom:var(--space-xl);
 }
-.detail-hero-gallery:hover { border-color:var(--c-primary); box-shadow:var(--shadow-hover); }
-.detail-hero-gallery img {
+.detail-gallery-main:hover { border-color:var(--c-primary); box-shadow:var(--shadow-hover); }
+.detail-gallery-main img {
   width:100%;
-  max-height:480px;
+  max-height:520px;
   object-fit:contain;
   display:block;
+  margin:0 auto;
+}
+
+/* 相册箭头 */
+.detail-gallery-arrow {
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  width:40px;
+  height:40px;
+  border:2px solid rgba(255,255,255,.25);
+  border-radius:var(--radius);
+  background:rgba(0,0,0,.4);
+  color:#fff;
+  font-size:1.2rem;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:3;
+  opacity:0;
+  transition:opacity .2s,background .2s;
+}
+.detail-gallery-main:hover .detail-gallery-arrow { opacity:1; }
+.detail-gallery-arrow:hover { background:rgba(0,0,0,.65); }
+.detail-gallery-prev { left:var(--space-md); }
+.detail-gallery-next { right:var(--space-md); }
+
+/* 计数器 */
+.detail-gallery-counter {
+  position:absolute;
+  bottom:var(--space-md);
+  right:var(--space-md);
+  font-family:var(--font-mono);
+  font-size:var(--fs-xs);
+  color:#fff;
+  background:rgba(0,0,0,.5);
+  padding:2px 8px;
+  border-radius:var(--radius);
+  z-index:3;
 }
 
 /* 缩略图网格（主图下方） */
@@ -1476,7 +1541,8 @@ a.works-card { text-decoration:none; color:inherit; }
 /* Author card */
 .detail-author-card,
 .detail-downloads,
-.detail-meta-card {
+.detail-meta-card,
+.detail-desc-card {
   background:var(--c-surface);
   border:2px solid var(--c-border);
   border-left:3px solid var(--c-primary);
@@ -1486,7 +1552,8 @@ a.works-card { text-decoration:none; color:inherit; }
 }
 .detail-author-label,
 .detail-downloads-label,
-.detail-meta-label {
+.detail-meta-label,
+.detail-desc-label {
   font-family:var(--font-mono);
   font-size:var(--fs-xs);
   color:var(--c-text-muted);
@@ -1498,6 +1565,14 @@ a.works-card { text-decoration:none; color:inherit; }
   font-size:var(--fs-lg);
   font-weight:700;
   color:var(--c-heading);
+}
+
+/* Description card text */
+.detail-desc-text {
+  font-size:var(--fs-sm);
+  color:var(--c-text-muted);
+  line-height:1.7;
+  margin:0;
 }
 
 /* Download buttons */
@@ -1532,8 +1607,8 @@ a.works-card { text-decoration:none; color:inherit; }
 
 /* Responsive */
 @media (max-width:768px) {
-  .detail-hero-gallery { max-height:320px; }
-  .detail-hero-gallery img { max-height:320px; }
+  .detail-gallery-main { max-height:320px; }
+  .detail-gallery-main img { max-height:320px; }
   .detail-hero-thumb { flex:0 0 56px; width:56px; height:56px; }
   .detail-layout {
     grid-template-columns:1fr;

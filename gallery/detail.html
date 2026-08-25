@@ -118,9 +118,12 @@
 <!-- ====== Main ====== -->
 <main id="main">
 
-<!-- Page Hero -->
+<!-- Page Hero + 返回按钮 -->
 <section class="page-hero">
   <div class="container">
+    <div class="detail-hero-top">
+      <a href="/gallery/" class="btn btn-ghost btn-sm detail-back-top">← 返回作品列表</a>
+    </div>
     <h1 id="detailTitle">作品详情</h1>
     <p class="hero-sub" id="detailSub">加载中…</p>
     <nav class="breadcrumb" aria-label="面包屑">
@@ -129,13 +132,18 @@
   </div>
 </section>
 
-<!-- 全宽 Hero 相册 -->
+<!-- 全宽相册浏览 -->
 <section class="section">
   <div class="container">
-    <div class="detail-hero-gallery" id="detailGallery" style="display:none;">
-      <img id="galleryMainImg" src="" alt="" loading="eager">
+    <div class="detail-gallery-wrap">
+      <div class="detail-gallery-main" id="detailGallery" style="display:none;">
+        <button class="detail-gallery-arrow detail-gallery-prev" id="galleryPrev" aria-label="上一张">&lt;</button>
+        <img id="galleryMainImg" src="" alt="" loading="eager">
+        <button class="detail-gallery-arrow detail-gallery-next" id="galleryNext" aria-label="下一张">&gt;</button>
+        <div class="detail-gallery-counter" id="galleryCounter"></div>
+      </div>
+      <div class="detail-hero-thumbs" id="galleryThumbs"></div>
     </div>
-    <div class="detail-hero-thumbs" id="galleryThumbs"></div>
   </div>
 </section>
 
@@ -149,13 +157,19 @@
         <article class="detail-body" id="detailBody"></article>
       </div>
 
-      <!-- 侧栏：作者 + 下载 + 元信息 -->
+      <!-- 侧栏 -->
       <aside class="detail-sidebar">
         <div class="detail-sidebar-inner">
           <!-- 作者卡片 -->
           <div class="detail-author-card" id="detailAuthor" style="display:none;">
             <div class="detail-author-label">作者</div>
             <div class="detail-author-name" id="authorName"></div>
+          </div>
+
+          <!-- 简短描述 -->
+          <div class="detail-desc-card" id="detailDescCard" style="display:none;">
+            <div class="detail-desc-label">简介</div>
+            <p class="detail-desc-text" id="detailDescText"></p>
           </div>
 
           <!-- 下载按钮 -->
@@ -169,9 +183,6 @@
             <div class="detail-meta-label">信息</div>
             <div class="detail-meta-items" id="detailMetaItems"></div>
           </div>
-
-          <!-- 返回按钮 -->
-          <a href="/gallery/" class="btn btn-outline detail-back-btn">← 返回作品列表</a>
         </div>
       </aside>
 
