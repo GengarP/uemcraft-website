@@ -1,6 +1,6 @@
 /* ============================================================
-   server.js — 服务器状态（动态多服务器，SSE 流式查询）
-   API: https://api.uemcraft.cn/mc-query/api/stream/java/{address}
+   server.js — 服务器状态（动态多服务器，批量 SSE 流式查询）
+   API: POST https://api.uemcraft.cn/mc-query/api/batch/stream
    数据源: /api/servers.php?action=list
    ============================================================ */
 
@@ -12,17 +12,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!serverSection && !heroStatus) return;
 
-  const EXTERNAL_API = 'https://api.uemcraft.cn/mc-query/api/stream/java/';
-  const QUERY_TIMEOUT = 15000; // 15 秒超时
+  const BATCH_API = 'https://api.uemcraft.cn/mc-query/api/batch/stream';
+  const QUERY_TIMEOUT = 30000; // 30 秒超时（批量查询整体）
 
   let servers = [];
   let statusCache = {};       // address -> status data
-  let activeStreams = [];      // 当前活跃的 EventSource 实例
+  let activeController = null; // 当前活跃的 AbortController
   let isRefreshing = false;    // 刷新锁
 
   // ---- 阶段进度映射 ----
   var PHASE_MAP = {
-    start:      { label: '正在开始…',       pct: 5  },
     dns:        { label: '正在解析 DNS…',    pct: 15 },
     srv:        { label: '正在查找 SRV…',    pct: 25 },
     connect:    { label: '正在连接…',        pct: 40 },
@@ -46,87 +45,120 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ---- SSE 流式查询单台服务器 ----
-  function fetchStatusStreaming(address, port, cardEl) {
-    return new Promise(function(resolve) {
-      var url = EXTERNAL_API + encodeURIComponent(address);
-      if (port) url += '?port=' + port;
-
-      var es = new EventSource(url);
-      activeStreams.push(es);
-      var settled = false;
-
-      // 超时保护
-      var timer = setTimeout(function() {
-        if (!settled) {
-          settled = true;
-          es.close();
-          removeStream(es);
-          updateCardProgress(cardEl, null, '查询超时');
-          resolve({ online: false });
-        }
-      }, QUERY_TIMEOUT);
-
-      // phase 事件 — 更新进度
-      es.addEventListener('phase', function(e) {
-        try {
-          var data = JSON.parse(e.data);
-          var info = PHASE_MAP[data.phase];
-          if (info && cardEl) {
-            updateCardProgress(cardEl, info.pct, info.label);
-          }
-        } catch (_) { /* ignore parse errors */ }
-      });
-
-      // result 事件 — 查询完成
-      es.addEventListener('result', function(e) {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        es.close();
-        removeStream(es);
-        try {
-          var data = JSON.parse(e.data);
-          if (data.status === 'success') {
-            resolve(data);
-          } else {
-            resolve({ online: false });
-          }
-        } catch (_) {
-          resolve({ online: false });
-        }
-      });
-
-      // error 事件 — 连接错误（EventSource 会自动重试，但我们直接关闭）
-      es.addEventListener('error', function() {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        es.close();
-        removeStream(es);
-        resolve({ online: false });
-      });
-    });
+  // ---- 解析 SSE 文本流 ----
+  function parseSSELine(line) {
+    if (line.startsWith('event: ')) {
+      return { type: 'event', value: line.slice(7).trim() };
+    }
+    if (line.startsWith('data: ')) {
+      return { type: 'data', value: line.slice(6) };
+    }
+    return null;
   }
 
-  function removeStream(es) {
-    var idx = activeStreams.indexOf(es);
-    if (idx !== -1) activeStreams.splice(idx, 1);
+  // ---- 批量 SSE 流式查询 ----
+  async function fetchBatchStreaming(servers, onServerEvent, onServerResult, onServerError) {
+    var controller = new AbortController();
+    activeController = controller;
+
+    var body = {
+      servers: servers.map(function(srv) {
+        return {
+          ip: srv.address,
+          port: srv.port || undefined,
+          edition: srv.edition || 'java'
+        };
+      })
+    };
+
+    try {
+      var res = await fetch(BATCH_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+
+      if (!res.ok) {
+        throw new Error('HTTP ' + res.status);
+      }
+
+      var reader = res.body.getReader();
+      var decoder = new TextDecoder();
+      var buffer = '';
+      var currentEvent = null;
+
+      while (true) {
+        var result = await reader.read();
+        if (result.done) break;
+
+        buffer += decoder.decode(result.value, { stream: true });
+        var lines = buffer.split('\n');
+        buffer = lines.pop(); // 保留不完整的行
+
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i].trim();
+
+          if (line === '') {
+            // 空行 = 事件结束，重置
+            currentEvent = null;
+            continue;
+          }
+
+          var parsed = parseSSELine(line);
+          if (!parsed) continue;
+
+          if (parsed.type === 'event') {
+            currentEvent = parsed.value;
+          } else if (parsed.type === 'data' && currentEvent) {
+            try {
+              var data = JSON.parse(parsed.value);
+              switch (currentEvent) {
+                case 'server_event':
+                  onServerEvent(data);
+                  break;
+                case 'server_result':
+                  onServerResult(data);
+                  break;
+                case 'server_error':
+                  onServerError(data);
+                  break;
+              }
+            } catch (_) { /* ignore parse errors */ }
+          }
+        }
+      }
+    } catch (e) {
+      if (e.name === 'AbortError') {
+        console.log('[server.js] Batch query aborted');
+      } else {
+        console.warn('[server.js] Batch query failed:', e.message);
+        // 标记所有服务器为离线
+        servers.forEach(function(srv) {
+          onServerError({ index: servers.indexOf(srv), ip: srv.address, error: e.message, online: false });
+        });
+      }
+    } finally {
+      activeController = null;
+    }
   }
 
-  // ---- 关闭所有活跃的 SSE 连接 ----
-  function closeAllStreams() {
-    activeStreams.forEach(function(es) {
-      try { es.close(); } catch (_) { /* ignore */ }
-    });
-    activeStreams = [];
+  // ---- 取消当前查询 ----
+  function cancelActiveQuery() {
+    if (activeController) {
+      activeController.abort();
+      activeController = null;
+    }
   }
 
   // ---- 更新卡片进度条 ----
-  function updateCardProgress(cardEl, pct, label) {
-    if (!cardEl) return;
-    var fill = cardEl.querySelector('.server-card-progress-fill');
-    var text = cardEl.querySelector('.server-card-progress-text');
+  function updateCardProgress(address, pct, label) {
+    var container = serverSection ? serverSection.querySelector('.container') : null;
+    if (!container) return;
+    var card = container.querySelector('.server-card[data-address="' + CSS.escape(address) + '"]');
+    if (!card) return;
+    var fill = card.querySelector('.server-card-progress-fill');
+    var text = card.querySelector('.server-card-progress-text');
     if (fill && pct != null) fill.style.width = pct + '%';
     if (text && label) text.textContent = label;
   }
@@ -139,6 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     var addrDisplay = escapeHtml(server.address) + (server.port ? ':' + server.port : '');
     var noteHtml = server.note ? ' <span class="server-card-note">' + escapeHtml(server.note) + '</span>' : '';
+    var editionLabel = server.edition === 'bedrock' ? '基岩版' : 'Java 版';
 
     card.innerHTML =
       '<div class="server-card-header">' +
@@ -150,6 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
       '    </div>' +
       '    <div class="server-card-addr">' +
       '      <code class="server-card-address">' + addrDisplay + '</code>' +
+      '      <span class="server-card-edition">' + editionLabel + '</span>' +
       '      <button class="server-card-copy" data-addr="' + escapeHtml(server.address) + (server.port ? ' -p ' + server.port : '') + '" title="复制地址">复制</button>' +
       '    </div>' +
       '  </div>' +
@@ -176,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return card;
   }
 
-  // ---- 渲染单张完整卡片（原地替换骨架） ----
+  // ---- 渲染单张完整卡片 ----
   function renderSingleCard(server, status) {
     var online = !!(status && status.online);
     var version = status && status.version ? status.version : '';
@@ -188,6 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
     var favicon = online && status.favicon ? status.favicon : '';
     var addrDisplay = escapeHtml(server.address) + (server.port ? ':' + server.port : '');
     var noteHtml = server.note ? ' <span class="server-card-note">' + escapeHtml(server.note) + '</span>' : '';
+    var editionLabel = server.edition === 'bedrock' ? '基岩版' : 'Java 版';
 
     var card = document.createElement('div');
     card.className = 'server-card' + (online ? '' : ' is-offline');
@@ -206,6 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
       '    </div>' +
       '    <div class="server-card-addr">' +
       '      <code class="server-card-address">' + addrDisplay + '</code>' +
+      '      <span class="server-card-edition">' + editionLabel + '</span>' +
       '      <button class="server-card-copy" data-addr="' + escapeHtml(server.address) + (server.port ? ' -p ' + server.port : '') + '" title="复制地址">复制</button>' +
       '    </div>' +
       '  </div>' +
@@ -309,52 +345,74 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isRefreshing) return;
     isRefreshing = true;
 
-    // 关闭上一轮的 SSE 连接
-    closeAllStreams();
+    // 取消上一轮查询
+    cancelActiveQuery();
 
-    if (!serverSection) {
-      // 无服务器区域（仅 Hero），直接查询置顶服务器
-      var featured = servers.find(function(s) { return s.is_featured; }) || servers[0];
-      if (featured) {
-        var status = await fetchStatusStreaming(featured.address, featured.port, null);
-        statusCache[featured.address] = status;
-        updateHeroBadge(featured, status);
-      }
-      isRefreshing = false;
-      return;
+    var container = serverSection ? serverSection.querySelector('.container') : null;
+    var featuredServer = servers.find(function(s) { return s.is_featured; }) || servers[0];
+    var featuredAddr = featuredServer ? featuredServer.address : null;
+
+    if (container) {
+      // 渲染骨架卡片
+      renderSkeletons();
     }
-
-    // 渲染骨架卡片
-    renderSkeletons();
 
     // Hero 状态设为查询中
     if (heroStatus) heroStatus.textContent = '查询中…';
 
-    var container = serverSection.querySelector('.container');
-    var featuredAddr = null;
-    var featuredServer = servers.find(function(s) { return s.is_featured; }) || servers[0];
-    if (featuredServer) featuredAddr = featuredServer.address;
+    // 构建 index -> server 映射
+    var serverByIndex = {};
 
-    // 并行查询所有服务器（逐个更新卡片）
-    var promises = servers.map(function(srv) {
-      return fetchStatusStreaming(srv.address, srv.port, null).then(function(status) {
-        statusCache[srv.address] = status;
+    await fetchBatchStreaming(
+      servers,
+      // onServerEvent — 更新进度
+      function(data) {
+        var idx = data.index;
+        var srv = serverByIndex[idx] || servers[idx];
+        if (!srv) return;
+        var phase = data.event || (data.data && data.data.phase);
+        var info = PHASE_MAP[phase];
+        if (info) {
+          updateCardProgress(srv.address, info.pct, info.label);
+        }
+      },
+      // onServerResult — 查询成功
+      function(data) {
+        var idx = data.index;
+        var srv = serverByIndex[idx] || servers[idx];
+        if (!srv) return;
+        statusCache[srv.address] = data;
 
         // 替换骨架卡片
         if (container) {
-          replaceSkeletonWithCard(container, srv, status);
+          replaceSkeletonWithCard(container, srv, data);
         }
 
         // 置顶服务器查询完成后立即更新 Hero
         if (srv.address === featuredAddr) {
-          updateHeroBadge(srv, status);
+          updateHeroBadge(srv, data);
+        }
+      },
+      // onServerError — 查询失败
+      function(data) {
+        var idx = data.index;
+        var srv = serverByIndex[idx] || servers[idx];
+        if (!srv) return;
+        var failStatus = { online: false };
+        statusCache[srv.address] = failStatus;
+
+        // 替换骨架卡片（离线态）
+        if (container) {
+          replaceSkeletonWithCard(container, srv, failStatus);
         }
 
-        return { server: srv, status: status };
-      });
-    });
+        // 置顶服务器也更新 Hero
+        if (srv.address === featuredAddr) {
+          updateHeroBadge(srv, failStatus);
+        }
+      }
+    );
 
-    await Promise.all(promises);
     isRefreshing = false;
   }
 

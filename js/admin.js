@@ -605,11 +605,14 @@
 
     function renderServerCard(item) {
       var addrDisplay = escapeHtml(item.address) + (item.port ? ':' + item.port : '');
+      var editionLabel = item.edition === 'bedrock' ? '基岩版' : 'Java 版';
+      var editionClass = item.edition === 'bedrock' ? 'is-bedrock' : 'is-java';
       return '<article class="admin-card" data-id="' + item.id + '">'
         + '<div class="admin-card-info">'
         + '  <span class="admin-card-name">' + escapeHtml(item.name) + '</span>'
         + '  <div class="admin-card-title-row">'
         + (item.is_featured ? '<span class="admin-badge is-approved">置顶</span>' : '')
+        + '    <span class="admin-badge admin-badge-edition ' + editionClass + '">' + editionLabel + '</span>'
         + '    <span class="admin-card-date">' + addrDisplay + '</span>'
         + '  </div>'
         + '</div>'
@@ -617,6 +620,7 @@
         + '  <div class="admin-card-meta">'
         + '    <span class="admin-card-name">' + escapeHtml(item.name) + '</span>'
         + (item.is_featured ? '<span class="admin-badge is-approved">置顶</span>' : '')
+        + '    <span class="admin-badge admin-badge-edition ' + editionClass + '">' + editionLabel + '</span>'
         + '  </div>'
         + '  <div class="admin-card-actions">'
         + '    <button class="btn btn-ghost btn-sm" data-action="toggle-featured" data-id="' + item.id + '" data-featured="' + item.is_featured + '">'

@@ -518,6 +518,7 @@
       setInput('inputName', item.name);
       setInput('inputAddress', item.address);
       setInput('inputPort', item.port ? String(item.port) : '');
+      setInput('inputEdition', item.edition || 'java');
       setInput('inputNote', item.note);
       setInput('inputFeatured', String(item.is_featured ? 1 : 0));
       setInput('inputSortOrder', String(item.sort_order || 0));
@@ -529,6 +530,7 @@
         name: getVal('inputName'),
         address: getVal('inputAddress'),
         port: portVal ? parseInt(portVal) || 0 : 0,
+        edition: getVal('inputEdition') || 'java',
         note: getVal('inputNote'),
         is_featured: parseInt(getVal('inputFeatured')) || 0,
         sort_order: parseInt(getVal('inputSortOrder')) || 0

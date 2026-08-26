@@ -825,6 +825,8 @@
 }
 .admin-badge.is-approved { color: var(--c-ok); border-color: var(--c-ok); }
 .admin-badge.is-hidden { color: var(--c-red); border-color: var(--c-red); }
+.admin-badge-edition.is-java { color: var(--c-primary); border-color: var(--c-primary); }
+.admin-badge-edition.is-bedrock { color: var(--c-gold); border-color: var(--c-gold); }
 .admin-card-actions {
   display: flex;
   gap: var(--space-xs);

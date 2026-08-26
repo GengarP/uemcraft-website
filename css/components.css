@@ -315,6 +315,18 @@
   user-select:all;
   color:var(--c-text-muted);
 }
+.server-card-edition {
+  font-family:var(--font-mono);
+  font-size:var(--fs-xs);
+  font-weight:700;
+  color:var(--c-text-muted);
+  background:var(--c-surface-2);
+  border:1px solid var(--c-border);
+  border-radius:var(--radius);
+  padding:.15rem .5rem;
+  line-height:1;
+  white-space:nowrap;
+}
 .server-card-copy {
   font-family:var(--font-mono);
   font-size:var(--fs-xs);

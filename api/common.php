@@ -435,6 +435,17 @@ function migrateSiteTables($db, $driver) {
             $db->exec("ALTER TABLE servers ADD COLUMN port INTEGER NOT NULL DEFAULT 0");
         }
     }
+
+    // 迁移：servers 表新增 edition 列（已有表兼容）
+    try {
+        $test = $db->query("SELECT edition FROM servers LIMIT 0");
+    } catch (PDOException $e) {
+        if ($driver === 'mysql') {
+            $db->exec("ALTER TABLE servers ADD COLUMN edition VARCHAR(10) NOT NULL DEFAULT 'java'");
+        } else {
+            $db->exec("ALTER TABLE servers ADD COLUMN edition TEXT NOT NULL DEFAULT 'java'");
+        }
+    }
     return;
 }
 
