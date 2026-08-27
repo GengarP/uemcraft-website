@@ -2,7 +2,7 @@
 /**
  * article.php — 文章详情页（服务端渲染 SEO 元数据）
  *
- * 服务端负责：读取 slug → 查库 → 在 <head> 输出 og:*/twitter:*/JSON-LD
+ * 服务端负责：读取 slug → 查库 → 在 <head> 输出 og:xxx / twitter:xxx / JSON-LD
  * 客户端负责：fetch 同一 API → 渲染 Markdown 正文 + 代码高亮
  *
  * URL 兼容：news/.htaccess 将 article.html?slug=xxx 重写到本文件
@@ -107,7 +107,7 @@ $iso_date = $article_date ? $article_date . 'T00:00:00+08:00' : '';
   if ($article_author) $ld['author'] = ['@type' => 'Person', 'name' => $article_author];
   if ($abs_image) $ld['image'] = $abs_image;
   if ($article_tags) $ld['keywords'] = implode(', ', $article_tags);
-  echo json_encode($ld, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_UNICODE);
+  echo json_encode($ld, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
   ?>
   </script>
 
