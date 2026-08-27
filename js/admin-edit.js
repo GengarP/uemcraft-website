@@ -108,6 +108,7 @@
       setInput('inputExcerpt', item.excerpt);
       setInput('inputContent', item.content);
       setInput('inputStatus', item.status);
+      setInput('inputPinned', String(item.is_pinned ? 1 : 0));
 
       var tags = item.tags || [];
       if (typeof tags === 'string') {
@@ -130,6 +131,7 @@
         excerpt: getVal('inputExcerpt'),
         content: getVal('inputContent'),
         status: getVal('inputStatus'),
+        is_pinned: parseInt(getVal('inputPinned')) || 0,
         tags: tags
       };
     }

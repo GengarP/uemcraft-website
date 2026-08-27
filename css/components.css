@@ -850,6 +850,23 @@ a.news-title:hover { color:var(--c-primary); }
   color:var(--c-text-muted);
   line-height:1.7;
 }
+/* ---- News card: pinned ---- */
+.news-card.is-pinned {
+  border-left:3px solid var(--c-accent-4);
+  background:color-mix(in srgb,var(--c-accent-4) 4%,var(--c-surface));
+}
+.pinned-badge {
+  display:inline-block;
+  background:var(--c-accent-4);
+  color:#fff;
+  border-radius:var(--radius);
+  padding:.1em .45em;
+  font-size:var(--fs-xs);
+  font-weight:700;
+  font-family:var(--font-mono);
+  margin-right:var(--space-xs);
+  vertical-align:middle;
+}
 
 /* ---- Timeline ---- */
 .timeline { position:relative; padding-left:2rem; }
@@ -1060,6 +1077,22 @@ img.member-avatar { object-fit:cover; }
   color:var(--c-text-muted);
   line-height:1.6;
   flex:1;
+}
+/* ---- Event card: featured ---- */
+.event-card.is-featured {
+  border-color:var(--c-accent-4);
+}
+.featured-badge {
+  display:inline-block;
+  background:var(--c-accent-4);
+  color:#fff;
+  border-radius:var(--radius);
+  padding:.1em .45em;
+  font-size:var(--fs-xs);
+  font-weight:700;
+  font-family:var(--font-mono);
+  margin-right:var(--space-xs);
+  vertical-align:middle;
 }
 .event-details {
   display:none;
@@ -1611,7 +1644,11 @@ a.works-card { text-decoration:none; color:inherit; }
 }
 .detail-download-btn:last-child { margin-bottom:0; }
 
-/* Back button — sticky，始终在侧栏内，不超出 container */
+/* Back button — independent grid item, sticky in sidebar column on desktop */
+.detail-back-wrap {
+  grid-column:2;
+  align-self:end;
+}
 .detail-back-btn {
   text-align:center;
   position:sticky;
@@ -1632,9 +1669,13 @@ a.works-card { text-decoration:none; color:inherit; }
   .detail-body { max-width:100%; }
   .detail-sidebar {
     width:100%;
+    order:-1;
   }
   .detail-sidebar-inner {
     position:static;
+  }
+  .detail-back-wrap {
+    order:1;
   }
   .detail-back-btn {
     position:static;

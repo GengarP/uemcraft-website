@@ -87,20 +87,23 @@
       var sc = item.status === 'published' ? 'is-approved' : 'is-hidden';
       var sl = item.status === 'published' ? '已发布' : '草稿';
       var thumb = item.cover || '';
+      var pinBadge = item.is_pinned ? '<span class="admin-badge is-approved">置顶</span>' : '';
       return '<article class="admin-card' + (item.status === 'draft' ? ' is-hidden' : '') + '" data-id="' + item.id + '">'
         + (thumb ? '<div class="admin-card-thumb"><img src="' + Auth.escapeHtml(thumb) + '" alt="" loading="lazy"></div>' : '')
         + '<div class="admin-card-info"><span class="admin-card-name">' + Auth.escapeHtml(item.title) + '</span>'
-        + '<div class="admin-card-title-row"><span class="admin-badge ' + sc + '">' + sl + '</span>'
+        + '<div class="admin-card-title-row">' + pinBadge + '<span class="admin-badge ' + sc + '">' + sl + '</span>'
         + '<span class="admin-card-date">' + Auth.escapeHtml(item.date) + '</span></div></div>'
         + '<div class="admin-card-header"><div class="admin-card-meta"><span class="admin-card-name">' + Auth.escapeHtml(item.title) + '</span>'
-        + '<span class="admin-badge ' + sc + '">' + sl + '</span><time class="wall-card-time">' + Auth.escapeHtml(item.date) + '</time> ' + tags + '</div>'
+        + pinBadge + '<span class="admin-badge ' + sc + '">' + sl + '</span><time class="wall-card-time">' + Auth.escapeHtml(item.date) + '</time> ' + tags + '</div>'
         + '<div class="admin-card-actions">'
+        + '<button class="btn btn-ghost btn-sm" data-action="toggle-pinned" data-id="' + item.id + '" data-pinned="' + item.is_pinned + '">' + (item.is_pinned ? '取消置顶' : '置顶') + '</button>'
         + '<button class="btn btn-ghost btn-sm" data-action="toggle" data-id="' + item.id + '" data-status="' + item.status + '">' + (item.status === 'published' ? '设为草稿' : '发布') + '</button>'
         + '<a href="news-edit.html?id=' + item.id + '" class="btn btn-ghost btn-sm">编辑</a>'
         + '<button class="btn btn-ghost btn-sm admin-btn-danger" data-action="delete" data-id="' + item.id + '">删除</button></div></div>'
         + '<div class="admin-card-body"><p class="text-muted">' + Auth.escapeHtml(item.excerpt || '无摘要') + '</p>'
         + '<small class="text-muted">slug: ' + Auth.escapeHtml(item.slug) + ' · 作者: ' + Auth.escapeHtml(item.author || '未知') + '</small></div>'
         + '<div class="admin-card-actions admin-card-actions--grid">'
+        + '<button class="btn btn-ghost btn-sm" data-action="toggle-pinned" data-id="' + item.id + '" data-pinned="' + item.is_pinned + '">' + (item.is_pinned ? '取消置顶' : '置顶') + '</button>'
         + '<button class="btn btn-ghost btn-sm" data-action="toggle" data-id="' + item.id + '" data-status="' + item.status + '">' + (item.status === 'published' ? '草稿' : '发布') + '</button>'
         + '<a href="news-edit.html?id=' + item.id + '" class="btn btn-ghost btn-sm">编辑</a>'
         + '<button class="btn btn-ghost btn-sm admin-btn-danger" data-action="delete" data-id="' + item.id + '">删除</button></div></article>';
@@ -111,6 +114,11 @@
         var btn = e.target.closest('[data-action]');
         if (!btn) return;
         var action = btn.getAttribute('data-action'), id = btn.getAttribute('data-id');
+        if (action === 'toggle-pinned') {
+          var np = btn.getAttribute('data-pinned') === '1' ? 0 : 1;
+          Auth.api('../api/news.php?action=update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: parseInt(id), is_pinned: np }) })
+            .then(function (json) { if (json.success) load(); else alert('操作失败：' + (json.error || '未知错误')); });
+        }
         if (action === 'toggle') {
           var ns = btn.getAttribute('data-status') === 'published' ? 'draft' : 'published';
           Auth.api('../api/news.php?action=update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: parseInt(id), status: ns }) })
@@ -182,18 +190,23 @@
       var scm = { upcoming: 'status-upcoming', ongoing: 'status-ongoing', past: 'status-past' };
       var sl = sm[item.status] || item.status, sc = scm[item.status] || '';
       var thumb = item.cover || '';
+      var featBadge = item.is_featured ? '<span class="admin-badge is-approved">精选</span>' : '';
       return '<article class="admin-card" data-id="' + item.id + '">'
         + (thumb ? '<div class="admin-card-thumb"><img src="' + Auth.escapeHtml(thumb) + '" alt="" loading="lazy"></div>' : '')
         + '<div class="admin-card-info"><span class="admin-card-name">' + Auth.escapeHtml(item.title) + '</span>'
-        + '<div class="admin-card-title-row"><span class="admin-badge ' + sc + '">' + sl + '</span>'
+        + '<div class="admin-card-title-row">' + featBadge + '<span class="admin-badge ' + sc + '">' + sl + '</span>'
         + '<span class="admin-card-date">' + Auth.escapeHtml(item.date_label || item.date_start || '') + '</span></div></div>'
         + '<div class="admin-card-header"><div class="admin-card-meta"><span class="admin-card-name">' + Auth.escapeHtml(item.title) + '</span>'
-        + '<span class="admin-badge ' + sc + '">' + sl + '</span><time class="wall-card-time">' + Auth.escapeHtml(item.date_label || item.date_start || '') + '</time></div>'
-        + '<div class="admin-card-actions"><a href="events-edit.html?id=' + item.id + '" class="btn btn-ghost btn-sm">编辑</a>'
+        + featBadge + '<span class="admin-badge ' + sc + '">' + sl + '</span><time class="wall-card-time">' + Auth.escapeHtml(item.date_label || item.date_start || '') + '</time></div>'
+        + '<div class="admin-card-actions">'
+        + '<button class="btn btn-ghost btn-sm" data-action="toggle-featured" data-id="' + item.id + '" data-featured="' + item.is_featured + '">' + (item.is_featured ? '取消精选' : '精选') + '</button>'
+        + '<a href="events-edit.html?id=' + item.id + '" class="btn btn-ghost btn-sm">编辑</a>'
         + '<button class="btn btn-ghost btn-sm admin-btn-danger" data-action="delete" data-id="' + item.id + '">删除</button></div></div>'
         + '<div class="admin-card-body"><p class="text-muted">' + Auth.escapeHtml(item.excerpt || '无摘要') + '</p>'
         + '<small class="text-muted">slug: ' + Auth.escapeHtml(item.slug) + ' · 排序: ' + item.sort_order + '</small></div>'
-        + '<div class="admin-card-actions admin-card-actions--grid"><a href="events-edit.html?id=' + item.id + '" class="btn btn-ghost btn-sm">编辑</a>'
+        + '<div class="admin-card-actions admin-card-actions--grid">'
+        + '<button class="btn btn-ghost btn-sm" data-action="toggle-featured" data-id="' + item.id + '" data-featured="' + item.is_featured + '">' + (item.is_featured ? '取消精选' : '精选') + '</button>'
+        + '<a href="events-edit.html?id=' + item.id + '" class="btn btn-ghost btn-sm">编辑</a>'
         + '<button class="btn btn-ghost btn-sm admin-btn-danger" data-action="delete" data-id="' + item.id + '">删除</button></div></article>';
     }
 
@@ -201,9 +214,15 @@
       container.addEventListener('click', function (e) {
         var btn = e.target.closest('[data-action]');
         if (!btn) return;
-        if (btn.getAttribute('data-action') === 'delete') {
+        var action = btn.getAttribute('data-action'), id = btn.getAttribute('data-id');
+        if (action === 'toggle-featured') {
+          var nf = btn.getAttribute('data-featured') === '1' ? 0 : 1;
+          Auth.api('../api/events.php?action=update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: parseInt(id), is_featured: nf }) })
+            .then(function (json) { if (json.success) load(); else alert('操作失败：' + (json.error || '未知错误')); });
+        }
+        if (action === 'delete') {
           if (!confirm('确定要删除这个活动吗？此操作不可撤销。')) return;
-          Auth.api('../api/events.php?action=delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: parseInt(btn.getAttribute('data-id')) }) })
+          Auth.api('../api/events.php?action=delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: parseInt(id) }) })
             .then(function (json) { if (json.success) load(); else alert('删除失败：' + (json.error || '未知错误')); });
         }
       });

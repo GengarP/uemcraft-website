@@ -81,10 +81,11 @@ function sortArticles(articles) {
 /* ---- 卡片渲染 ---- */
 function renderNewsCard(item) {
   var a = document.createElement('a');
-  a.className = 'news-card';
+  a.className = 'news-card' + (item.is_pinned ? ' is-pinned' : '');
   a.href = newsUrl(item.slug);
+  var pinBadge = item.is_pinned ? '<span class="pinned-badge">置顶</span>' : '';
   a.innerHTML =
-    '<div class="news-date">' + escapeHtml(formatDate(item.date)) + '</div>' +
+    '<div class="news-date">' + pinBadge + escapeHtml(formatDate(item.date)) + '</div>' +
     '<div class="news-title">' + escapeHtml(item.title) + '</div>' +
     '<div class="news-excerpt">' + escapeHtml(item.excerpt) + '</div>';
   return a;
@@ -102,8 +103,10 @@ function renderEventCard(item) {
   var a = document.createElement('a');
   a.href = item.link || '#';
   var st = EVENT_STATUS[item.status] || EVENT_STATUS.upcoming;
+  var featuredClass = item.is_featured ? ' is-featured' : '';
+  var featuredBadge = item.is_featured ? '<span class="featured-badge">精选</span>' : '';
   a.innerHTML =
-    '<div class="event-card">' +
+    '<div class="event-card' + featuredClass + '">' +
       '<div class="event-card-img">' +
         '<img src="' + escapeHtml(item.cover || '') + '" alt="">' +
         '<div class="event-img-meta">' +
@@ -112,7 +115,7 @@ function renderEventCard(item) {
         '</div>' +
       '</div>' +
       '<div class="event-card-body">' +
-        '<div class="news-title">' + escapeHtml(item.title) + '</div>' +
+        '<div class="news-title">' + featuredBadge + escapeHtml(item.title) + '</div>' +
         '<div class="news-excerpt">' + escapeHtml(item.excerpt || '') + '</div>' +
       '</div>' +
     '</div>';
@@ -296,11 +299,11 @@ function initContent() {
     return;
   }
 
-  // 新闻列表页（异步）
+  // 新闻列表页（异步，API 已按 is_pinned DESC, date DESC 排序）
   var newsList = document.getElementById('newsList');
   if (newsList) {
     fetchArticleIndex().then(function (articles) {
-      sortArticles(articles).forEach(function (item) {
+      articles.forEach(function (item) {
         newsList.appendChild(renderNewsCard(item));
       });
     }).catch(function () {

@@ -26,7 +26,7 @@ try {
 
     // ---- 公开：全部活动 ----
     if ($action === 'list') {
-        $stmt = $db->query("SELECT id, title, slug, excerpt, cover, date_label, date_start, date_end, status, link, is_featured, sort_order FROM events ORDER BY sort_order ASC, date_start DESC");
+        $stmt = $db->query("SELECT id, title, slug, excerpt, cover, date_label, date_start, date_end, status, link, is_featured, sort_order FROM events ORDER BY is_featured DESC, sort_order ASC, date_start DESC");
         $rows = $stmt->fetchAll();
 
         foreach ($rows as &$row) {
@@ -41,7 +41,7 @@ try {
 
     // ---- 公开：近期活动（upcoming + ongoing） ----
     if ($action === 'upcoming') {
-        $stmt = $db->prepare("SELECT id, title, slug, excerpt, cover, date_label, date_start, date_end, status, link, is_featured, sort_order FROM events WHERE status IN ('upcoming', 'ongoing') ORDER BY sort_order ASC, date_start ASC");
+        $stmt = $db->prepare("SELECT id, title, slug, excerpt, cover, date_label, date_start, date_end, status, link, is_featured, sort_order FROM events WHERE status IN ('upcoming', 'ongoing') ORDER BY is_featured DESC, sort_order ASC, date_start ASC");
         $stmt->execute();
         $rows = $stmt->fetchAll();
 
@@ -57,7 +57,7 @@ try {
 
     // ---- 公开：往期活动（past） ----
     if ($action === 'past') {
-        $stmt = $db->prepare("SELECT id, title, slug, excerpt, cover, date_label, date_start, date_end, status, link, is_featured, sort_order FROM events WHERE status = 'past' ORDER BY date_start DESC");
+        $stmt = $db->prepare("SELECT id, title, slug, excerpt, cover, date_label, date_start, date_end, status, link, is_featured, sort_order FROM events WHERE status = 'past' ORDER BY is_featured DESC, date_start DESC");
         $stmt->execute();
         $rows = $stmt->fetchAll();
 
@@ -136,7 +136,7 @@ try {
         $totalStmt->execute($params);
         $total = (int) $totalStmt->fetchColumn();
 
-        $stmt = $db->prepare("SELECT * FROM events $where ORDER BY sort_order ASC, date_start DESC LIMIT :limit OFFSET :offset");
+        $stmt = $db->prepare("SELECT * FROM events $where ORDER BY is_featured DESC, sort_order ASC, date_start DESC LIMIT :limit OFFSET :offset");
         foreach ($params as $k => $v) {
             $stmt->bindValue($k, $v);
         }

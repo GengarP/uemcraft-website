@@ -33,7 +33,7 @@ try {
         $totalStmt = $db->query("SELECT COUNT(*) FROM news $where");
         $total = (int) $totalStmt->fetchColumn();
 
-        $stmt = $db->prepare("SELECT id, title, slug, excerpt, cover, cover_caption, author, tags, date, status FROM news $where ORDER BY date DESC LIMIT :limit OFFSET :offset");
+        $stmt = $db->prepare("SELECT id, title, slug, excerpt, cover, cover_caption, author, tags, date, status, is_pinned FROM news $where ORDER BY is_pinned DESC, date DESC LIMIT :limit OFFSET :offset");
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', ($page - 1) * $limit, PDO::PARAM_INT);
         $stmt->execute();
@@ -41,6 +41,7 @@ try {
 
         foreach ($rows as &$row) {
             $row['id'] = (int) $row['id'];
+            $row['is_pinned'] = (int) $row['is_pinned'];
             $row['tags'] = json_decode($row['tags'], true) ?: [];
         }
         unset($row);
@@ -94,6 +95,7 @@ try {
         }
 
         $row['id'] = (int) $row['id'];
+        $row['is_pinned'] = (int) $row['is_pinned'];
         $row['tags'] = json_decode($row['tags'], true) ?: [];
 
         json_response(['success' => true, 'data' => $row]);
@@ -118,7 +120,7 @@ try {
         $totalStmt->execute($params);
         $total = (int) $totalStmt->fetchColumn();
 
-        $stmt = $db->prepare("SELECT id, title, slug, excerpt, content, cover, cover_caption, author, tags, date, status, created_at, updated_at FROM news $where ORDER BY date DESC LIMIT :limit OFFSET :offset");
+        $stmt = $db->prepare("SELECT id, title, slug, excerpt, content, cover, cover_caption, author, tags, date, status, is_pinned, created_at, updated_at FROM news $where ORDER BY is_pinned DESC, date DESC LIMIT :limit OFFSET :offset");
         foreach ($params as $k => $v) {
             $stmt->bindValue($k, $v);
         }
@@ -129,6 +131,7 @@ try {
 
         foreach ($rows as &$row) {
             $row['id'] = (int) $row['id'];
+            $row['is_pinned'] = (int) $row['is_pinned'];
             $row['created_at'] = (int) $row['created_at'];
             $row['updated_at'] = (int) $row['updated_at'];
             $row['tags'] = json_decode($row['tags'], true) ?: [];
@@ -164,6 +167,7 @@ try {
         $tags    = $input['tags'] ?? [];
         $date    = trim($input['date'] ?? '');
         $status  = trim($input['status'] ?? 'draft');
+        $is_pinned = intval($input['is_pinned'] ?? 0) ? 1 : 0;
 
         // 校验
         if ($title === '') {
@@ -198,8 +202,8 @@ try {
 
         $ts = now();
 
-        $stmt = $db->prepare("INSERT INTO news (title, slug, excerpt, content, cover, cover_caption, author, tags, date, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$title, $slug, $excerpt, $content, $cover, $cover_caption, $author, $tagsJson, $date, $status, $ts, $ts]);
+        $stmt = $db->prepare("INSERT INTO news (title, slug, excerpt, content, cover, cover_caption, author, tags, date, status, is_pinned, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$title, $slug, $excerpt, $content, $cover, $cover_caption, $author, $tagsJson, $date, $status, $is_pinned, $ts, $ts]);
 
         json_response([
             'success' => true,
@@ -240,6 +244,7 @@ try {
         $author  = array_key_exists('author', $input)  ? trim($input['author'])  : $existing['author'];
         $date    = array_key_exists('date', $input)    ? trim($input['date'])    : $existing['date'];
         $status  = array_key_exists('status', $input)  ? trim($input['status'])  : $existing['status'];
+        $is_pinned = array_key_exists('is_pinned', $input) ? (intval($input['is_pinned']) ? 1 : 0) : (int) $existing['is_pinned'];
 
         // tags 特殊处理
         if (array_key_exists('tags', $input)) {
@@ -270,8 +275,8 @@ try {
             $status = $existing['status'];
         }
 
-        $stmt = $db->prepare("UPDATE news SET title=?, slug=?, excerpt=?, content=?, cover=?, cover_caption=?, author=?, tags=?, date=?, status=?, updated_at=? WHERE id=?");
-        $stmt->execute([$title, $slug, $excerpt, $content, $cover, $cover_caption, $author, $tagsJson, $date, $status, now(), $id]);
+        $stmt = $db->prepare("UPDATE news SET title=?, slug=?, excerpt=?, content=?, cover=?, cover_caption=?, author=?, tags=?, date=?, status=?, is_pinned=?, updated_at=? WHERE id=?");
+        $stmt->execute([$title, $slug, $excerpt, $content, $cover, $cover_caption, $author, $tagsJson, $date, $status, $is_pinned, now(), $id]);
 
         json_response([
             'success' => true,

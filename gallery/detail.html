@@ -183,11 +183,14 @@
             <div class="detail-downloads" id="detailDownloads" style="display:none;">
               <div id="downloadButtons"></div>
             </div>
-            <!-- 返回按钮 -->
-            <a href="/gallery/" class="btn btn-outline btn-block detail-back-btn" id="detailBackBtn">← 返回作品列表</a>
           </div>
         </div>
       </aside>
+
+      <!-- 返回按钮（独立 grid 子元素，移动端通过 CSS order 放到底部） -->
+      <div class="detail-back-wrap">
+        <a href="/gallery/" class="btn btn-outline btn-block detail-back-btn" id="detailBackBtn">← 返回作品列表</a>
+      </div>
 
     </div>
   </div>

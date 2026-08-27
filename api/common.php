@@ -156,6 +156,7 @@ function createSiteTables($db, $driver) {
             tags TEXT NOT NULL,
             date VARCHAR(10) NOT NULL,
             status VARCHAR(16) NOT NULL DEFAULT 'draft',
+            is_pinned TINYINT NOT NULL DEFAULT 0,
             created_at INT NOT NULL,
             updated_at INT NOT NULL,
             PRIMARY KEY (id),
@@ -225,12 +226,14 @@ function createSiteTables($db, $driver) {
         tags          TEXT NOT NULL DEFAULT '[]',
         date          TEXT NOT NULL,
         status        TEXT NOT NULL DEFAULT 'draft',
+        is_pinned     INTEGER NOT NULL DEFAULT 0,
         created_at    INTEGER NOT NULL,
         updated_at    INTEGER NOT NULL
     )");
-    $db->exec("CREATE INDEX idx_news_date   ON news(date DESC)");
-    $db->exec("CREATE INDEX idx_news_slug   ON news(slug)");
-    $db->exec("CREATE INDEX idx_news_status ON news(status)");
+    $db->exec("CREATE INDEX idx_news_date    ON news(date DESC)");
+    $db->exec("CREATE INDEX idx_news_slug    ON news(slug)");
+    $db->exec("CREATE INDEX idx_news_status  ON news(status)");
+    $db->exec("CREATE INDEX idx_news_pinned  ON news(is_pinned DESC)");
 
     $db->exec("CREATE TABLE events (
         id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -433,6 +436,17 @@ function migrateSiteTables($db, $driver) {
             $db->exec("ALTER TABLE servers ADD COLUMN port INT NOT NULL DEFAULT 0");
         } else {
             $db->exec("ALTER TABLE servers ADD COLUMN port INTEGER NOT NULL DEFAULT 0");
+        }
+    }
+
+    // 迁移：news 表新增 is_pinned 列（置顶标记）
+    try {
+        $test = $db->query("SELECT is_pinned FROM news LIMIT 0");
+    } catch (PDOException $e) {
+        if ($driver === 'mysql') {
+            $db->exec("ALTER TABLE news ADD COLUMN is_pinned TINYINT NOT NULL DEFAULT 0");
+        } else {
+            $db->exec("ALTER TABLE news ADD COLUMN is_pinned INTEGER NOT NULL DEFAULT 0");
         }
     }
 
