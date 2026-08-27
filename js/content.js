@@ -225,6 +225,63 @@ function enhanceCodeBlocks(root) {
   }
 }
 
+/* ---- SEO 辅助函数 ---- */
+function setMetaAttr(attr, value, content) {
+  var el = document.querySelector('meta[' + attr + '="' + value + '"]');
+  if (el) el.setAttribute('content', content || '');
+}
+
+function injectArticleSEO(item) {
+  var slug = item.slug || new URLSearchParams(window.location.search).get('slug');
+  var canonical = 'https://uemcraft.cn/news/article.html?slug=' + encodeURIComponent(slug);
+  var absUrl = window.location.href;
+  var imgUrl = item.cover ? (item.cover.indexOf('http') === 0 ? item.cover : 'https://uemcraft.cn' + item.cover) : '';
+  var isoDate = item.date ? item.date + 'T00:00:00+08:00' : '';
+
+  // canonical
+  var link = document.querySelector('link[rel="canonical"]');
+  if (link) link.setAttribute('href', canonical);
+
+  // Open Graph
+  setMetaAttr('property', 'og:title', item.title);
+  setMetaAttr('property', 'og:description', item.excerpt || '');
+  setMetaAttr('property', 'og:image', imgUrl);
+  setMetaAttr('property', 'og:url', absUrl);
+  setMetaAttr('property', 'article:published_time', isoDate);
+  setMetaAttr('property', 'article:author', item.author || '');
+
+  // Twitter Card
+  setMetaAttr('name', 'twitter:title', item.title);
+  setMetaAttr('name', 'twitter:description', item.excerpt || '');
+  setMetaAttr('name', 'twitter:image', imgUrl);
+
+  // JSON-LD 结构化数据
+  var existing = document.getElementById('article-jsonld');
+  if (existing) existing.remove();
+  var ld = {
+    '@context': 'https://schema.org',
+    '@type': 'NewsArticle',
+    'headline': item.title,
+    'description': item.excerpt || '',
+    'datePublished': isoDate,
+    'dateModified': item.updated_at ? new Date(item.updated_at * 1000).toISOString() : isoDate,
+    'mainEntityOfPage': { '@type': 'WebPage', '@id': canonical },
+    'publisher': {
+      '@type': 'Organization',
+      'name': 'UEMCraft',
+      'logo': { '@type': 'ImageObject', 'url': 'https://uemcraft.cn/assets/img/logo-256.webp' }
+    }
+  };
+  if (item.author) ld.author = { '@type': 'Person', 'name': item.author };
+  if (imgUrl) ld.image = imgUrl;
+  if (item.tags && item.tags.length) ld.keywords = item.tags.join(', ');
+  var script = document.createElement('script');
+  script.type = 'application/ld+json';
+  script.id = 'article-jsonld';
+  script.textContent = JSON.stringify(ld);
+  document.head.appendChild(script);
+}
+
 /* ---- 文章详情渲染（异步） ---- */
 function buildMetaHtml(item) {
   var html = '';
@@ -269,6 +326,9 @@ function renderArticleData(item) {
   document.title = item.title + ' — 资讯动态 — UEMCraft';
   var desc = document.querySelector('meta[name="description"]');
   if (desc) desc.setAttribute('content', item.excerpt || '');
+
+  // 注入 SEO 元数据（OG / Twitter Card / JSON-LD）
+  injectArticleSEO(item);
 
   if (titleEl) titleEl.textContent = item.title;
   if (subEl) subEl.textContent = item.excerpt || '';
