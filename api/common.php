@@ -7,7 +7,6 @@
  */
 
 // ---- CORS 头 ----
-header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, X-Admin-Token');
@@ -20,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // ---- 通用工具 ----
 
 function json_response($data, $code = 200) {
+    header('Content-Type: application/json; charset=utf-8');
     http_response_code($code);
     echo json_encode($data, JSON_UNESCAPED_UNICODE);
     exit;
