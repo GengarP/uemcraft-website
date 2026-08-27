@@ -1,7 +1,4 @@
 {
   "name": "uemcraft-website",
-  "private": true,
-  "scripts": {
-    "migrate": "php scripts/migrate-to-db.php"
-  }
+  "private": true
 }

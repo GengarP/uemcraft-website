@@ -108,6 +108,32 @@ window.UEMAdminAuth = (function () {
     redirectToLogin();
   }
 
+  /* ---- 工具函数（供 admin 子模块复用） ---- */
+  function escapeHtml(text) {
+    var u = window.UEMUtils;
+    return u ? u.escapeHtml(text) : (function () {
+      var d = document.createElement('div');
+      d.textContent = text || '';
+      return d.innerHTML;
+    })();
+  }
+
+  function setText(id, val) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  function showMessage(el, text, type) {
+    if (!el) return;
+    el.textContent = text;
+    el.className = 'wall-form-message';
+    if (type) el.classList.add('is-' + type);
+  }
+
+  function pad(n) {
+    return n < 10 ? '0' + n : '' + n;
+  }
+
   return {
     TOKEN_KEY: TOKEN_KEY,
     getToken: getToken,
@@ -117,6 +143,10 @@ window.UEMAdminAuth = (function () {
     api: api,
     requireAuth: requireAuth,
     logout: logout,
-    redirectToLogin: redirectToLogin
+    redirectToLogin: redirectToLogin,
+    escapeHtml: escapeHtml,
+    setText: setText,
+    showMessage: showMessage,
+    pad: pad
   };
 })();

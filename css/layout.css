@@ -233,9 +233,6 @@
   text-align:center;
   border-bottom:2px solid var(--c-border);
 }
-.page-hero .hero-icon {
-  margin-bottom:var(--space-md);
-}
 .page-hero h1 {
   margin-bottom:var(--space-sm);
 }

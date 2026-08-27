@@ -69,8 +69,6 @@
   --c-primary-hi:   #4A7CF0;
   --c-primary-dark: #1E45B0;
   --c-accent-1:     #217087;
-  --c-accent-2:     #214d87;
-  --c-accent-3:     #212b87;
   --c-accent-4:     #392187;
 
   /* 文字 */
@@ -82,12 +80,9 @@
   --c-gold:  #C88A15;
   --c-red:   #C0392B;
   --c-ok:    #27AE60;
-  --c-warn:  #E67E22;
-  --c-info:  #2980B9;
 
   /* 像素/方块特质 */
   --radius:       4px;
-  --radius-lg:    10px;
   --shadow-hard:  4px 4px 0 rgba(0,0,0,.18);
   --shadow-hard-sm: 2px 2px 0 rgba(0,0,0,.14);
   --shadow-hover: 6px 6px 0 rgba(0,0,0,.22);
@@ -135,7 +130,6 @@
   --space-xl: 2rem;
   --space-2xl: 3rem;
   --space-3xl: 5rem;
-  --space-4xl: 8rem;
 
   /* 布局 */
   --max-width: 1200px;
@@ -164,8 +158,6 @@
   --c-primary-dark: #426BD4;
 
   --c-accent-1:     #4DB8D4;
-  --c-accent-2:     #5B8AF0;
-  --c-accent-3:     #6370F0;
   --c-accent-4:     #785EF0;
 
   --c-text:       #E2E5ED;
@@ -175,8 +167,6 @@
   --c-gold:  #F5C842;
   --c-red:   #E74C3C;
   --c-ok:    #2ECC71;
-  --c-warn:  #F0A030;
-  --c-info:  #5DADE2;
 
   --shadow-hard:    4px 4px 0 rgba(0,0,0,.50);
   --shadow-hard-sm: 2px 2px 0 rgba(0,0,0,.40);
