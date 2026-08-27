@@ -1,0 +1,13 @@
+# UEMCraft — Apache URL 重写规则
+# 仅在 Apache + mod_rewrite 环境下生效；Nginx 需在 server{} 中配置等价规则
+
+RewriteEngine On
+
+# 文章详情页：article.html?slug=xxx → article.php（服务端渲染 OG/Twitter 元数据）
+# 爬虫（Facebook、X、Discord 等）不执行 JS，因此必须在 PHP 中输出 meta 标签
+RewriteRule ^news/article\.html$ /news/article.php [QSA,L]
+
+# Nginx 等价配置（放在 server {} 或 location /news/ {} 中）:
+#   location = /news/article.html {
+#       rewrite ^/news/article\.html$ /news/article.php last;
+#   }

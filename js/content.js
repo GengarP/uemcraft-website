@@ -255,8 +255,17 @@ function injectArticleSEO(item) {
   setMetaAttr('name', 'twitter:description', item.excerpt || '');
   setMetaAttr('name', 'twitter:image', imgUrl);
 
-  // JSON-LD 结构化数据
+  // JSON-LD 结构化数据（PHP 已预渲染时跳过，避免重复）
   var existing = document.getElementById('article-jsonld');
+  if (!existing) {
+    var scripts = document.querySelectorAll('script[type="application/ld+json"]');
+    for (var si = 0; si < scripts.length; si++) {
+      try {
+        var parsed = JSON.parse(scripts[si].textContent);
+        if (parsed['@type'] === 'NewsArticle') { existing = scripts[si]; break; }
+      } catch (e) {}
+    }
+  }
   if (existing) existing.remove();
   var ld = {
     '@context': 'https://schema.org',
