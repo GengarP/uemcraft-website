@@ -29,19 +29,32 @@ document.addEventListener('DOMContentLoaded', function () {
       blocksContainer.appendChild(frag);
     }
 
+    // 进度条模拟
+    var bar = document.getElementById('loaderProgressBar');
+    var progress = 0;
+    var timer = setInterval(function () {
+      progress += Math.random() * 15 + 5;
+      if (progress > 90) progress = 90;
+      if (bar) bar.style.width = progress + '%';
+    }, 200);
+
     var done = function () {
-      loader.classList.add('is-done');
+      clearInterval(timer);
+      if (bar) bar.style.width = '100%';
       setTimeout(function () {
-        var heroContent = document.querySelector('.hero-index-content');
-        if (heroContent) heroContent.classList.add('is-revealed');
-        var heroSection = document.querySelector('.hero-index');
-        if (heroSection) heroSection.classList.add('is-loaded');
-        var reveals = document.querySelectorAll('.hero-index-content .reveal');
-        reveals.forEach(function (el, i) {
-          setTimeout(function () { el.classList.add('in'); }, i * 100);
-        });
-      }, 150);
-      setTimeout(function () { loader.remove(); }, 650);
+        loader.classList.add('is-done');
+        setTimeout(function () {
+          var heroContent = document.querySelector('.hero-index-content');
+          if (heroContent) heroContent.classList.add('is-revealed');
+          var heroSection = document.querySelector('.hero-index');
+          if (heroSection) heroSection.classList.add('is-loaded');
+          var reveals = document.querySelectorAll('.hero-index-content .reveal');
+          reveals.forEach(function (el, i) {
+            setTimeout(function () { el.classList.add('in'); }, i * 100);
+          });
+        }, 150);
+        setTimeout(function () { loader.remove(); }, 650);
+      }, 100);
     };
     if (document.readyState === 'complete') {
       setTimeout(done, 800);

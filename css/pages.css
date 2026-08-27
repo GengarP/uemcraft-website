@@ -58,6 +58,26 @@
   color:var(--c-text-muted);
   animation:loader-blink 1.6s step-end infinite;
 }
+/* Loader progress bar */
+.loader-progress {
+  width:200px;
+  height:3px;
+  background:var(--c-border);
+  border-radius:2px;
+  margin-top:var(--space-md);
+  overflow:hidden;
+}
+.loader-progress-bar {
+  height:100%;
+  width:0%;
+  background:#4caf50;
+  border-radius:2px;
+  transition:width .3s ease;
+}
+.page-loader.is-done .loader-progress {
+  opacity:0;
+  transition:opacity .3s ease;
+}
 @keyframes loader-blink {
   0%,100% { opacity:1; }
   50%     { opacity:0; }
@@ -79,6 +99,72 @@
 @keyframes loader-float {
   0%,100% { transform:translateY(0) rotate(0deg); }
   50%     { transform:translateY(-20px) rotate(5deg); }
+}
+
+/* ========== GitHub 风格顶部进度条 ========== */
+.nprogress-bar {
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:3px;
+  z-index:999999;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .3s ease;
+}
+.nprogress-bar.is-active { opacity:1; }
+.nprogress-bar-inner {
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#4caf50,#66bb6a);
+  border-radius:0 2px 2px 0;
+  box-shadow:0 0 8px rgba(76,175,80,.5);
+  transition:width .2s ease;
+}
+
+/* ========== 页面跳转遮罩 ========== */
+.page-transition-overlay {
+  position:fixed;
+  inset:0;
+  z-index:999998;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .2s ease;
+}
+.page-transition-overlay.is-active {
+  opacity:1;
+  pointer-events:all;
+}
+.pt-curtain {
+  position:absolute;
+  top:0; bottom:0;
+  width:50%;
+  background:#002140;
+  transition:transform .5s cubic-bezier(.7,0,.3,1);
+}
+.pt-curtain-l { left:0; transform:translateX(-100%); }
+.pt-curtain-r { right:0; transform:translateX(100%); }
+.page-transition-overlay.is-active .pt-curtain-l { transform:translateX(0); }
+.page-transition-overlay.is-active .pt-curtain-r { transform:translateX(0); }
+.pt-center {
+  position:absolute;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  z-index:1;
+  opacity:0;
+  transition:opacity .3s ease .2s;
+}
+.page-transition-overlay.is-active .pt-center { opacity:1; }
+.pt-logo {
+  animation:loader-pulse 1.2s ease-in-out infinite;
+}
+.pt-sub {
+  margin-top:8px;
+  font-size:var(--fs-sm);
+  color:#e2e5ed;
+  animation:loader-blink 1.6s step-end infinite;
 }
 
 /* ========== 首页 Hero ========== */
