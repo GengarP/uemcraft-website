@@ -45,13 +45,28 @@
   font-display: swap;
 }
 
-/* ---- Minecraft AE 像素字体（MOTD 展示） ---- */
+/* ---- Minecraft AE 像素字体 ---- */
+/* 拉丁字符（英文/数字/符号） */
 @font-face {
   font-family: "Minecraft AE";
   src: url("../assets/fonts/minecraft-ae.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0000-024F, U+0259, U+1E00-1EFF, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* CJK 字符（中文） — 加大字号 + 拉宽字距 */
+@font-face {
+  font-family: "Minecraft AE";
+  src: url("../assets/fonts/minecraft-ae.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+2E80-2EFF, U+3000-303F, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF;
+  size-adjust: 110%;
+  ascent-override: 85%;
+  descent-override: 15%;
+  line-gap-override: 0%;
 }
 
 /* ---- 亮色模式（默认） ---- */
@@ -107,11 +122,14 @@
 
 
   /* 字体 */
-  --font-body:  "Noto Sans SC","Source Han Sans SC","PingFang SC","Microsoft YaHei","思源黑体",system-ui,-apple-system,sans-serif;
-  --font-mono:  "Fusion Pixel","Tiny5","Cascadia Code","Cascadia Mono",Consolas,"Courier New",monospace;
+  --font-body:  "Minecraft AE","Fusion Pixel","Noto Sans SC","Source Han Sans SC","PingFang SC","Microsoft YaHei","思源黑体",system-ui,-apple-system,sans-serif;
+  --font-mono:  "Minecraft AE","Fusion Pixel","Tiny5","Cascadia Code","Cascadia Mono",Consolas,"Courier New",monospace;
+  --cjk-letter-spacing: .1em;
+  --cjk-vertical-offset: 0;     /* CJK 垂直偏移：正值下移，负值上移 */
+  --latin-vertical-offset: .1em; /* 英文下移：1em = 字号100% */
 
   /* 字号 */
-  --fs-base: 16px;
+  --fs-base: 14px;
   --fs-sm:   .875rem;
   --fs-xs:   .75rem;
   --fs-lg:   1.125rem;
@@ -133,8 +151,8 @@
 
   /* 布局 */
   --max-width: 1200px;
-  --header-h:  68px;
-  --header-h-scrolled: 56px;
+  --header-h:  80px;
+  --header-h-scrolled: 65px;
 
   /* 过渡 */
   --ease:     cubic-bezier(.4,0,.2,1);

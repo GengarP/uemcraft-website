@@ -111,6 +111,8 @@ html {
 .text-xs    { font-size:var(--fs-xs); }
 .text-lg    { font-size:var(--fs-lg); }
 .text-center { text-align:center; }
+.cjk-spacing { letter-spacing:var(--cjk-letter-spacing); position:relative; top:var(--cjk-vertical-offset); }
+.latin-spacing { position:relative; top:var(--latin-vertical-offset); }
 
 /* ---- Links inside prose ---- */
 .prose a {

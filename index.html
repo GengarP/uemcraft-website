@@ -43,7 +43,7 @@
     <img src="/assets/img/loading.webp" alt="" class="loader-logo" id="loaderLogo" width="80" height="80">
     <div class="loader-title">UEMCraft</div>
     <div class="loader-progress"><div class="loader-progress-bar" id="loaderProgressBar"></div></div>
-    <div class="loader-sub">正在生成区块…</div>
+    <div class="loader-sub">加载地形中…</div>
   </div>
   <div class="loader-blocks" id="loaderBlocks"></div>
 </div>
@@ -55,10 +55,6 @@
   <div class="header-inner">
     <a href="index.html" class="header-logo" aria-label="UEMCraft 首页">
       <img src="/assets/img/logo-256.webp" alt="UEMCraft Logo" width="40" height="40">
-      <span class="logo-text">
-        <span class="logo-cn">应大MC同好会</span>
-        <span class="logo-en">UEMCraft</span>
-      </span>
     </a>
     <nav class="header-nav" aria-label="主导航">
       <a href="index.html" class="is-active">首页</a>
@@ -154,8 +150,7 @@
       <span class="hero-title-cn">应急管理大学<br>Minecraft 同好会</span>
     </h1>
     <p class="hero-desc reveal reveal-delay-2">
-      以 Minecraft 为平台，开展校园数字复原、建筑创作与技术交流活动<br>
-      培养创造力、团队协作能力与跨学科实践能力
+      以 Minecraft 为平台，开展校园数字复原、建筑创作与技术交流活动<br>欢迎来到所有 UEMer 的第二宇宙！
     </p>
     <div class="hero-cta reveal reveal-delay-3">
       <a href="join.html" class="btn btn-gold btn-lg">加入我们</a>
@@ -229,17 +224,17 @@
     </div>
     <div class="grid-3 reveal" id="newsGrid">
       <div class="news-card news-card-empty" aria-hidden="true">
-        <div class="news-date">·····</div>
+        <div class="news-date">……</div>
         <div class="news-title">敬请期待</div>
         <div class="news-excerpt">更多动态即将发布</div>
       </div>
       <div class="news-card news-card-empty" aria-hidden="true">
-        <div class="news-date">·····</div>
+        <div class="news-date">……</div>
         <div class="news-title">敬请期待</div>
         <div class="news-excerpt">更多动态即将发布</div>
       </div>
       <div class="news-card news-card-empty" aria-hidden="true">
-        <div class="news-date">·····</div>
+        <div class="news-date">……</div>
         <div class="news-title">敬请期待</div>
         <div class="news-excerpt">更多动态即将发布</div>
       </div>
@@ -268,27 +263,30 @@
       <span class="section-label">DEPARTMENTS</span>
       <h2>三大部门</h2>
     </div>
-    <div class="grid-3 reveal">
-      <a href="about.html#tech" class="entry-card">
-        <div class="entry-icon icon-block">技</div>
-        <div>
-          <div class="entry-title">技术部</div>
-          <div class="entry-desc">服务器运维、插件开发、红石电路与命令方块培训，为社群提供技术支撑。</div>
-        </div>
+    <div class="dept-showcase reveal">
+      <a href="about.html#tech" class="dept-item">
+        <svg class="dept-item-icon" viewBox="0 0 16 16" shape-rendering="crispEdges">
+          <rect x="2" y="8" width="5" height="2" fill="var(--dept-main)"/><rect x="3" y="7" width="6" height="1" fill="var(--dept-main)"/><rect x="4" y="6" width="6" height="1" fill="var(--dept-main)"/><rect x="4" y="10" width="4" height="1" fill="var(--dept-main)"/><rect x="5" y="5" width="4" height="1" fill="var(--dept-main)"/><rect x="5" y="11" width="2" height="1" fill="var(--dept-main)"/><rect x="6" y="4" width="4" height="1" fill="var(--dept-main)"/><rect x="7" y="3" width="2" height="1" fill="var(--dept-main)"/><rect x="7" y="9" width="2" height="1" fill="var(--dept-main)"/><rect x="8" y="8" width="2" height="1" fill="var(--dept-main)"/><rect x="8" y="11" width="1" height="1" fill="var(--dept-main)"/><rect x="9" y="10" width="1" height="1" fill="var(--dept-main)"/><rect x="10" y="7" width="1" height="1" fill="var(--dept-main)"/><rect x="11" y="8" width="1" height="2" fill="var(--dept-main)"/>
+          <rect x="2" y="10" width="2" height="1" fill="var(--dept-shadow)"/><rect x="3" y="11" width="2" height="1" fill="var(--dept-shadow)"/><rect x="4" y="12" width="8" height="1" fill="var(--dept-shadow)"/><rect x="6" y="13" width="4" height="1" fill="var(--dept-shadow)"/><rect x="7" y="8" width="1" height="1" fill="var(--dept-shadow)"/><rect x="7" y="11" width="1" height="1" fill="var(--dept-shadow)"/><rect x="8" y="10" width="1" height="1" fill="var(--dept-shadow)"/><rect x="9" y="5" width="2" height="1" fill="var(--dept-shadow)"/><rect x="9" y="7" width="1" height="1" fill="var(--dept-shadow)"/><rect x="9" y="9" width="2" height="1" fill="var(--dept-shadow)"/><rect x="9" y="11" width="4" height="1" fill="var(--dept-shadow)"/><rect x="10" y="6" width="2" height="1" fill="var(--dept-shadow)"/><rect x="10" y="8" width="1" height="1" fill="var(--dept-shadow)"/><rect x="10" y="10" width="4" height="1" fill="var(--dept-shadow)"/><rect x="11" y="7" width="2" height="1" fill="var(--dept-shadow)"/><rect x="12" y="8" width="2" height="2" fill="var(--dept-shadow)"/>
+        </svg>
+        <div class="dept-item-title">技术部</div>
+        <div class="dept-item-desc">服务器运维、插件开发、红石电路与命令方块培训，为社群提供技术支撑。</div>
       </a>
-      <a href="about.html#create" class="entry-card">
-        <div class="entry-icon icon-block icon-block-teal">创</div>
-        <div>
-          <div class="entry-title">创作部</div>
-          <div class="entry-desc">建筑创作、校园数字复原工程、作品存档与展示，用方块重建校园之美。</div>
-        </div>
+      <a href="about.html#create" class="dept-item">
+        <svg class="dept-item-icon" viewBox="0 0 16 16" shape-rendering="crispEdges">
+          <rect x="2" y="13" width="2" height="1" fill="var(--dept-main)"/><rect x="3" y="12" width="2" height="1" fill="var(--dept-main)"/><rect x="4" y="11" width="2" height="1" fill="var(--dept-main)"/><rect x="5" y="3" width="9" height="1" fill="var(--dept-main)"/><rect x="5" y="10" width="2" height="1" fill="var(--dept-main)"/><rect x="6" y="2" width="5" height="1" fill="var(--dept-main)"/><rect x="6" y="4" width="1" height="1" fill="var(--dept-main)"/><rect x="6" y="9" width="2" height="1" fill="var(--dept-main)"/><rect x="7" y="8" width="2" height="1" fill="var(--dept-main)"/><rect x="8" y="7" width="2" height="1" fill="var(--dept-main)"/><rect x="9" y="6" width="2" height="1" fill="var(--dept-main)"/><rect x="10" y="4" width="3" height="2" fill="var(--dept-main)"/><rect x="12" y="6" width="2" height="1" fill="var(--dept-main)"/><rect x="13" y="7" width="1" height="4" fill="var(--dept-main)"/>
+          <rect x="2" y="14" width="2" height="1" fill="var(--dept-shadow)"/><rect x="4" y="13" width="1" height="1" fill="var(--dept-shadow)"/><rect x="5" y="12" width="1" height="1" fill="var(--dept-shadow)"/><rect x="6" y="11" width="1" height="1" fill="var(--dept-shadow)"/><rect x="7" y="4" width="3" height="1" fill="var(--dept-shadow)"/><rect x="7" y="10" width="1" height="1" fill="var(--dept-shadow)"/><rect x="8" y="9" width="1" height="1" fill="var(--dept-shadow)"/><rect x="9" y="8" width="1" height="1" fill="var(--dept-shadow)"/><rect x="10" y="7" width="1" height="1" fill="var(--dept-shadow)"/><rect x="11" y="6" width="1" height="1" fill="var(--dept-shadow)"/><rect x="12" y="7" width="1" height="4" fill="var(--dept-shadow)"/><rect x="13" y="4" width="1" height="2" fill="var(--dept-shadow)"/><rect x="13" y="11" width="1" height="1" fill="var(--dept-shadow)"/><rect x="14" y="6" width="1" height="5" fill="var(--dept-shadow)"/>
+        </svg>
+        <div class="dept-item-title">创作部</div>
+        <div class="dept-item-desc">建筑创作、校园数字复原工程、作品存档与展示，用方块重建校园之美。</div>
       </a>
-      <a href="about.html#media" class="entry-card">
-        <div class="entry-icon icon-block icon-block-purple">宣</div>
-        <div>
-          <div class="entry-title">宣传部</div>
-          <div class="entry-desc">宣传推广、新媒体运营、跨校联络，运营 B站 / 抖音 等社群账号。</div>
-        </div>
+      <a href="about.html#media" class="dept-item">
+        <svg class="dept-item-icon" viewBox="0 0 16 16" shape-rendering="crispEdges">
+          <rect x="2" y="13" width="3" height="2" fill="var(--dept-shadow)"/><rect x="3" y="5" width="12" height="1" fill="var(--dept-shadow)"/><rect x="3" y="6" width="2" height="1" fill="var(--dept-shadow)"/><rect x="3" y="7" width="1" height="6" fill="var(--dept-shadow)"/><rect x="4" y="11" width="1" height="2" fill="var(--dept-shadow)"/><rect x="5" y="12" width="9" height="1" fill="var(--dept-shadow)"/><rect x="5" y="14" width="10" height="1" fill="var(--dept-shadow)"/><rect x="6" y="3" width="2" height="1" fill="var(--dept-shadow)"/><rect x="7" y="2" width="3" height="1" fill="var(--dept-shadow)"/><rect x="8" y="1" width="1" height="1" fill="var(--dept-shadow)"/><rect x="9" y="3" width="2" height="1" fill="var(--dept-shadow)"/><rect x="12" y="6" width="3" height="1" fill="var(--dept-shadow)"/><rect x="12" y="11" width="2" height="1" fill="var(--dept-shadow)"/><rect x="13" y="7" width="2" height="2" fill="var(--dept-shadow)"/><rect x="13" y="9" width="1" height="2" fill="var(--dept-shadow)"/><rect x="14" y="4" width="1" height="1" fill="var(--dept-shadow)"/>
+          <rect x="2" y="4" width="12" height="1" fill="var(--dept-main)"/><rect x="2" y="5" width="1" height="8" fill="var(--dept-main)"/><rect x="4" y="7" width="9" height="4" fill="var(--dept-main)"/><rect x="5" y="6" width="7" height="1" fill="var(--dept-main)"/><rect x="5" y="11" width="7" height="1" fill="var(--dept-main)"/><rect x="5" y="13" width="10" height="1" fill="var(--dept-main)"/><rect x="14" y="9" width="1" height="4" fill="var(--dept-main)"/>
+        </svg>
+        <div class="dept-item-title">宣传部</div>
+        <div class="dept-item-desc">宣传推广、新媒体运营、跨校联络，运营 B站 / 抖音 等社群账号。</div>
       </a>
     </div>
   </div>
@@ -386,10 +384,10 @@
     </div>
   </div>
   <div class="footer-bottom">
-    <span>&copy; <span id="year"></span> 应急管理大学 Minecraft 同好会 · UEMCraft</span>
-    <span>Minecraft 是 Mojang AB 的商标 · 本站为社群非商业用途</span>
-    <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" style="color:var(--c-text-muted);text-decoration:none;">赣ICP备2026018930号</a>
-    <a href="https://beian.mps.gov.cn/" target="_blank" rel="noopener" style="color:var(--c-text-muted);text-decoration:none;display:inline-flex;align-items:center;gap:4px;"><img src="/assets/img/备案图标.png" alt="公安备案" style="height:14px;width:auto;">赣公网安备 36072102000273号</a>
+    <p class="fb-left"><span class="copy-sym">&copy;</span> <span id="year"></span> 应急管理大学 Minecraft 同好会 版权所有</p>
+    <p class="fb-right"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">赣ICP备2026018930号</a></p>
+    <p class="fb-left"><a href="https://www.minecraft.net/zh-hans" target="_blank" rel="noopener">Minecraft</a> 是微软公司的商标 - 本站为社群非商业用途</p>
+    <p class="fb-right"><a href="https://beian.mps.gov.cn/" target="_blank" rel="noopener" class="beian-icon"><img src="/assets/img/备案图标.png" alt="公安备案" style="height:14px;width:auto;">赣公网安备 36072102000273号</a></p>
   </div>
 </footer>
 
@@ -397,6 +395,7 @@
 <button class="back-to-top" aria-label="回到顶部" title="回到顶部">↑</button>
 
 <script defer src="js/utils.js"></script>
+<script defer src="js/cjk-spacing.js"></script>
 <script defer src="js/code-highlight.js"></script>
 <script defer src="js/content.js"></script>
 <script defer src="js/loader.js"></script>
@@ -409,7 +408,7 @@
 <script>
   // 首次访问弹窗提示
   if (!localStorage.getItem('uemcraft-welcome-shown')) {
-    alert('若您在网站运行时遇到问题，请通过导航栏加入我们处的联系方式、或发送邮件到邮箱 uemcraftcn@163.com 来进行反馈。感谢你的支持！');
+    alert('若您在网站运行时遇到问题，请联系我们进行反馈。你可以发送邮件到邮箱 uemcraftcn@163.com 或 加入同好会官方 QQ 群聊。感谢你的支持！');
     localStorage.setItem('uemcraft-welcome-shown', '1');
   }
 </script>
