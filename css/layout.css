@@ -40,17 +40,6 @@
 }
 
 /* Logo */
-.header-logo {
-  display:flex;
-  align-items:center;
-  flex-shrink:0;
-}
-.header-logo img {
-  width:46px;
-  height:46px;
-  border-radius:var(--radius);
-}
-
 /* Navigation */
 .header-nav { display:flex; align-items:center; gap:.25rem; }
 .header-nav a {

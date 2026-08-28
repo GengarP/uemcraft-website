@@ -199,7 +199,7 @@ function buildMetaHtml(item) {
             '<span class="article-meta-value">' + escapeHtml(formatDate(item.date)) + '</span>' +
           '</div>';
   if (item.author) {
-    html += '<span class="article-meta-sep" aria-hidden="true">·</span>';
+    html += '<span class="article-meta-sep" aria-hidden="true">-</span>';
     html += '<div class="article-meta-item">' +
               '<span class="article-meta-label">作者</span>' +
               '<span class="article-meta-value">' + escapeHtml(item.author) + '</span>' +
