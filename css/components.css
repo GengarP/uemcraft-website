@@ -1739,13 +1739,13 @@ a.works-card { text-decoration:none; color:inherit; }
   text-align:left;
   display:flex;
   align-items:center;
-  justify-content:space-between;
-  gap:var(--space-md);
   transition:color var(--duration);
 }
 .faq-q:hover { color:var(--c-primary); }
 .faq-q::after {
   content:'+';
+  margin-left:auto;
+  padding-left:var(--space-md);
   font-size:1.2rem;
   font-weight:400;
   font-family:var(--font-mono);

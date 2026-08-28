@@ -6,6 +6,18 @@
 
   var CJK_RE = /([\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF\u3000-\u303F\uFF00-\uFFEF\uFE30-\uFE4F]+)/g;
   var SKIP = { SCRIPT:1, STYLE:1, CODE:1, PRE:1, KBD:1, SAMP:1, TEXTAREA:1, INPUT:1, SELECT:1 };
+  var SKIP_CLASS = /^(cjk-spacing|latin-spacing)$/;
+
+  function shouldSkip(el) {
+    if (SKIP[el.tagName]) return true;
+    if (el.hasAttribute && el.hasAttribute('data-no-cjk')) return true;
+    if (el.classList) {
+      for (var i = 0; i < el.classList.length; i++) {
+        if (SKIP_CLASS.test(el.classList[i])) return true;
+      }
+    }
+    return false;
+  }
 
   function wrapText(node) {
     var text = node.textContent;
@@ -39,8 +51,7 @@
 
   function walk(el) {
     if (el.nodeType !== 1) return;
-    if (SKIP[el.tagName]) return;
-    if (el.classList && (el.classList.contains('cjk-spacing') || el.classList.contains('latin-spacing'))) return;
+    if (shouldSkip(el)) return;
     var child = el.firstChild;
     while (child) {
       var next = child.nextSibling;
@@ -64,7 +75,7 @@
       for (var j = 0; j < added.length; j++) {
         var n = added[j];
         if (n.nodeType === 1) {
-          if (n.classList && (n.classList.contains('cjk-spacing') || n.classList.contains('latin-spacing'))) continue;
+          if (shouldSkip(n)) continue;
           walk(n);
         } else if (n.nodeType === 3) {
           wrapText(n);
