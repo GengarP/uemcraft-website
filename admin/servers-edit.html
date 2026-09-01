@@ -40,9 +40,12 @@
 <!-- ====== Header ====== -->
 <header class="site-header" role="banner">
   <div class="header-inner">
+    <a href="/index.html" class="header-logo" aria-label="UEMCraft 首页">
+      <img src="/assets/img/minecraft_title.png" alt="UEMCraft" class="header-logo-img">
+    </a>
     <nav class="header-nav" aria-label="主导航">
       <a href="/index.html">首页</a>
-      <div class="nav-dropdown"><a href="/about.html" class="nav-drop-trigger">关于我们</a><div class="nav-drop-menu"><a href="/join.html">加入我们</a><a href="/gallery/">作品展示</a></div></div>
+      <div class="nav-dropdown"><a href="/about.html" class="nav-drop-trigger">关于我们</a><div class="nav-drop-menu"><a href="/join.html">加入我们</a><a href="/gallery/">作品展示</a><a href="https://skin.uemcraft.cn/" target="_blank" rel="noopener">皮肤站</a></div></div>
       <a href="/news/">资讯动态</a>
       <a href="/events.html">活动中心</a>
       <a href="/wall/">留言墙</a>
@@ -103,7 +106,7 @@
   <a href="/join.html" class="mobile-sub">加入我们</a>
   <a href="/gallery/" class="mobile-sub">作品展示</a>
   <a href="/events.html">活动中心</a>
-  <a href="/news/">资讯动态</a>
+  <a href="/news/">资讯动态</a>
   <a href="/wall/">留言墙</a>
 </nav>
 
@@ -181,6 +184,17 @@
           </select>
           <small class="form-help">置顶服务器显示在首页 Hero 徽章</small>
         </div>
+        <div class="form-group">
+          <label for="inputHideAddress">隐藏地址</label>
+          <select id="inputHideAddress" class="form-input">
+            <option value="0">否</option>
+            <option value="1">是</option>
+          </select>
+          <small class="form-help">隐藏后前端不展示真实 IP，查询经由后端代理</small>
+        </div>
+      </div>
+
+      <div class="form-row">
         <div class="form-group">
           <label for="inputSortOrder">排序权重</label>
           <input type="number" id="inputSortOrder" class="form-input" value="0" min="0">

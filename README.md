@@ -46,10 +46,10 @@
 ├── js/
 │   ├── main.js             全局（导航/主题/滚动）
 │   ├── content.js          内容渲染（从 API 加载新闻和活动）
-│   ├── server.js           服务器状态卡片（API 查询 + MOTD 渲染）
+│   ├── server.js           服务器状态卡片（后端代理查询 + MOTD 渲染）
 │   ├── gallery.js          作品展示（API 加载 + 分类筛选 + 卡片跳转）
 │   ├── gallery-detail.js   作品详情（Markdown + 相册 + 下载链接）
-│   ├── hero-gallery.js     Hero 背景画廊
+│   ├── hero-gallery.js     Hero 背景画廊（滑动切换 + 视差滚动）
 │   ├── admin-auth.js       统一管理认证模块
 │   ├── admin.js            后台仪表盘/列表逻辑
 │   ├── admin-edit.js       后台编辑表单逻辑
@@ -100,8 +100,9 @@
 通过 `/admin/` 服务器管理页面管理，支持：
 - 创建/编辑/删除服务器条目
 - 地址、端口、备注、排序、置顶
+- **隐藏地址**：开启后前端不展示真实 IP，查询经由后端代理转发
 - 前端首页自动查询服务器状态（在线人数、版本、延迟、MOTD）
-- 外部 API：`https://api.uemcraft.cn/mc-query/api/java/{address}`
+- 外部查询通过后端代理（`/api/servers.php?action=batch_query`），真实 IP 不暴露给前端
 
 ### 留言墙
 
@@ -124,7 +125,8 @@
 | `api/works.php` | `?action=list` / `?action=detail&id=xxx` / `?action=detail&slug=xxx` | 公开：作品列表/详情 |
 | `api/works.php` | `?action=admin_list` / `?action=admin_detail&id=xxx` | 管理：作品列表/详情 |
 | `api/works.php` | `?action=create` / `?action=update` / `?action=delete` | 管理：CRUD |
-| `api/servers.php` | `?action=list` / `?action=featured` | 公开：服务器列表/置顶 |
+| `api/servers.php` | `?action=list` / `?action=featured` | 公开：服务器列表/置顶（隐藏地址自动掩码） |
+| `api/servers.php` | `?action=batch_query` | 公开：后端代理批量查询（发 ID，隐藏真实 IP） |
 | `api/servers.php` | `?action=admin_list` / `?action=admin_detail&id=xxx` | 管理：服务器列表/详情 |
 | `api/servers.php` | `?action=create` / `?action=update` / `?action=delete` | 管理：CRUD |
 | `api/wall.php` | `?action=list` / `?action=post` | 公开：留言列表/发表 |
@@ -222,9 +224,8 @@ npx serve .
 | 名称 | 链接 |
 |------|------|
 | UEMCraft 官网 | https://uemcraft.cn |
-| MUA | https://www.mualliance.cn/ |
-| MUA 皮肤站 | https://skin.mualliance.ltd/ |
-| YIT & UEM 联合皮肤站 | https://skin.uemcraft.cn/ |
+| MUA 高校联盟 | https://www.mualliance.cn/ |
+| 皮肤站 | https://skin.uemcraft.cn/ |
 | 应急管理大学 | https://www.ncist.edu.cn/ |
 | 燕理MC玩家创作协会 | https://www.yitmc.cn |
 | QQ 群 | https://qm.qq.com/q/VYDnv3ZJwC |

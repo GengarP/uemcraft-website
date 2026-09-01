@@ -364,12 +364,15 @@
       var addr = Auth.escapeHtml(item.address) + (item.port ? ':' + item.port : '');
       var el = item.edition === 'bedrock' ? '基岩版' : 'Java 版';
       var ec = item.edition === 'bedrock' ? 'is-bedrock' : 'is-java';
+      var hideBadge = item.hide_address ? '<span class="admin-badge" style="background:var(--c-accent-4);color:#fff;">地址已隐藏</span>' : '';
       return '<article class="admin-card" data-id="' + item.id + '">'
         + '<div class="admin-card-info"><span class="admin-card-name">' + Auth.escapeHtml(item.name) + '</span>'
         + '<div class="admin-card-title-row">' + (item.is_featured ? '<span class="admin-badge is-approved">置顶</span>' : '')
+        + hideBadge
         + '<span class="admin-badge admin-badge-edition ' + ec + '">' + el + '</span><span class="admin-card-date">' + addr + '</span></div></div>'
         + '<div class="admin-card-header"><div class="admin-card-meta"><span class="admin-card-name">' + Auth.escapeHtml(item.name) + '</span>'
         + (item.is_featured ? '<span class="admin-badge is-approved">置顶</span>' : '')
+        + hideBadge
         + '<span class="admin-badge admin-badge-edition ' + ec + '">' + el + '</span></div>'
         + '<div class="admin-card-actions">'
         + '<button class="btn btn-ghost btn-sm" data-action="toggle-featured" data-id="' + item.id + '" data-featured="' + item.is_featured + '">' + (item.is_featured ? '取消置顶' : '置顶') + '</button>'

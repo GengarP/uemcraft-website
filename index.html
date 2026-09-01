@@ -60,9 +60,12 @@
 <!-- ====== Header ====== -->
 <header class="site-header" role="banner">
   <div class="header-inner">
+    <a href="index.html" class="header-logo" aria-label="UEMCraft 首页">
+      <img src="/assets/img/minecraft_title.png" alt="UEMCraft" class="header-logo-img">
+    </a>
     <nav class="header-nav" aria-label="主导航">
       <a href="index.html" class="is-active">首页</a>
-      <div class="nav-dropdown"><a href="about.html" class="nav-drop-trigger">关于我们</a><div class="nav-drop-menu"><a href="join.html">加入我们</a><a href="gallery/">作品展示</a></div></div>
+      <div class="nav-dropdown"><a href="about.html" class="nav-drop-trigger">关于我们</a><div class="nav-drop-menu"><a href="join.html">加入我们</a><a href="gallery/">作品展示</a><a href="https://skin.uemcraft.cn/" target="_blank" rel="noopener">皮肤站</a></div></div>
       <a href="news/">资讯动态</a>
       <a href="events.html">活动中心</a>
       <a href="wall/">留言墙</a>
@@ -135,33 +138,44 @@
 <section class="hero-index">
   <!-- 背景画廊：可左右滑动切换背景图。在下方 slide 的 src 填入图片路径；不需要的整行删除 -->
   <div class="hero-gallery" id="heroGallery" aria-hidden="true">
-    <div class="hero-gallery-track">
-      <div class="hero-slide"><img src="/assets/img/bg-1.jpg" alt=""></div>
-      <div class="hero-slide"><img src="/assets/img/bg-2.jpg" alt=""></div>
-      <div class="hero-slide"><img src="/assets/img/bg-3.jpg" alt=""></div>
-      <div class="hero-slide"><img src="/assets/img/bg-4.jpg" alt=""></div>
+    <div class="hero-gallery-parallax" id="heroParallax">
+      <div class="hero-gallery-track">
+        <div class="hero-slide"><img src="/assets/img/bg-1.jpg" alt=""></div>
+        <div class="hero-slide"><img src="/assets/img/bg-2.jpg" alt=""></div>
+        <div class="hero-slide"><img src="/assets/img/bg-3.jpg" alt=""></div>
+        <div class="hero-slide"><img src="/assets/img/bg-4.jpg" alt=""></div>
+      </div>
     </div>
   </div>
   <div class="container hero-index-content">
-    <a href="#serverSection" class="hero-badge reveal" id="heroBadge" title="查看服务器详情">
-      <span class="server-indicator" id="heroIndicator"></span>
-      <span id="heroStatus">加载中…</span>
-    </a>
-    <h1 class="reveal reveal-delay-1">
-      <img src="/assets/img/minecraft_title.png" alt="UEMCraft" class="hero-title-img" width="560" height="80">
-      <span class="hero-title-cn">应急管理大学<br>Minecraft 同好会</span>
-    </h1>
-    <p class="hero-desc reveal reveal-delay-2">
-      以 Minecraft 为平台，开展校园数字复原、建筑创作与技术交流活动<br>欢迎来到所有 UEMer 的第二宇宙！
-    </p>
-    <div class="hero-cta reveal reveal-delay-3">
-      <a href="join.html" class="btn btn-gold btn-lg">加入我们</a>
-      <a href="gallery/" class="btn btn-outline btn-lg">查看作品</a>
+    <!-- 左侧文字内容 -->
+    <div class="hero-text">
+      <h1 class="hero-title-cn reveal reveal-delay-1">方寸之间，<br>筑应大万千。</h1>
+      <p class="hero-desc reveal reveal-delay-2">应急管理大学 Minecraft 同好会<br>欢迎来到所有 UEMer 的第二宇宙！</p>
+      <div class="hero-bottom reveal reveal-delay-3">
+        <div class="hero-cta">
+          <a href="join.html" class="btn btn-gold btn-lg">加入我们</a>
+          <a href="gallery/" class="btn btn-outline btn-lg">查看作品</a>
+        </div>
+        <!-- 服务器信息 -->
+        <div class="hero-visual" id="heroServerInfo" title="点击查看详情">
+          <div class="hero-server-info">
+            <div class="hero-server-name" id="heroServerName">服务器</div>
+            <div class="hero-server-status">
+              <span class="server-indicator" id="heroIndicator"></span>
+              <span id="heroStatus">加载中…</span>
+            </div>
+            <div class="hero-server-stats">
+              <span class="hero-server-stat"><span id="heroPlayers">--</span> 在线</span>
+              <span class="hero-server-stat">版本 <span id="heroVersion">--</span></span>
+              <span class="hero-server-stat">延迟 <span id="heroLatency">--</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-  <!-- 画廊控制：左右箭头 / 指示点 -->
-  <button class="hero-gallery-arrow hero-gallery-prev" type="button" aria-label="上一张背景">‹</button>
-  <button class="hero-gallery-arrow hero-gallery-next" type="button" aria-label="下一张背景">›</button>
+  <!-- 画廊控制：指示点 -->
   <div class="hero-gallery-dots" id="heroGalleryDots"></div>
   <!-- Floating decorations -->
   <div class="hero-float hero-float-1" aria-hidden="true"></div>
@@ -379,8 +393,7 @@
       <h4>相关链接</h4>
       <ul>
         <li><a href="https://www.yitmc.cn" target="_blank" rel="noopener">燕理MC玩家创作协会</a></li>
-        <li><a href="https://skin.uemcraft.cn/" target="_blank" rel="noopener">YIT &amp; UEM 联合皮肤站</a></li>
-        <li><a href="https://skin.mualliance.ltd/" target="_blank" rel="noopener">MUA 皮肤站</a></li>
+        <li><a href="https://www.mualliance.cn/" target="_blank" rel="noopener">MUA 高校联盟</a></li>
         <li><a href="https://www.ncist.edu.cn/" target="_blank" rel="noopener">应急管理大学</a></li>
       </ul>
     </div>
@@ -408,10 +421,15 @@
 <script defer src="js/server.js"></script>
 <script defer src="js/hero-gallery.js"></script>
 <script>
-  // 首次访问弹窗提示
-  if (!localStorage.getItem('uemcraft-welcome-shown')) {
-    alert('若您在网站运行时遇到问题，请联系我们进行反馈。你可以发送邮件到邮箱 uemcraftcn@163.com 或 加入同好会官方 QQ 群聊。感谢你的支持！');
-    localStorage.setItem('uemcraft-welcome-shown', '1');
+  // 点击 Hero 服务器信息平滑滚动到 SERVER section
+  var heroServerInfo = document.getElementById('heroServerInfo');
+  if (heroServerInfo) {
+    heroServerInfo.addEventListener('click', function() {
+      var serverSection = document.getElementById('serverSection');
+      if (serverSection) {
+        serverSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
   }
 </script>
 </body>

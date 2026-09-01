@@ -399,6 +399,7 @@ function migrateSiteTables($db, $driver) {
             port INT NOT NULL DEFAULT 0,
             note VARCHAR(255) NOT NULL DEFAULT '',
             is_featured TINYINT NOT NULL DEFAULT 0,
+            hide_address TINYINT NOT NULL DEFAULT 0,
             sort_order INT NOT NULL DEFAULT 0,
             created_at INT NOT NULL,
             updated_at INT NOT NULL,
@@ -409,15 +410,16 @@ function migrateSiteTables($db, $driver) {
         // SQLite — 使用 try/catch 兼容 "table already exists" 错误
         try {
             $db->exec("CREATE TABLE servers (
-                id          INTEGER PRIMARY KEY AUTOINCREMENT,
-                name        TEXT NOT NULL,
-                address     TEXT NOT NULL,
-                port        INTEGER NOT NULL DEFAULT 0,
-                note        TEXT NOT NULL DEFAULT '',
-                is_featured INTEGER NOT NULL DEFAULT 0,
-                sort_order  INTEGER NOT NULL DEFAULT 0,
-                created_at  INTEGER NOT NULL,
-                updated_at  INTEGER NOT NULL
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                name          TEXT NOT NULL,
+                address       TEXT NOT NULL,
+                port          INTEGER NOT NULL DEFAULT 0,
+                note          TEXT NOT NULL DEFAULT '',
+                is_featured   INTEGER NOT NULL DEFAULT 0,
+                hide_address  INTEGER NOT NULL DEFAULT 0,
+                sort_order    INTEGER NOT NULL DEFAULT 0,
+                created_at    INTEGER NOT NULL,
+                updated_at    INTEGER NOT NULL
             )");
             $db->exec("CREATE INDEX IF NOT EXISTS idx_servers_sort ON servers(sort_order)");
         } catch (PDOException $e) {
@@ -458,6 +460,17 @@ function migrateSiteTables($db, $driver) {
             $db->exec("ALTER TABLE servers ADD COLUMN edition VARCHAR(10) NOT NULL DEFAULT 'java'");
         } else {
             $db->exec("ALTER TABLE servers ADD COLUMN edition TEXT NOT NULL DEFAULT 'java'");
+        }
+    }
+
+    // 迁移：servers 表新增 hide_address 列（隐藏 IP / 对外加密查询地址）
+    try {
+        $test = $db->query("SELECT hide_address FROM servers LIMIT 0");
+    } catch (PDOException $e) {
+        if ($driver === 'mysql') {
+            $db->exec("ALTER TABLE servers ADD COLUMN hide_address TINYINT NOT NULL DEFAULT 0");
+        } else {
+            $db->exec("ALTER TABLE servers ADD COLUMN hide_address INTEGER NOT NULL DEFAULT 0");
         }
     }
     return;

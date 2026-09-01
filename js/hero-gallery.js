@@ -1,5 +1,5 @@
 /* ============================================================
-   hero-gallery.js — 首页背景画廊（左右滑动 + 无缝循环）
+   hero-gallery.js — 首页背景画廊（左右滑动 + 无缝循环 + 视差滚动）
    slide 的 img 若 src 为空会被忽略；至少两张有效图才会启用。
    首尾各克隆一张，实现「最后一张向右滑能无缝回到第一张」。
    ============================================================ */
@@ -11,8 +11,6 @@ document.addEventListener('DOMContentLoaded', function () {
   var hero = gallery.parentElement;
   var track = gallery.querySelector('.hero-gallery-track');
   var dotsWrap = document.getElementById('heroGalleryDots');
-  var prevBtn = hero.querySelector('.hero-gallery-prev');
-  var nextBtn = hero.querySelector('.hero-gallery-next');
 
   // 只保留填了 src 的 slide
   var allSlides = Array.prototype.slice.call(track.querySelectorAll('.hero-slide'));
@@ -28,8 +26,6 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   if (slides.length < 2) {
-    if (prevBtn) prevBtn.style.display = 'none';
-    if (nextBtn) nextBtn.style.display = 'none';
     if (dotsWrap) dotsWrap.style.display = 'none';
     return;
   }
@@ -110,9 +106,6 @@ document.addEventListener('DOMContentLoaded', function () {
   function start() { stop(); timer = setInterval(next, AUTO_MS); }
   function restart() { start(); }
 
-  if (prevBtn) prevBtn.addEventListener('click', function () { prev(); restart(); });
-  if (nextBtn) nextBtn.addEventListener('click', function () { next(); restart(); });
-
   // 触摸滑动
   var startX = 0, deltaX = 0, tracking = false;
   gallery.addEventListener('touchstart', function (e) {
@@ -146,4 +139,38 @@ document.addEventListener('DOMContentLoaded', function () {
   setTransform(current, false);
   updateDots();
   start();
+
+  // ---- 视差滚动效果 ----
+  var parallax = document.getElementById('heroParallax');
+  var heroSection = document.querySelector('.hero-index');
+  if (parallax && heroSection) {
+    var ticking = false;
+    var PARALLAX_SPEED = 0.4; // 视差速度：0.4 表示背景以 40% 的速度滚动
+
+    function updateParallax() {
+      var scrolled = window.pageYOffset;
+      var heroHeight = heroSection.offsetHeight;
+
+      // 只在 hero 区域可见时应用视差
+      if (scrolled < heroHeight) {
+        var parallaxOffset = scrolled * PARALLAX_SPEED;
+        parallax.style.transform = 'translate3d(0,' + parallaxOffset + 'px,0)';
+      }
+
+      ticking = false;
+    }
+
+    function onScroll() {
+      if (!ticking) {
+        requestAnimationFrame(updateParallax);
+        ticking = true;
+      }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    // 初始化位置
+    updateParallax();
+  }
+
 });

@@ -97,7 +97,7 @@
   --c-ok:    #27AE60;
 
   /* 像素/方块特质 */
-  --radius:       4px;
+  --radius:       0;
   --shadow-hard:  4px 4px 0 rgba(0,0,0,.18);
   --shadow-hard-sm: 2px 2px 0 rgba(0,0,0,.14);
   --shadow-hover: 6px 6px 0 rgba(0,0,0,.22);
@@ -126,10 +126,10 @@
   --font-mono:  "Minecraft AE","Fusion Pixel","Tiny5","Cascadia Code","Cascadia Mono",Consolas,"Courier New",monospace;
   --cjk-letter-spacing: .1em;
   --cjk-vertical-offset: 0;     /* CJK 垂直偏移：正值下移，负值上移 */
-  --latin-vertical-offset: .1em; /* 英文下移：1em = 字号100% */
+  --latin-vertical-offset: 0em; /* 英文下移：1em = 字号100% */
 
   /* 字号 */
-  --fs-base: 14px;
+  --fs-base: 16px;
   --fs-sm:   .875rem;
   --fs-xs:   .75rem;
   --fs-lg:   1.125rem;
@@ -152,7 +152,6 @@
   /* 布局 */
   --max-width: 1200px;
   --header-h:  80px;
-  --header-h-scrolled: 65px;
 
   /* 过渡 */
   --ease:     cubic-bezier(.4,0,.2,1);

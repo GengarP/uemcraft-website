@@ -523,6 +523,7 @@
       setInput('inputEdition', item.edition || 'java');
       setInput('inputNote', item.note);
       setInput('inputFeatured', String(item.is_featured ? 1 : 0));
+      setInput('inputHideAddress', String(item.hide_address ? 1 : 0));
       setInput('inputSortOrder', String(item.sort_order || 0));
     }
 
@@ -535,6 +536,7 @@
         edition: getVal('inputEdition') || 'java',
         note: getVal('inputNote'),
         is_featured: parseInt(getVal('inputFeatured')) || 0,
+        hide_address: parseInt(getVal('inputHideAddress')) || 0,
         sort_order: parseInt(getVal('inputSortOrder')) || 0
       };
     }

@@ -111,7 +111,7 @@
   background: var(--c-surface);
   border-bottom: 2px solid var(--c-border);
   position: sticky;
-  top: var(--header-h-scrolled);
+  top: var(--header-h);
   z-index: 90;
 }
 
@@ -497,7 +497,7 @@
   flex: 1;
   height: 6px;
   background: var(--c-border);
-  border-radius: 3px;
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -505,7 +505,7 @@
   height: 100%;
   width: 0;
   background: var(--c-primary);
-  border-radius: 3px;
+  border-radius: 0;
   transition: width 0.3s ease;
 }
 

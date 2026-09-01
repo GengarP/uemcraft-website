@@ -18,12 +18,25 @@ require_once __DIR__ . '/common.php';
 
 $action = $_GET['action'] ?? '';
 
+/**
+ * 对外展示时掩码地址（隐藏真实 IP / 域名）
+ * play.uemcraft.cn → play.***.cn
+ * 192.168.1.100   → 192.***.***.100
+ */
+function mask_address($addr) {
+    if (strpos($addr, '.') === false) return '***';
+    $parts = explode('.', $addr);
+    if (count($parts) <= 2) return $parts[0] . '.***';
+    // 保留首尾段，中间用 *** 替代
+    return $parts[0] . '.***.' . end($parts);
+}
+
 try {
     $db = getSiteDb();
 
     // ---- 公开：全部服务器 ----
     if ($action === 'list') {
-        $stmt = $db->query("SELECT id, name, address, port, edition, note, is_featured, sort_order FROM servers ORDER BY sort_order ASC, id ASC");
+        $stmt = $db->query("SELECT id, name, address, port, edition, note, is_featured, hide_address, sort_order FROM servers ORDER BY sort_order ASC, id ASC");
         $rows = $stmt->fetchAll();
 
         foreach ($rows as &$row) {
@@ -31,7 +44,12 @@ try {
             $row['port'] = (int) ($row['port'] ?? 0);
             $row['edition'] = $row['edition'] ?? 'java';
             $row['is_featured'] = (int) $row['is_featured'];
+            $row['hide_address'] = (int) ($row['hide_address'] ?? 0);
             $row['sort_order'] = (int) $row['sort_order'];
+            // 隐藏地址时对外掩码
+            if ($row['hide_address']) {
+                $row['address'] = mask_address($row['address']);
+            }
         }
         unset($row);
 
@@ -40,12 +58,12 @@ try {
 
     // ---- 公开：置顶服务器 ----
     if ($action === 'featured') {
-        $stmt = $db->query("SELECT id, name, address, port, edition, note, is_featured, sort_order FROM servers WHERE is_featured = 1 ORDER BY sort_order ASC, id ASC LIMIT 1");
+        $stmt = $db->query("SELECT id, name, address, port, edition, note, is_featured, hide_address, sort_order FROM servers WHERE is_featured = 1 ORDER BY sort_order ASC, id ASC LIMIT 1");
         $row = $stmt->fetch();
 
         if (!$row) {
             // 回退到第一条
-            $stmt = $db->query("SELECT id, name, address, port, edition, note, is_featured, sort_order FROM servers ORDER BY sort_order ASC, id ASC LIMIT 1");
+            $stmt = $db->query("SELECT id, name, address, port, edition, note, is_featured, hide_address, sort_order FROM servers ORDER BY sort_order ASC, id ASC LIMIT 1");
             $row = $stmt->fetch();
         }
 
@@ -54,7 +72,11 @@ try {
             $row['port'] = (int) ($row['port'] ?? 0);
             $row['edition'] = $row['edition'] ?? 'java';
             $row['is_featured'] = (int) $row['is_featured'];
+            $row['hide_address'] = (int) ($row['hide_address'] ?? 0);
             $row['sort_order'] = (int) $row['sort_order'];
+            if ($row['hide_address']) {
+                $row['address'] = mask_address($row['address']);
+            }
         }
 
         json_response(['success' => true, 'data' => $row]);
@@ -81,6 +103,7 @@ try {
         $row['port'] = (int) ($row['port'] ?? 0);
         $row['edition'] = $row['edition'] ?? 'java';
         $row['is_featured'] = (int) $row['is_featured'];
+        $row['hide_address'] = (int) ($row['hide_address'] ?? 0);
         $row['sort_order'] = (int) $row['sort_order'];
         $row['created_at'] = (int) $row['created_at'];
         $row['updated_at'] = (int) $row['updated_at'];
@@ -109,6 +132,7 @@ try {
             $row['port'] = (int) ($row['port'] ?? 0);
             $row['edition'] = $row['edition'] ?? 'java';
             $row['is_featured'] = (int) $row['is_featured'];
+            $row['hide_address'] = (int) ($row['hide_address'] ?? 0);
             $row['sort_order'] = (int) $row['sort_order'];
             $row['created_at'] = (int) $row['created_at'];
             $row['updated_at'] = (int) $row['updated_at'];
@@ -133,6 +157,7 @@ try {
         $edition    = in_array($input['edition'] ?? '', ['java', 'bedrock']) ? $input['edition'] : 'java';
         $note       = trim($input['note'] ?? '');
         $is_featured = intval($input['is_featured'] ?? 0) ? 1 : 0;
+        $hide_address = intval($input['hide_address'] ?? 0) ? 1 : 0;
         $sort_order  = intval($input['sort_order'] ?? 0);
 
         if ($name === '') {
@@ -149,8 +174,8 @@ try {
 
         $ts = now();
 
-        $stmt = $db->prepare("INSERT INTO servers (name, address, port, edition, note, is_featured, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$name, $address, $port, $edition, $note, $is_featured, $sort_order, $ts, $ts]);
+        $stmt = $db->prepare("INSERT INTO servers (name, address, port, edition, note, is_featured, hide_address, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$name, $address, $port, $edition, $note, $is_featured, $hide_address, $sort_order, $ts, $ts]);
 
         json_response([
             'success' => true,
@@ -160,6 +185,7 @@ try {
                 'address' => $address,
                 'port'  => $port,
                 'edition' => $edition,
+                'hide_address' => $hide_address,
             ],
         ]);
     }
@@ -188,6 +214,7 @@ try {
         $edition    = array_key_exists('edition', $input) && in_array($input['edition'], ['java', 'bedrock']) ? $input['edition'] : ($existing['edition'] ?? 'java');
         $note       = array_key_exists('note', $input)       ? trim($input['note'])       : $existing['note'];
         $is_featured = array_key_exists('is_featured', $input) ? (intval($input['is_featured']) ? 1 : 0) : (int) $existing['is_featured'];
+        $hide_address = array_key_exists('hide_address', $input) ? (intval($input['hide_address']) ? 1 : 0) : (int) ($existing['hide_address'] ?? 0);
         $sort_order  = array_key_exists('sort_order', $input)  ? intval($input['sort_order'])  : (int) $existing['sort_order'];
 
         if ($name === '') {
@@ -202,8 +229,8 @@ try {
             $db->exec("UPDATE servers SET is_featured = 0 WHERE is_featured = 1");
         }
 
-        $stmt = $db->prepare("UPDATE servers SET name=?, address=?, port=?, edition=?, note=?, is_featured=?, sort_order=?, updated_at=? WHERE id=?");
-        $stmt->execute([$name, $address, $port, $edition, $note, $is_featured, $sort_order, now(), $id]);
+        $stmt = $db->prepare("UPDATE servers SET name=?, address=?, port=?, edition=?, note=?, is_featured=?, hide_address=?, sort_order=?, updated_at=? WHERE id=?");
+        $stmt->execute([$name, $address, $port, $edition, $note, $is_featured, $hide_address, $sort_order, now(), $id]);
 
         json_response([
             'success' => true,
@@ -213,6 +240,7 @@ try {
                 'address' => $address,
                 'port'  => $port,
                 'edition' => $edition,
+                'hide_address' => $hide_address,
             ],
         ]);
     }
@@ -234,6 +262,86 @@ try {
         }
 
         json_response(['success' => true, 'data' => ['id' => $id]]);
+    }
+
+    // ---- 公开：后端代理批量查询（前端发服务器 ID，后端用真实 IP 查询外部 API） ----
+    if ($action === 'batch_query') {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
+        }
+
+        $input = readInput();
+        $ids = $input['ids'] ?? [];
+        if (!is_array($ids) || empty($ids)) {
+            json_response(['success' => false, 'error' => '缺少 ids 参数'], 400);
+        }
+
+        // 从数据库获取真实地址
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $stmt = $db->prepare("SELECT id, address, port, edition FROM servers WHERE id IN ($placeholders) ORDER BY sort_order ASC, id ASC");
+        $stmt->execute(array_values($ids));
+        $rows = $stmt->fetchAll();
+
+        if (empty($rows)) {
+            json_response(['success' => false, 'error' => '未找到服务器'], 404);
+        }
+
+        // 构建外部 API 请求体
+        $servers_payload = [];
+        foreach ($rows as $row) {
+            $servers_payload[] = [
+                'ip'      => $row['address'],
+                'port'    => (int) ($row['port'] ?: 0) ?: null,
+                'edition' => $row['edition'] ?? 'java',
+            ];
+        }
+
+        $external_url = 'https://api.uemcraft.cn/mc-query/api/batch/stream';
+        $post_body = json_encode(['servers' => $servers_payload]);
+
+        // 流式转发：关闭所有输出缓冲
+        while (ob_get_level()) { ob_end_flush(); }
+        header('Content-Type: text/event-stream');
+        header('Cache-Control: no-cache');
+        header('X-Accel-Buffering: no');
+        @ini_set('zlib.output_compression', 'Off');
+
+        $ch = curl_init($external_url);
+        curl_setopt_array($ch, [
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $post_body,
+            CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+            CURLOPT_RETURNTRANSFER => false,
+            CURLOPT_HEADER         => false,
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_FOLLOWLOCATION => true,
+        ]);
+
+        // 流式回调：逐块输出
+        curl_setopt($ch, CURLOPT_WRITEFUNCTION, function ($ch, $chunk) use ($ids, $rows) {
+            // 将外部 API 返回的 index 映射回前端传入的 ID 顺序
+            echo $chunk;
+            if (ob_get_level()) ob_flush();
+            flush();
+            return strlen($chunk);
+        });
+
+        curl_exec($ch);
+        $err = curl_error($ch);
+        curl_close($ch);
+
+        if ($err) {
+            // 查询失败时发送 SSE 错误事件
+            $ids_arr = array_values($ids);
+            foreach ($rows as $i => $row) {
+                echo "event: server_error\n";
+                echo "data: " . json_encode(['index' => $i, 'error' => $err, 'online' => false]) . "\n\n";
+            }
+            if (ob_get_level()) ob_flush();
+            flush();
+        }
+
+        exit;
     }
 
     json_response(['success' => false, 'error' => '未知操作'], 400);

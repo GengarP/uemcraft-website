@@ -1,6 +1,6 @@
 /* ============================================================
    server.js — 服务器状态（动态多服务器，批量 SSE 流式查询）
-   API: POST https://api.uemcraft.cn/mc-query/api/batch/stream
+   API: POST /api/servers.php?action=batch_query（后端代理，隐藏真实 IP）
    数据源: /api/servers.php?action=list
    ============================================================ */
 
@@ -9,10 +9,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const serverSection = document.getElementById('serverSection');
   const heroIndicator = document.getElementById('heroIndicator');
   const heroStatus    = document.getElementById('heroStatus');
+  const heroServerName = document.getElementById('heroServerName');
+  const heroPlayers   = document.getElementById('heroPlayers');
+  const heroVersion   = document.getElementById('heroVersion');
+  const heroLatency   = document.getElementById('heroLatency');
 
   if (!serverSection && !heroStatus) return;
 
-  const BATCH_API = 'https://api.uemcraft.cn/mc-query/api/batch/stream';
+  const BATCH_API = '/api/servers.php?action=batch_query';
   const QUERY_TIMEOUT = 30000; // 30 秒超时（批量查询整体）
 
   let servers = [];
@@ -62,13 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     activeController = controller;
 
     var body = {
-      servers: servers.map(function(srv) {
-        return {
-          ip: srv.address,
-          port: srv.port || undefined,
-          edition: srv.edition || 'java'
-        };
-      })
+      ids: servers.map(function(srv) { return srv.id; })
     };
 
     try {
@@ -294,18 +292,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ---- 更新 Hero 徽章 ----
+  // ---- 更新 Hero 信息条 ----
   function updateHeroBadge(server, status) {
     if (!heroStatus) return;
 
     var online = !!(status && status.online);
     var players = online ? ((status.players && status.players.online) || 0) : 0;
+    var maxPlayers = online ? ((status.players && status.players.max) || 0) : 0;
     var version = status && status.version ? status.version : '';
+    var latency = online && status.latency != null ? status.latency : null;
 
     if (heroIndicator) heroIndicator.classList.toggle('is-offline', !online);
-    heroStatus.textContent = online
-      ? players + ' 人在线 · ' + version
-      : server.name + ' 离线';
+    if (heroServerName) heroServerName.textContent = server.name || '服务器';
+    heroStatus.textContent = online ? '在线' : '离线';
+    if (heroPlayers) heroPlayers.textContent = online ? players + ' / ' + maxPlayers : '--';
+    if (heroVersion) heroVersion.textContent = online && version ? version : '--';
+    if (heroLatency) heroLatency.textContent = latency != null ? latency + ' ms' : '--';
   }
 
   // ---- 渲染首页服务器卡片骨架 ----
@@ -359,6 +361,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Hero 状态设为查询中
     if (heroStatus) heroStatus.textContent = '查询中…';
+    if (heroPlayers) heroPlayers.textContent = '--';
+    if (heroVersion) heroVersion.textContent = '--';
+    if (heroLatency) heroLatency.textContent = '--';
 
     // 构建 index -> server 映射
     var serverByIndex = {};
@@ -433,7 +438,11 @@ document.addEventListener('DOMContentLoaded', () => {
           container.appendChild(placeholder);
         }
       }
-      if (heroStatus) heroStatus.textContent = '暂未配置服务器';
+      if (heroServerName) heroServerName.textContent = '暂未配置';
+      if (heroStatus) heroStatus.textContent = '';
+      if (heroPlayers) heroPlayers.textContent = '--';
+      if (heroVersion) heroVersion.textContent = '--';
+      if (heroLatency) heroLatency.textContent = '--';
       return;
     }
 

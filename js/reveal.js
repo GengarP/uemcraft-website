@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
   /* ---- IntersectionObserver 滚动显现 ---- */
   var loaderActive = !!document.getElementById('pageLoader');
   var reveals = document.querySelectorAll(
-    loaderActive ? '.reveal:not(.hero-index-content .reveal)' : '.reveal'
+    loaderActive ? '.reveal:not(.hero-index .reveal)' : '.reveal'
   );
   if (reveals.length && 'IntersectionObserver' in window) {
     var obs = new IntersectionObserver(function (entries) {

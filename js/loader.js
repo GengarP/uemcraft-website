@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
           if (heroContent) heroContent.classList.add('is-revealed');
           var heroSection = document.querySelector('.hero-index');
           if (heroSection) heroSection.classList.add('is-loaded');
-          var reveals = document.querySelectorAll('.hero-index-content .reveal');
+          var reveals = document.querySelectorAll('.hero-index .reveal');
           reveals.forEach(function (el, i) {
             setTimeout(function () { el.classList.add('in'); }, i * 100);
           });
@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (heroContent) heroContent.classList.add('is-revealed');
     var heroSection = document.querySelector('.hero-index');
     if (heroSection) heroSection.classList.add('is-loaded');
-    document.querySelectorAll('.hero-index-content .reveal').forEach(function (el, i) {
+    document.querySelectorAll('.hero-index .reveal').forEach(function (el, i) {
       setTimeout(function () { el.classList.add('in'); }, i * 100);
     });
   }
