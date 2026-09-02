@@ -30,7 +30,7 @@ function formatDate(iso) {
 }
 
 function newsUrl(slug) {
-  return '/news/article.html?slug=' + encodeURIComponent(slug);
+  return '/news/' + encodeURIComponent(slug);
 }
 
 /* ---- 异步数据加载（API） ---- */
@@ -132,8 +132,8 @@ function setMetaAttr(attr, value, content) {
 }
 
 function injectArticleSEO(item) {
-  var slug = item.slug || new URLSearchParams(window.location.search).get('slug');
-  var canonical = 'https://uemcraft.cn/news/article.html?slug=' + encodeURIComponent(slug);
+  var slug = item.slug || window.__NEWS_SLUG__;
+  var canonical = 'https://uemcraft.cn/news/' + encodeURIComponent(slug);
   var absUrl = window.location.href;
   var imgUrl = item.cover ? (item.cover.indexOf('http') === 0 ? item.cover : 'https://uemcraft.cn' + item.cover) : '';
   var isoDate = item.date ? item.date + 'T00:00:00+08:00' : '';
@@ -274,7 +274,7 @@ function renderArticleData(item) {
 function initContent() {
   // 文章详情页（异步）
   if (document.getElementById('articleContent')) {
-    var slug = new URLSearchParams(window.location.search).get('slug');
+    var slug = window.__NEWS_SLUG__;
     var titleEl = document.getElementById('articleTitle');
     var subEl = document.getElementById('articleSub');
     var crumbEl = document.getElementById('articleCrumb');

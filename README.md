@@ -26,8 +26,7 @@
 │   ├── index.html          作品展示（API 驱动 + 分类筛选）
 │   └── detail.html         作品详情（?id=，Modrinth 风格双栏布局）
 ├── news/
-│   ├── index.html          新闻列表（从 API 加载）
-│   └── article.html        文章详情（从 API 加载，?slug=）
+│   └── index.php           新闻路由（列表 + 详情，路径式 URL）
 ├── wall/
 │   ├── index.html          留言墙（需 PHP 后端）
 │   └── admin.html          留言墙管理端
@@ -74,7 +73,7 @@
 - 标签、封面图、摘要、作者等元数据
 - 草稿/已发布状态切换
 
-文章 URL：`/news/article.html?slug=<slug>`
+文章 URL：`/news/<slug>`（需配置 Apache URL 重写）
 
 ### 活动
 
@@ -208,7 +207,8 @@ npx serve .
 1. 将全部文件部署到支持 PHP 的服务器
 2. 设置环境变量 `ADMIN_TOKEN`（管理后台令牌）
 3. 可选：设置 MySQL 相关环境变量
-4. 访问 `/admin/login.html` 登录管理后台
+4. 配置 Apache URL 重写（见下方）
+5. 访问 `/admin/login.html` 登录管理后台
 
 **PHP 要求**：PHP 7.4+，PDO + SQLite3 或 PDO + MySQL
 
@@ -218,6 +218,66 @@ npx serve .
 - **虚拟主机** — 上传文件，确保 PHP 可执行
 
 > **注意**：纯静态托管（GitHub Pages 等）无法运行 PHP 后端。数据库文件（`api/*.db`）为运行期自动生成，勿提交。
+
+### Apache URL 重写配置
+
+新闻详情页使用路径式 URL（`/news/{slug}`），需要 Apache URL 重写支持。
+
+#### 方式一：.htaccess（推荐）
+
+在网站根目录创建 `.htaccess` 文件：
+
+```apache
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^news/([a-zA-Z0-9_-]+)/?$ news/index.php?slug=$1 [L,QSA]
+```
+
+#### 方式二：Apache 配置文件
+
+如果无法使用 `.htaccess`，在 Apache 配置文件（如 `httpd.conf` 或虚拟主机配置）中添加：
+
+```apache
+<Directory "/path/to/your/website">
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^news/([a-zA-Z0-9_-]+)/?$ news/index.php?slug=$1 [L,QSA]
+</Directory>
+```
+
+#### 方式三：宝塔面板
+
+1. 进入宝塔面板 → 网站 → 设置 → 伪静态
+2. 选择「自定义」规则
+3. 添加以下内容：
+
+```nginx
+location /news/ {
+    if (!-e $request_filename) {
+        rewrite ^/news/([a-zA-Z0-9_-]+)/?$ /news/index.php?slug=$1 last;
+    }
+}
+```
+
+#### Nginx 配置
+
+如果使用 Nginx，在 `server` 块中添加：
+
+```nginx
+location /news/ {
+    try_files $uri $uri/ /news/index.php?slug=$uri;
+    rewrite ^/news/([a-zA-Z0-9_-]+)/?$ /news/index.php?slug=$1 last;
+}
+```
+
+### URL 格式
+
+配置完成后，新闻 URL 格式为：
+
+- 列表页：`/news/`
+- 详情页：`/news/{slug}`（如 `/news/welcome-to-uemcraft`）
 
 ## 相关链接
 

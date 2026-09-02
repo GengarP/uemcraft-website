@@ -1,20 +1,100 @@
+<?php
+/**
+ * news/index.php — 新闻路由
+ *
+ * /news/           → 列表页
+ * /news/{slug}     → 详情页
+ *
+ * 需要 Apache .htaccess 配置 URL 重写
+ */
+
+require_once __DIR__ . '/../api/common.php';
+
+// 从 URL 路径中提取 slug
+$path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$slug = '';
+
+// 匹配 /news/{slug} 模式
+if (preg_match('#^/news/([a-zA-Z0-9_-]+)/?$#', $path, $m)) {
+    $slug = trim($m[1]);
+}
+
+$isDetail = $slug !== '';
+
+// 详情页 SEO 数据
+$page_title   = '资讯动态 — UEMCraft';
+$page_desc    = 'UEMCraft 资讯动态——应急管理大学 Minecraft 同好会的最新消息与公告。';
+$page_image   = '';
+$page_url     = 'https://uemcraft.cn/news/' . ($slug ? urlencode($slug) : '');
+$article_date = '';
+$article_author = '';
+$article_tags = [];
+
+if ($isDetail) {
+    try {
+        $db   = getSiteDb();
+        $stmt = $db->prepare("SELECT title, slug, excerpt, cover, author, tags, date FROM news WHERE slug = :slug AND status = 'published'");
+        $stmt->execute([':slug' => $slug]);
+        $row = $stmt->fetch();
+
+        if ($row) {
+            $page_title     = ($row['title'] ?: '文章') . ' — 资讯动态 — UEMCraft';
+            $page_desc      = $row['excerpt'] ?: $page_desc;
+            $page_image     = $row['cover'] ?? '';
+            $article_date   = $row['date'] ?? '';
+            $article_author = $row['author'] ?? '';
+            $article_tags   = json_decode($row['tags'] ?? '[]', true) ?: [];
+        }
+    } catch (Throwable $e) {
+        error_log('[news/index.php] ' . $e->getMessage());
+    }
+}
+
+// 绝对图片 URL
+$abs_image = '';
+if ($page_image !== '') {
+    $abs_image = strpos($page_image, 'http') === 0 ? $page_image : 'https://uemcraft.cn' . $page_image;
+}
+
+// ISO 日期
+$iso_date = $article_date ? $article_date . 'T00:00:00+08:00' : '';
+?>
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <meta name="description" content="UEMCraft 资讯动态——应急管理大学 Minecraft 同好会的最新消息与公告。">
+  <meta name="description" content="<?php echo htmlspecialchars($page_desc, ENT_QUOTES, 'UTF-8'); ?>">
   <meta name="theme-color" content="#213d87">
   <meta name="robots" content="index, follow">
-  <title>资讯动态 — UEMCraft</title>
-  <link rel="canonical" href="https://uemcraft.cn/news/">
-  <meta property="og:type" content="website">
-  <meta property="og:locale" content="zh_CN">
-  <meta property="og:site_name" content="UEMCraft">
-  <meta property="og:title" content="资讯动态 — UEMCraft">
-  <meta property="og:description" content="UEMCraft 资讯动态——应急管理大学 Minecraft 同好会的最新消息与公告。">
-  <meta property="og:url" content="https://uemcraft.cn/news/">
-  <meta property="og:image" content="https://uemcraft.cn/assets/img/logo-256.webp">
+  <title><?php echo htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8'); ?></title>
+  <link rel="canonical" href="https://uemcraft.cn/news/<?php echo $slug ? urlencode($slug) : ''; ?>">
+
+<?php if ($isDetail): ?>
+  <!-- JSON-LD 结构化数据 -->
+  <script type="application/ld+json">
+  <?php
+  $ld = [
+      '@context' => 'https://schema.org',
+      '@type'    => 'NewsArticle',
+      'headline' => $page_title,
+      'description' => $page_desc,
+      'mainEntityOfPage' => ['@type' => 'WebPage', '@id' => $page_url],
+      'publisher' => [
+          '@type' => 'Organization',
+          'name'  => 'UEMCraft',
+          'logo'  => ['@type' => 'ImageObject', 'url' => 'https://uemcraft.cn/assets/img/logo-256.webp'],
+      ],
+  ];
+  if ($iso_date) $ld['datePublished'] = $iso_date;
+  if ($article_author) $ld['author'] = ['@type' => 'Person', 'name' => $article_author];
+  if ($abs_image) $ld['image'] = $abs_image;
+  if ($article_tags) $ld['keywords'] = implode(', ', $article_tags);
+  echo json_encode($ld, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+  ?>
+  </script>
+<?php endif; ?>
+
   <link rel="icon" href="../favicon.ico" type="images/x-icon">
   <script>
     (function(){
@@ -110,6 +190,7 @@
   <a href="/about.html">关于我们</a>
   <a href="/join.html" class="mobile-sub">加入我们</a>
   <a href="/gallery/" class="mobile-sub">作品展示</a>
+  <a href="https://skin.uemcraft.cn/" class="mobile-sub" target="_blank" rel="noopener">皮肤站</a>
   <a href="/events.html">活动中心</a>
   <a href="/news/" class="is-active">资讯动态</a>
   <a href="/wall/">留言墙</a>
@@ -118,7 +199,31 @@
 <!-- ====== Main ====== -->
 <main id="main">
 
-<!-- Page Hero -->
+<?php if ($isDetail): ?>
+<!-- 文章详情页 -->
+<section class="page-hero">
+  <div class="container">
+    <h1 id="articleTitle">文章标题</h1>
+    <p class="hero-sub" id="articleSub">加载中…</p>
+    <nav class="breadcrumb" aria-label="面包屑">
+      <a href="/index.html">首页</a> <span>/</span> <a href="/news/">资讯动态</a> <span>/</span> <span id="articleCrumb">文章标题</span>
+    </nav>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width:800px;">
+    <figure class="article-hero reveal" id="articleCover" style="display:none;"></figure>
+    <div class="article-meta reveal" id="articleMeta" style="display:none;"></div>
+    <article class="article-body reveal" id="articleContent"></article>
+    <div class="reveal" style="margin-top:var(--space-3xl); padding-top:var(--space-xl); border-top:2px solid var(--c-border); display:flex; justify-content:space-between; flex-wrap:wrap; gap:var(--space-md);">
+      <a href="/news/" class="btn btn-outline">← 返回资讯列表</a>
+    </div>
+  </div>
+</section>
+
+<?php else: ?>
+<!-- 新闻列表页 -->
 <section class="page-hero">
   <div class="container">
     <h1>资讯动态</h1>
@@ -129,7 +234,6 @@
   </div>
 </section>
 
-<!-- Latest News -->
 <section class="section section-alt">
   <div class="container">
     <div class="section-head reveal">
@@ -139,6 +243,7 @@
     <div class="reveal" id="newsList" style="max-width:760px;margin-inline:auto;display:flex;flex-direction:column;gap:var(--space-md);"></div>
   </div>
 </section>
+<?php endif; ?>
 
 </main>
 
@@ -196,13 +301,27 @@
 
 <button class="back-to-top" aria-label="回到顶部" title="回到顶部">↑</button>
 
+<!-- Markdown 引擎：marked.js（自托管，零依赖，避免 CDN 阻塞） -->
+<script defer src="/js/marked.umd.js"></script>
+
+<!-- 内容数据与渲染 -->
 <script defer src="/js/utils.js"></script>
 <script defer src="/js/cjk-spacing.js"></script>
 <script defer src="/js/code-highlight.js"></script>
 <script defer src="/js/content.js"></script>
+
+<!-- 全局交互脚本 -->
 <script defer src="/js/nav.js"></script>
 <script defer src="/js/page-transition.js"></script>
 <script defer src="/js/theme.js"></script>
 <script defer src="/js/reveal.js"></script>
+
+<?php if ($isDetail): ?>
+<!-- 传递 slug 给前端 -->
+<script>
+  window.__NEWS_SLUG__ = '<?php echo addslashes($slug); ?>';
+</script>
+<?php endif; ?>
+
 </body>
 </html>

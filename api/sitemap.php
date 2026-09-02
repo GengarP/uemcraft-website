@@ -45,7 +45,7 @@ try {
     foreach ($articles as $a) {
         $lastmod = date('Y-m-d', $a['updated_at'] ?: strtotime($a['date']));
         $xml .= '  <url>' . "\n";
-        $xml .= '    <loc>' . $base . '/news/article.html?slug=' . rawurlencode($a['slug']) . '</loc>' . "\n";
+        $xml .= '    <loc>' . $base . '/news/' . rawurlencode($a['slug']) . '</loc>' . "\n";
         $xml .= '    <lastmod>' . $lastmod . '</lastmod>' . "\n";
         $xml .= '    <changefreq>monthly</changefreq>' . "\n";
         $xml .= '    <priority>0.7</priority>' . "\n";
