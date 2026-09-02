@@ -300,7 +300,6 @@
 .hero-visual {
   cursor:pointer;
   flex-shrink:0;
-  margin-right:calc(-1 * var(--space-xl) - var(--space-xl));
 }
 .hero-server-info {
   text-align:right;
@@ -458,7 +457,7 @@
     gap:var(--space-sm);
   }
   .hero-visual {
-    margin-right:calc(-1 * var(--space-lg));
+    margin-right:0;
   }
   .hero-server-info {
     padding:var(--space-xs) var(--space-sm);
