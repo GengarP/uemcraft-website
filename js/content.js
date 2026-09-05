@@ -132,7 +132,6 @@ function renderEventListItem(item, index) {
     '<div class="event-list-img">' +
       '<img src="' + escapeHtml(cover) + '" alt="">' +
       '<div class="event-img-placeholder" aria-hidden="true">EVENT</div>' +
-      '<span class="event-list-num">' + (index + 1) + '</span>' +
     '</div>' +
     '<div class="event-list-body">' +
       '<div class="event-list-meta">' +

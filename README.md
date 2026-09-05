@@ -184,7 +184,7 @@ SITE_DB_DRIVER=mysql SITE_DB_NAME=uemcraft SITE_DB_USER=root SITE_DB_PASS=密码
 - **主题色**：`#213d87`（深蓝）
 - **字体**：Noto Sans SC（中文）+ Fusion Pixel（英文等宽）+ Minecraft AE（MOTD 展示）
 - **图标**：iconfont 字体图标
-- **外链标识**：所有 `target="_blank"` 链接自动追加 `↗` 角标
+- **外链标识**：导航栏 `target="_blank"` 链接自动追加 `↗` 角标
 - **活动列表**：交替图文布局（左图右文 / 右图左文），图片 hover 缩放
 
 ### 服务器状态卡片
