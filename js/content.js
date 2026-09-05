@@ -134,11 +134,11 @@ function renderEventListItem(item, index) {
       '<div class="event-img-placeholder" aria-hidden="true">EVENT</div>' +
     '</div>' +
     '<div class="event-list-body">' +
+      '<h3 class="event-list-title">' + escapeHtml(item.title) + '</h3>' +
       '<div class="event-list-meta">' +
         '<span class="event-date-badge">' + escapeHtml(item.date_label || item.dateLabel || '') + '</span>' +
         '<span class="event-status ' + st.cls + '">' + st.label + '</span>' +
       '</div>' +
-      '<h3 class="event-list-title">' + escapeHtml(item.title) + '</h3>' +
       '<p class="event-list-excerpt">' + escapeHtml(item.excerpt || '') + '</p>' +
       '<div class="event-list-actions">' +
         '<a href="' + escapeHtml(item.link || '#') + '" class="btn btn-outline btn-sm">查看详情 →</a>' +
