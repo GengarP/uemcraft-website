@@ -220,10 +220,19 @@
   </div>
 </section>
 
-<hr class="divider-line">
+<!-- Server Status -->
+<section class="section section-alt" id="serverSection">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-label">SERVER</span>
+      <h2>服务器状态</h2>
+    </div>
+    <!-- 服务器面板由 server.js 动态渲染 -->
+  </div>
+</section>
 
 <!-- Latest News -->
-<section class="section section-alt">
+<section class="section">
   <div class="container">
     <div class="section-head reveal">
       <span class="section-label">NEWS</span>
@@ -252,14 +261,33 @@
   </div>
 </section>
 
-<!-- Server Status -->
-<section class="section" id="serverSection">
+<!-- Upcoming Events -->
+<section class="section section-alt">
   <div class="container">
     <div class="section-head reveal">
-      <span class="section-label">SERVER</span>
-      <h2>服务器状态</h2>
+      <span class="section-label">EVENTS</span>
+      <h2>近期活动</h2>
     </div>
-    <!-- 服务器面板由 server.js 动态渲染 -->
+    <div class="event-list reveal" id="eventsGrid">
+    </div>
+    <div class="text-center" style="margin-top:var(--space-xl);">
+      <a href="events.html" class="btn btn-outline">查看全部活动 →</a>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Works Preview -->
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-label">GALLERY</span>
+      <h2>精选作品</h2>
+    </div>
+    <div class="gallery-grid reveal">
+    </div>
+    <div class="text-center" style="margin-top:var(--space-xl);">
+      <a href="gallery/" class="btn btn-outline">查看全部作品 →</a>
+    </div>
   </div>
 </section>
 
@@ -295,36 +323,6 @@
         <div class="dept-item-title">宣传部</div>
         <div class="dept-item-desc">宣传推广、新媒体运营、跨校联络，运营 B站 / 抖音 等社群账号。</div>
       </a>
-    </div>
-  </div>
-</section>
-
-<!-- Featured Works Preview -->
-<section class="section">
-  <div class="container">
-    <div class="section-head reveal">
-      <span class="section-label">GALLERY</span>
-      <h2>精选作品</h2>
-    </div>
-    <div class="gallery-grid reveal">
-    </div>
-    <div class="text-center" style="margin-top:var(--space-xl);">
-      <a href="gallery/" class="btn btn-outline">查看全部作品 →</a>
-    </div>
-  </div>
-</section>
-
-<!-- Upcoming Events -->
-<section class="section section-alt">
-  <div class="container">
-    <div class="section-head reveal">
-      <span class="section-label">EVENTS</span>
-      <h2>近期活动</h2>
-    </div>
-    <div class="grid-2 reveal" id="eventsGrid">
-    </div>
-    <div class="text-center" style="margin-top:var(--space-xl);">
-      <a href="events.html" class="btn btn-outline">查看全部活动 →</a>
     </div>
   </div>
 </section>

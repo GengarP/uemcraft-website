@@ -122,6 +122,32 @@ function renderEventCard(item) {
   return a;
 }
 
+function renderEventListItem(item, index) {
+  var div = document.createElement('div');
+  var isEven = index % 2 === 1;
+  div.className = 'event-list-item' + (isEven ? ' is-even' : '');
+  var st = EVENT_STATUS[item.status] || EVENT_STATUS.upcoming;
+  var cover = item.cover || '';
+  div.innerHTML =
+    '<div class="event-list-img">' +
+      '<img src="' + escapeHtml(cover) + '" alt="">' +
+      '<div class="event-img-placeholder" aria-hidden="true">EVENT</div>' +
+      '<span class="event-list-num">' + (index + 1) + '</span>' +
+    '</div>' +
+    '<div class="event-list-body">' +
+      '<div class="event-list-meta">' +
+        '<span class="event-date-badge">' + escapeHtml(item.date_label || item.dateLabel || '') + '</span>' +
+        '<span class="event-status ' + st.cls + '">' + st.label + '</span>' +
+      '</div>' +
+      '<h3 class="event-list-title">' + escapeHtml(item.title) + '</h3>' +
+      '<p class="event-list-excerpt">' + escapeHtml(item.excerpt || '') + '</p>' +
+      '<div class="event-list-actions">' +
+        '<a href="' + escapeHtml(item.link || '#') + '" class="btn btn-outline btn-sm">查看详情 →</a>' +
+      '</div>' +
+    '</div>';
+  return div;
+}
+
 /* ---- 代码高亮（委托给 code-highlight.js） ---- */
 var enhanceCodeBlocks = (window.CodeHighlight && window.CodeHighlight.enhanceCodeBlocks) || function () {};
 
@@ -358,11 +384,11 @@ function initContent() {
       .catch(function () {});
   }
 
-  // 首页近期活动预览（异步，从 API）
+  // 首页近期活动预览（异步，从 API，交替图文布局）
   var eventsGrid = document.getElementById('eventsGrid');
   if (eventsGrid) {
     fetchEvents('upcoming').then(function (items) {
-      items.forEach(function (item) { eventsGrid.appendChild(renderEventCard(item)); });
+      items.forEach(function (item, idx) { eventsGrid.appendChild(renderEventListItem(item, idx)); });
     }).catch(function () {});
   }
 
