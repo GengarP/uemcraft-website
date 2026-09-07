@@ -43,6 +43,8 @@
 │   ├── tokens.css          设计令牌
 │   ├── base.css / layout.css / components.css / pages.css
 ├── js/
+│   ├── components.js       共享组件（导航栏 + 页脚，document.write 同步注入）
+│   ├── page-transition.js  页面跳转动画（帷幕遮罩 + 像素涟漪 + 顶部进度条）
 │   ├── main.js             全局（导航/主题/滚动）
 │   ├── content.js          内容渲染（从 API 加载新闻和活动）
 │   ├── server.js           服务器状态卡片（后端代理查询 + MOTD 渲染）
@@ -186,6 +188,50 @@ SITE_DB_DRIVER=mysql SITE_DB_NAME=uemcraft SITE_DB_USER=root SITE_DB_PASS=密码
 - **图标**：iconfont 字体图标
 - **外链标识**：导航栏 `target="_blank"` 链接自动追加 `↗` 角标
 - **活动列表**：交替图文布局（左图右文 / 右图左文），图片 hover 缩放
+
+### 共享组件（components.js）
+
+所有页面通过 `components.js` 统一注入导航栏和页脚，避免重复 HTML。使用 IIFE + `document.write()` 同步写入 DOM，确保后续 `defer` 脚本（`nav.js`、`theme.js` 等）能立即查询到元素。
+
+**加载方式**：不带 `defer` / `async` 的同步脚本，放在 `</main>` 之后、`defer` 脚本之前。
+
+```
+</main>
+<script src="/js/components.js"></script>    ← 同步执行，注入 header + footer
+<script defer src="/js/nav.js"></script>      ← DOMContentLoaded 时查询元素
+```
+
+**渲染内容**：
+
+- **导航栏**：品牌 logo + 桌面导航（含下拉菜单）+ 设置面板（主题切换 + 纹理选择）+ 汉堡按钮 + 移动端全屏导航
+- **页脚**：四列网格（品牌信息 / 快速链接 / 联系方式 / 相关链接）+ 底部版权 + ICP 备案 + 回到顶部按钮
+
+**导航高亮**：通过 `currentPath()` 获取当前路径，匹配 `NAV_ITEMS` 中的 `match` 数组，自动为当前页面链接添加 `.is-active` 类。
+
+**使用方式**：HTML 中只需一行 `<script src="/js/components.js"></script>`，无需手动编写导航和页脚 HTML。
+
+### 页面跳转动画（page-transition.js）
+
+所有页面加载 `page-transition.js`，提供统一的跳转过渡体验，包含三个视觉层：
+
+**1. GitHub 风格顶部进度条**
+
+点击内部链接时，在页面顶部显示渐进式进度条。通过 `sessionStorage('pt-navigating')` 标记跳转状态，新页面加载时自动收尾动画。进度条模拟加载过程（随机步进，上限 85%），`window.load` 后完成剩余部分。
+
+**2. 帷幕遮罩**
+
+页面跳转时显示左右合拢的帷幕效果（`.page-transition-overlay`），中心展示加载动画（logo + "加载中…" 文字），500ms 后执行跳转。
+
+**3. 全屏像素涟漪（Canvas2D）**
+
+帷幕激活期间，在遮罩层上用 Canvas2D 绘制从中心扩散的像素化圆形涟漪：
+
+- **渲染**：`arc()` 绘制圆形路径，`strokeStyle` 透明度随半径增大线性衰减
+- **像素化**：Canvas 尺寸按 `pixelScale=16` 缩小，CSS 放大 + `image-rendering: pixelated` 实现像素风格
+- **多层叠加**：每 1500ms 生成新涟漪，形成持续扩散的视觉效果
+- **动画参数**：120 帧完成一次扩散，目标半径为画布 60%，透明度按 `(1-progress)^1.5` 衰减
+
+**链接拦截逻辑**：拦截所有同源内部链接（排除 `#` 锚点、`mailto:`、`tel:`、`target="_blank"`、下载链接、API 请求），触发完整过渡动画后跳转。
 
 ### 服务器状态卡片
 
