@@ -8,6 +8,61 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (!sessionStorage.getItem('introDone')) {
     sessionStorage.setItem('introDone', '1');
+
+    // 为 logo 生成全屏像素涟漪（Canvas2D arc，fixed 定位铺满视口）
+    var rippleTimer = null;
+    (function () {
+      var vw = window.innerWidth || 1920;
+      var vh = window.innerHeight || 1080;
+      var pixelScale = 16;            // ↑ 越大像素越粗，越小越细腻
+      var canvasSize = Math.ceil(Math.max(vw, vh) / pixelScale);
+      var strokeWidth = 1.5;
+      var totalFrames = 120;
+      var targetR = canvasSize * 0.6;
+      var cssSize = canvasSize * pixelScale;
+
+      function spawnRipple() {
+        var cvs = document.createElement('canvas');
+        cvs.setAttribute('aria-hidden', 'true');
+        cvs.width = canvasSize;
+        cvs.height = canvasSize;
+        cvs.style.cssText =
+          'position:fixed;top:50%;left:50%;' +
+          'width:' + cssSize + 'px;height:' + cssSize + 'px;' +
+          'transform:translate(-50%,-50%);' +
+          'pointer-events:none;z-index:2;' +
+          'image-rendering:pixelated;image-rendering:crisp-edges;';
+        loader.appendChild(cvs);
+
+        var ctx = cvs.getContext('2d');
+        var cx = canvasSize / 2;
+        var cy = canvasSize / 2;
+        var frame = 0;
+
+        function draw() {
+          var progress = frame / totalFrames;
+          var r = targetR * progress;
+          var opacity = Math.pow(1 - progress, 1.5);
+          if (opacity < 0.01 || frame > totalFrames) {
+            if (cvs.parentNode) cvs.remove();
+            return;
+          }
+          ctx.clearRect(0, 0, canvasSize, canvasSize);
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(255,255,255,' + opacity.toFixed(3) + ')';
+          ctx.lineWidth = strokeWidth;
+          ctx.stroke();
+          frame++;
+          requestAnimationFrame(draw);
+        }
+        requestAnimationFrame(draw);
+      }
+
+      spawnRipple();
+      rippleTimer = setInterval(spawnRipple, 1500);
+    })();
+
     // 生成浮动像素方块
     var blocksContainer = document.getElementById('loaderBlocks');
     if (blocksContainer) {
@@ -40,6 +95,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var done = function () {
       clearInterval(timer);
+      // 停止涟漪生成并清理已有涟漪 canvas
+      if (rippleTimer) { clearInterval(rippleTimer); rippleTimer = null; }
       if (bar) bar.style.width = '100%';
       setTimeout(function () {
         loader.classList.add('is-done');

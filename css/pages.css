@@ -41,6 +41,8 @@
   width:80px; height:80px;
   transform-origin:50% 0;
   animation:loader-rock 1.5s ease-in-out infinite;
+  position:relative;
+  z-index:1;
 }
 @keyframes loader-rock {
   0%        { transform:rotate(0); }
@@ -165,6 +167,8 @@
 .pt-logo {
   transform-origin:50% 0;
   animation:loader-rock 1.5s ease-in-out infinite;
+  position:relative;
+  z-index:1;
 }
 .pt-sub {
   margin-top:8px;
@@ -772,6 +776,7 @@
 
 @media (prefers-reduced-motion:reduce) {
   .d404-block { animation:none; opacity:.3; }
+  canvas[aria-hidden] { display:none; }
 }
 
 #serverSection { scroll-margin-top:80px; }

@@ -55,6 +55,54 @@
     '</div>';
   document.body.appendChild(overlay);
 
+  /* ---- 全屏像素涟漪（Canvas2D arc，fixed 定位铺满视口） ---- */
+  var ptPixelScale = 16;             // ↑ 越大像素越粗，越小越细腻
+  var ptCanvasSize = Math.ceil(Math.max(window.innerWidth || 1920, window.innerHeight || 1080) / ptPixelScale);
+  var ptStrokeWidth = 1.5;
+  var ptTotalFrames = 120;
+  var ptTargetR = ptCanvasSize * 0.6;
+  var ptCssSize = ptCanvasSize * ptPixelScale;
+
+  function spawnPtRipple() {
+    if (!overlay.classList.contains('is-active')) return;
+    var cvs = document.createElement('canvas');
+    cvs.setAttribute('aria-hidden', 'true');
+    cvs.width = ptCanvasSize;
+    cvs.height = ptCanvasSize;
+    cvs.style.cssText =
+      'position:fixed;top:50%;left:50%;' +
+      'width:' + ptCssSize + 'px;height:' + ptCssSize + 'px;' +
+      'transform:translate(-50%,-50%);' +
+      'pointer-events:none;z-index:2;' +
+      'image-rendering:pixelated;image-rendering:crisp-edges;';
+    overlay.appendChild(cvs);
+
+    var ctx = cvs.getContext('2d');
+    var cx = ptCanvasSize / 2;
+    var cy = ptCanvasSize / 2;
+    var frame = 0;
+
+    function draw() {
+      var progress = frame / ptTotalFrames;
+      var r = ptTargetR * progress;
+      var opacity = Math.pow(1 - progress, 1.5);
+      if (opacity < 0.01 || frame > ptTotalFrames) {
+        if (cvs.parentNode) cvs.remove();
+        return;
+      }
+      ctx.clearRect(0, 0, ptCanvasSize, ptCanvasSize);
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,255,255,' + opacity.toFixed(3) + ')';
+      ctx.lineWidth = ptStrokeWidth;
+      ctx.stroke();
+      frame++;
+      requestAnimationFrame(draw);
+    }
+    requestAnimationFrame(draw);
+  }
+  var ptRippleTimer = null;
+
   /* ---- 拦截内部链接 ---- */
   document.addEventListener('click', function (e) {
     var link = e.target.closest('a[href]');
@@ -83,8 +131,11 @@
     // 显示顶部进度条
     showTopBar();
 
-    // 显示帷幕遮罩
+    // 显示帷幕遮罩 + 全屏涟漪
     overlay.classList.add('is-active');
+    spawnPtRipple();
+    clearInterval(ptRippleTimer);
+    ptRippleTimer = setInterval(spawnPtRipple, 1500);
 
     // 帷幕合拢后跳转
     setTimeout(function () {
