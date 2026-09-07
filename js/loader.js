@@ -10,18 +10,20 @@ document.addEventListener('DOMContentLoaded', function () {
     sessionStorage.setItem('introDone', '1');
 
     // 为 logo 生成全屏像素涟漪（Canvas2D arc，fixed 定位铺满视口）
-    var rippleTimer = null;
+    // 与摆动动画同步：通过 animationiteration 事件触发，周期1.5s
+    var rippleLogo = loader.querySelector('.loader-logo');
+    var spawnRipple;
     (function () {
       var vw = window.innerWidth || 1920;
       var vh = window.innerHeight || 1080;
       var pixelScale = 16;            // ↑ 越大像素越粗，越小越细腻
       var canvasSize = Math.ceil(Math.max(vw, vh) / pixelScale);
       var strokeWidth = 1.5;
-      var totalFrames = 120;
+      var totalFrames = 90;           // 1.5s × 60fps，与摆动动画周期对齐
       var targetR = canvasSize * 0.6;
       var cssSize = canvasSize * pixelScale;
 
-      function spawnRipple() {
+      spawnRipple = function () {
         var cvs = document.createElement('canvas');
         cvs.setAttribute('aria-hidden', 'true');
         cvs.width = canvasSize;
@@ -29,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
         cvs.style.cssText =
           'position:fixed;top:50%;left:50%;' +
           'width:' + cssSize + 'px;height:' + cssSize + 'px;' +
+          'max-width:none;' +
           'transform:translate(-50%,-50%);' +
           'pointer-events:none;z-index:2;' +
           'image-rendering:pixelated;image-rendering:crisp-edges;';
@@ -57,10 +60,15 @@ document.addEventListener('DOMContentLoaded', function () {
           requestAnimationFrame(draw);
         }
         requestAnimationFrame(draw);
-      }
+      };
 
+      // 首个涟漪立即播放，与 CSS 动画同时启动
       spawnRipple();
-      rippleTimer = setInterval(spawnRipple, 1500);
+
+      // 后续涟漪通过摆动动画 iteration 事件同步触发
+      if (rippleLogo) {
+        rippleLogo.addEventListener('animationiteration', spawnRipple);
+      }
     })();
 
     // 生成浮动像素方块
@@ -96,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var done = function () {
       clearInterval(timer);
       // 停止涟漪生成并清理已有涟漪 canvas
-      if (rippleTimer) { clearInterval(rippleTimer); rippleTimer = null; }
+      if (rippleLogo) { rippleLogo.removeEventListener('animationiteration', spawnRipple); }
       if (bar) bar.style.width = '100%';
       setTimeout(function () {
         loader.classList.add('is-done');

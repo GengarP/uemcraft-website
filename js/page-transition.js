@@ -56,12 +56,14 @@
   document.body.appendChild(overlay);
 
   /* ---- 全屏像素涟漪（Canvas2D arc，fixed 定位铺满视口） ---- */
+  // 与摆动动画同步：通过 animationiteration 事件触发，周期1.5s
   var ptPixelScale = 16;             // ↑ 越大像素越粗，越小越细腻
   var ptCanvasSize = Math.ceil(Math.max(window.innerWidth || 1920, window.innerHeight || 1080) / ptPixelScale);
   var ptStrokeWidth = 1.5;
-  var ptTotalFrames = 120;
+  var ptTotalFrames = 90;            // 1.5s × 60fps，与摆动动画周期对齐
   var ptTargetR = ptCanvasSize * 0.6;
   var ptCssSize = ptCanvasSize * ptPixelScale;
+  var ptLogo = overlay.querySelector('.pt-logo');
 
   function spawnPtRipple() {
     if (!overlay.classList.contains('is-active')) return;
@@ -72,6 +74,7 @@
     cvs.style.cssText =
       'position:fixed;top:50%;left:50%;' +
       'width:' + ptCssSize + 'px;height:' + ptCssSize + 'px;' +
+      'max-width:none;' +
       'transform:translate(-50%,-50%);' +
       'pointer-events:none;z-index:2;' +
       'image-rendering:pixelated;image-rendering:crisp-edges;';
@@ -101,7 +104,6 @@
     }
     requestAnimationFrame(draw);
   }
-  var ptRippleTimer = null;
 
   /* ---- 拦截内部链接 ---- */
   document.addEventListener('click', function (e) {
@@ -131,11 +133,10 @@
     // 显示顶部进度条
     showTopBar();
 
-    // 显示帷幕遮罩 + 全屏涟漪
+    // 显示帷幕遮罩 + 全屏涟漪（与摆动动画同步）
     overlay.classList.add('is-active');
     spawnPtRipple();
-    clearInterval(ptRippleTimer);
-    ptRippleTimer = setInterval(spawnPtRipple, 1500);
+    if (ptLogo) { ptLogo.addEventListener('animationiteration', spawnPtRipple); }
 
     // 帷幕合拢后跳转
     setTimeout(function () {
