@@ -62,7 +62,7 @@
   var ptPixelScale = 16;             // ↑ 越大像素越粗，越小越细腻
   var ptCanvasSize = Math.ceil(Math.max(ptVw, window.innerHeight || 1080) * (ptIsMobile ? 1.2 : 1) / ptPixelScale);
   var ptStrokeWidth = ptIsMobile ? 1.0 : 1.5;
-  var ptTotalFrames = 90;            // 1.5s × 60fps，与摆动动画周期对齐
+  var ptTotalFrames = ptIsMobile ? 50 : 90;  // 移动端 ~0.8s，桌面端 1.5s
   var ptTargetR = ptCanvasSize * 0.85;
   var ptCssSize = ptCanvasSize * ptPixelScale;
   var ptLogo = overlay.querySelector('.pt-logo');

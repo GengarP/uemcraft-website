@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var pixelScale = 16;            // ↑ 越大像素越粗，越小越细腻
       var canvasSize = Math.ceil(Math.max(vw, vh) * (isMobile ? 1.2 : 1) / pixelScale);
       var strokeWidth = isMobile ? 1.0 : 1.5;
-      var totalFrames = 90;           // 1.5s × 60fps，与摆动动画周期对齐
+      var totalFrames = isMobile ? 50 : 90;  // 移动端 ~0.8s，桌面端 1.5s
       var targetR = canvasSize * 0.85;
       var cssSize = canvasSize * pixelScale;
 
