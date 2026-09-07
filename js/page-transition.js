@@ -57,11 +57,13 @@
 
   /* ---- 全屏像素涟漪（Canvas2D arc，fixed 定位铺满视口） ---- */
   // 与摆动动画同步：通过 animationiteration 事件触发，周期1.5s
+  var ptVw = window.innerWidth || 1920;
+  var ptIsMobile = ptVw <= 768;
   var ptPixelScale = 16;             // ↑ 越大像素越粗，越小越细腻
-  var ptCanvasSize = Math.ceil(Math.max(window.innerWidth || 1920, window.innerHeight || 1080) / ptPixelScale);
-  var ptStrokeWidth = 1.5;
+  var ptCanvasSize = Math.ceil(Math.max(ptVw, window.innerHeight || 1080) * (ptIsMobile ? 1.2 : 1) / ptPixelScale);
+  var ptStrokeWidth = ptIsMobile ? 1.0 : 1.5;
   var ptTotalFrames = 90;            // 1.5s × 60fps，与摆动动画周期对齐
-  var ptTargetR = ptCanvasSize * 0.6;
+  var ptTargetR = ptCanvasSize * 0.85;
   var ptCssSize = ptCanvasSize * ptPixelScale;
   var ptLogo = overlay.querySelector('.pt-logo');
 
