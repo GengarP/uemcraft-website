@@ -46,7 +46,7 @@
   text-decoration:none;
 }
 .header-logo-img {
-  height:40px;
+  height:30px;
   width:auto;
   image-rendering:pixelated;
 }
@@ -340,7 +340,7 @@
 }
 .footer-col p,
 .footer-col li {
-  font-size:var(--fs-base);
+  font-size:var(--fs-sm);
   color:var(--c-text-muted);
   margin-bottom:var(--space-xs);
 }
@@ -470,7 +470,7 @@ a.footer-badge:focus-visible {
   .header-nav { display:none; }
   .header-actions .btn { display:none; }
   .hamburger { display:flex; }
-  .header-logo-img { height:32px; }
+  .header-logo-img { height:26px; }
   .footer-grid { grid-template-columns:1fr 1fr; }
 }
 
