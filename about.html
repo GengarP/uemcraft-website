@@ -302,11 +302,10 @@
 <script defer src="/js/page-transition.js"></script>
 <script defer src="/js/theme.js"></script>
 <script defer src="/js/reveal.js"></script>
-<!-- PDF.js for mobile-compatible PDF viewing -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs" type="module"></script>
+<!-- PDF.js for mobile-compatible PDF viewing (local) -->
 <script type="module">
-import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs';
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.mjs';
+import * as pdfjsLib from '/js/pdfjs/pdf.min.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdfjs/pdf.worker.min.mjs';
 
 (function () {
   var viewer = document.getElementById('pdfViewer');
@@ -314,6 +313,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
 
   var canvas = viewer.querySelector('.pdf-canvas');
   var ctx = canvas.getContext('2d');
+  var body = viewer.querySelector('.pdf-viewer-body');
   var loadingEl = viewer.querySelector('.pdf-loading');
   var errorEl = viewer.querySelector('.pdf-error');
   var btnPrev = viewer.querySelector('.pdf-prev');
@@ -329,18 +329,35 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
   var totalPages = 0;
   var scale = 1.5;
   var baseScale = 1.5;
+  var zoomRatio = 1;          // 用户缩放倍率（1 = 适配宽度）
   var rendering = false;
   var pendingPage = null;
+  var pageNaturalW = 0;       // PDF 页面原始宽度（scale=1）
+
+  function calcBaseScale() {
+    if (!pageNaturalW) return;
+    var containerW = body.clientWidth - 16; // 减去 padding
+    baseScale = Math.min(containerW / pageNaturalW, 1.5);
+    if (baseScale < 0.3) baseScale = 0.3;
+    scale = baseScale * zoomRatio;
+  }
 
   function renderPage(num) {
     if (rendering) { pendingPage = num; return; }
     rendering = true;
     pdf.getPage(num).then(function (page) {
+      if (!pageNaturalW) {
+        var vp1 = page.getViewport({ scale: 1 });
+        pageNaturalW = vp1.width;
+        calcBaseScale();
+      }
       var viewport = page.getViewport({ scale: scale });
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
+      var dpr = window.devicePixelRatio || 1;
+      canvas.width = viewport.width * dpr;
+      canvas.height = viewport.height * dpr;
       canvas.style.width = viewport.width + 'px';
       canvas.style.height = viewport.height + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       return page.render({ canvasContext: ctx, viewport: viewport }).promise;
     }).then(function () {
       rendering = false;
@@ -357,7 +374,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
   function updateUI() {
     currentEl.textContent = pageNum;
     totalEl.textContent = totalPages;
-    zoomLevel.textContent = Math.round(scale / baseScale * 100) + '%';
+    zoomLevel.textContent = Math.round(zoomRatio * 100) + '%';
     btnPrev.disabled = pageNum <= 1;
     btnNext.disabled = pageNum >= totalPages;
   }
@@ -365,6 +382,13 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
   function goPage(n) {
     if (n < 1 || n > totalPages) return;
     pageNum = n;
+    renderPage(pageNum);
+    updateUI();
+  }
+
+  function applyZoom(ratio) {
+    zoomRatio = Math.min(Math.max(ratio, 0.5), 3);
+    calcBaseScale();
     renderPage(pageNum);
     updateUI();
   }
@@ -384,16 +408,19 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
 
   btnPrev.addEventListener('click', function () { goPage(pageNum - 1); });
   btnNext.addEventListener('click', function () { goPage(pageNum + 1); });
+  btnZoomIn.addEventListener('click', function () { applyZoom(zoomRatio + 0.25); });
+  btnZoomOut.addEventListener('click', function () { applyZoom(zoomRatio - 0.25); });
 
-  btnZoomIn.addEventListener('click', function () {
-    scale = Math.min(scale + baseScale * 0.25, baseScale * 3);
-    renderPage(pageNum);
-    updateUI();
-  });
-  btnZoomOut.addEventListener('click', function () {
-    scale = Math.max(scale - baseScale * 0.25, baseScale * 0.5);
-    renderPage(pageNum);
-    updateUI();
+  // 窗口大小变化时重新适配
+  var resizeTimer;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () {
+      if (!pdf) return;
+      calcBaseScale();
+      renderPage(pageNum);
+      updateUI();
+    }, 200);
   });
 
   // Keyboard navigation
@@ -401,13 +428,12 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
   viewer.addEventListener('keydown', function (e) {
     if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); goPage(pageNum - 1); }
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); goPage(pageNum + 1); }
-    if (e.key === '+' || e.key === '=') { e.preventDefault(); btnZoomIn.click(); }
-    if (e.key === '-') { e.preventDefault(); btnZoomOut.click(); }
+    if (e.key === '+' || e.key === '=') { e.preventDefault(); applyZoom(zoomRatio + 0.25); }
+    if (e.key === '-') { e.preventDefault(); applyZoom(zoomRatio - 0.25); }
   });
 
   // Pinch-to-zoom for mobile
   var lastDist = 0;
-  var body = viewer.querySelector('.pdf-viewer-body');
   body.addEventListener('touchstart', function (e) {
     if (e.touches.length === 2) {
       var dx = e.touches[0].clientX - e.touches[1].clientX;
@@ -423,9 +449,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
       if (lastDist > 0) {
         var delta = dist - lastDist;
         if (Math.abs(delta) > 10) {
-          scale = Math.min(Math.max(scale + (delta > 0 ? baseScale * 0.15 : -baseScale * 0.15), baseScale * 0.5), baseScale * 3);
-          renderPage(pageNum);
-          updateUI();
+          applyZoom(zoomRatio + (delta > 0 ? 0.15 : -0.15));
           lastDist = dist;
         }
       }
