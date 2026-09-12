@@ -353,12 +353,16 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdfjs/pdf.worker.min.mjs';
       }
       var viewport = page.getViewport({ scale: scale });
       var dpr = window.devicePixelRatio || 1;
-      canvas.width = viewport.width * dpr;
-      canvas.height = viewport.height * dpr;
-      canvas.style.width = viewport.width + 'px';
-      canvas.style.height = viewport.height + 'px';
+      var containerW = body.clientWidth - 16;
+      var displayW = Math.min(viewport.width, containerW);
+      var displayH = viewport.height * (displayW / viewport.width);
+      canvas.width = displayW * dpr;
+      canvas.height = displayH * dpr;
+      canvas.style.width = displayW + 'px';
+      canvas.style.height = displayH + 'px';
+      var scaledViewport = page.getViewport({ scale: scale * (displayW / viewport.width) });
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      return page.render({ canvasContext: ctx, viewport: viewport }).promise;
+      return page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
     }).then(function () {
       rendering = false;
       if (pendingPage !== null) {
