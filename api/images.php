@@ -3,10 +3,10 @@
  * images.php — UEMCraft 图片管理 API
  * ------------------------------------
  * 管理接口（需 X-Admin-Token 请求头）：
- *   GET  ?action=list&folder=news|gallery           （列出指定目录下所有图片）
- *   POST ?action=upload&folder=news|gallery          （上传图片，自动重命名为 yy-mm-dd-title 格式）
- *   POST ?action=delete                              （删除图片，需通过引用检查）
- *   POST ?action=rename                              （重命名图片，需通过引用检查）
+ *   GET  ?action=list&folder=news|gallery|docs           （列出指定目录下所有图片）
+ *   POST ?action=upload&folder=news|gallery|docs          （上传图片，自动重命名为 yy-mm-dd-title 格式）
+ *   POST ?action=delete                                   （删除图片，需通过引用检查）
+ *   POST ?action=rename                                   （重命名图片，需通过引用检查）
  */
 
 require_once __DIR__ . '/common.php';
@@ -15,7 +15,7 @@ $ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'ico'];
 $MAX_SIZE    = 10 * 1024 * 1024; // 10MB
 
 // 允许的图片子目录
-$ALLOWED_FOLDERS = ['news', 'gallery'];
+$ALLOWED_FOLDERS = ['news', 'gallery', 'docs'];
 $BASE_IMG_DIR = realpath(__DIR__ . '/../assets/img');
 
 $action = $_GET['action'] ?? '';

@@ -1013,8 +1013,10 @@
   overflow-y:auto;
   padding:var(--space-lg) var(--space-md);
   border-right:1px solid var(--c-border);
+  border-bottom:2px solid var(--c-border);
   background:var(--c-surface);
   -webkit-overflow-scrolling:touch;
+  align-self:start;
 }
 .docs-sidebar-header {
   margin-bottom:var(--space-lg);

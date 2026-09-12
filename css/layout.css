@@ -319,13 +319,13 @@
 .site-footer {
   background:var(--c-surface);
   border-top:2px solid var(--c-border);
-  padding-block:var(--space-2xl) var(--space-lg);
+  padding-block:var(--space-3xl) var(--space-xl);
   margin-top:var(--space-3xl);
 }
 .footer-grid {
   display:grid;
   grid-template-columns:1.5fr 1fr 1fr 1fr;
-  gap:var(--space-xl);
+  gap:var(--space-2xl);
   max-width:var(--max-width);
   margin-inline:auto;
   padding-inline:var(--space-lg);
@@ -333,16 +333,18 @@
 .footer-col h4 {
   font-size:var(--fs-sm);
   font-family:var(--font-mono);
-  color:var(--c-text-muted);
+  color:var(--c-heading);
   text-transform:uppercase;
-  letter-spacing:0;
-  margin-bottom:var(--space-md);
+  letter-spacing:.06em;
+  margin-bottom:var(--space-lg);
+  font-weight:700;
 }
 .footer-col p,
 .footer-col li {
   font-size:var(--fs-sm);
   color:var(--c-text-muted);
-  margin-bottom:var(--space-xs);
+  margin-bottom:var(--space-sm);
+  line-height:1.6;
 }
 .footer-col ul {
   display:grid;
@@ -361,18 +363,22 @@
 }
 .footer-contact-link:hover .iconfont { opacity:1; }
 .footer-col a {
-  color:var(--c-text);
-  transition:color var(--duration);
+  color:var(--c-text-muted);
+  transition:color var(--duration), padding-left var(--duration);
+  text-decoration:none;
 }
-.footer-col a:hover { color:var(--c-primary); }
+.footer-col a:hover {
+  color:var(--c-primary);
+  padding-left:4px;
+}
 .footer-logo {
   display:flex;
   align-items:center;
-  gap:var(--space-sm);
-  margin-bottom:var(--space-md);
+  gap:var(--space-md);
+  margin-bottom:var(--space-lg);
 }
-.footer-logo img { width:32px; height:32px; border-radius:0; }
-.footer-logo span { font-weight:700; color:var(--c-heading); }
+.footer-logo img { width:36px; height:36px; border-radius:0; }
+.footer-logo span { font-weight:700; color:var(--c-heading); font-size:var(--fs-base); }
 .footer-badges { display:flex; gap:var(--space-sm); flex-wrap:wrap; margin-top:var(--space-md); }
 .footer-badge {
   display:inline-flex;
@@ -401,14 +407,14 @@ a.footer-badge:focus-visible {
   max-width:var(--max-width);
   margin-inline:auto;
   padding-inline:var(--space-lg);
-  margin-top:var(--space-2xl);
-  padding-top:var(--space-lg);
+  margin-top:var(--space-3xl);
+  padding-top:var(--space-xl);
   border-top:1px solid var(--c-border);
   font-size:var(--fs-xs);
   color:var(--c-text-muted);
   display:grid;
   grid-template-columns:1fr 1fr;
-  row-gap:var(--space-xs);
+  row-gap:var(--space-sm);
 }
 .footer-bottom p { margin:0; }
 .footer-bottom .fb-left { text-align:left; }
@@ -476,10 +482,10 @@ a.footer-badge:focus-visible {
 
 @media (max-width:768px) {
   .grid-2, .grid-3, .grid-4 { grid-template-columns:1fr; }
-  .footer-grid { grid-template-columns:1fr; text-align:left; }
+  .footer-grid { grid-template-columns:1fr; text-align:left; gap:var(--space-2xl); }
   .footer-logo, .footer-badges { justify-content:flex-start; }
   .footer-col ul { grid-template-columns:1fr 1fr; }
-  .footer-bottom { grid-template-columns:1fr; text-align:center; }
+  .footer-bottom { grid-template-columns:1fr; text-align:center; gap:var(--space-sm); }
   .footer-bottom .fb-left,
   .footer-bottom .fb-right { text-align:center; }
   /* 重排顺序：版权 → 商标 → ICP → 公安 */
