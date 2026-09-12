@@ -337,9 +337,9 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdfjs/pdf.worker.min.mjs';
   function calcBaseScale() {
     if (!pageNaturalW) return;
     var containerW = body.clientWidth - 16; // 减去 padding
-    baseScale = Math.min(containerW / pageNaturalW, 1.5);
-    if (baseScale < 0.3) baseScale = 0.3;
-    scale = baseScale * zoomRatio;
+    baseScale = containerW / pageNaturalW;
+    // zoomRatio ≤ 1 时锁定为 100%（适配宽度），> 1 时放大
+    scale = baseScale * Math.max(zoomRatio, 1);
   }
 
   function renderPage(num) {
@@ -353,16 +353,12 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdfjs/pdf.worker.min.mjs';
       }
       var viewport = page.getViewport({ scale: scale });
       var dpr = window.devicePixelRatio || 1;
-      var containerW = body.clientWidth - 16;
-      var displayW = Math.min(viewport.width, containerW);
-      var displayH = viewport.height * (displayW / viewport.width);
-      canvas.width = displayW * dpr;
-      canvas.height = displayH * dpr;
-      canvas.style.width = displayW + 'px';
-      canvas.style.height = displayH + 'px';
-      var scaledViewport = page.getViewport({ scale: scale * (displayW / viewport.width) });
+      canvas.width = viewport.width * dpr;
+      canvas.height = viewport.height * dpr;
+      canvas.style.width = viewport.width + 'px';
+      canvas.style.height = viewport.height + 'px';
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      return page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
+      return page.render({ canvasContext: ctx, viewport: viewport }).promise;
     }).then(function () {
       rendering = false;
       if (pendingPage !== null) {
@@ -378,9 +374,10 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdfjs/pdf.worker.min.mjs';
   function updateUI() {
     currentEl.textContent = pageNum;
     totalEl.textContent = totalPages;
-    zoomLevel.textContent = Math.round(zoomRatio * 100) + '%';
+    zoomLevel.textContent = Math.round(Math.max(zoomRatio, 1) * 100) + '%';
     btnPrev.disabled = pageNum <= 1;
     btnNext.disabled = pageNum >= totalPages;
+    btnZoomOut.disabled = zoomRatio <= 1;
   }
 
   function goPage(n) {
@@ -391,10 +388,11 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdfjs/pdf.worker.min.mjs';
   }
 
   function applyZoom(ratio) {
-    zoomRatio = Math.min(Math.max(ratio, 0.5), 3);
+    zoomRatio = Math.min(Math.max(ratio, 1), 3);
     calcBaseScale();
     renderPage(pageNum);
     updateUI();
+    btnZoomOut.disabled = zoomRatio <= 1;
   }
 
   var url = viewer.getAttribute('data-src');
