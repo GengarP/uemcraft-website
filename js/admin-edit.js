@@ -18,6 +18,8 @@
       initEventsEdit();
     } else if (document.getElementById('workForm')) {
       initWorksEdit();
+    } else if (document.getElementById('docsForm')) {
+      initDocsEdit();
     } else if (document.getElementById('serverForm')) {
       initServersEdit();
     }
@@ -538,6 +540,134 @@
         is_featured: parseInt(getVal('inputFeatured')) || 0,
         hide_address: parseInt(getVal('inputHideAddress')) || 0,
         sort_order: parseInt(getVal('inputSortOrder')) || 0
+      };
+    }
+  }
+
+  // ============================================================
+  //  文档编辑
+  // ============================================================
+  function initDocsEdit() {
+    var params = new URLSearchParams(window.location.search);
+    var editId = params.get('id');
+    var isEdit = !!editId;
+    var apiBase = '../api/docs.php';
+
+    // 更新标题
+    if (isEdit) {
+      setText('heroTitle', '编辑文档');
+      setText('heroSub', '修改文档信息');
+      setText('crumbAction', '编辑');
+      document.title = '编辑文档 — UEMCraft';
+    }
+
+    var form = document.getElementById('docsForm');
+    var msg = document.getElementById('formMessage');
+    var btn = document.getElementById('saveBtn');
+
+    // 加载分类建议
+    Auth.api(apiBase + '?action=categories').then(function (json) {
+      if (json.success && json.data) {
+        var datalist = document.getElementById('categoryList');
+        if (datalist) {
+          json.data.forEach(function (cat) {
+            var opt = document.createElement('option');
+            opt.value = cat;
+            datalist.appendChild(opt);
+          });
+        }
+      }
+    }).catch(function () {});
+
+    // 编辑模式：加载现有数据
+    if (isEdit) {
+      Auth.api(apiBase + '?action=admin_detail&id=' + editId).then(function (json) {
+        if (!json.success || !json.data) {
+          showMessage(msg, '文档不存在', 'error');
+          return;
+        }
+        fillDocsForm(json.data);
+      }).catch(function () {
+        showMessage(msg, '加载失败', 'error');
+      });
+    }
+
+    // 提交
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var data = getDocsFormData();
+
+      if (!data.title) {
+        showMessage(msg, '标题不能为空', 'error');
+        return;
+      }
+      if (!data.slug) {
+        showMessage(msg, 'slug 不能为空', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '保存中…';
+      showMessage(msg, '', '');
+
+      var action = isEdit ? 'update' : 'create';
+      var body = isEdit ? Object.assign({ id: parseInt(editId) }, data) : data;
+
+      Auth.api(apiBase + '?action=' + action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      }).then(function (json) {
+        if (json.success) {
+          showMessage(msg, '保存成功！', 'success');
+          setTimeout(function () { window.location.href = 'docs.html'; }, 800);
+        } else {
+          showMessage(msg, '保存失败：' + (json.error || '未知错误'), 'error');
+          btn.disabled = false;
+          btn.textContent = '保存';
+        }
+      }).catch(function () {
+        showMessage(msg, '请求失败', 'error');
+        btn.disabled = false;
+        btn.textContent = '保存';
+      });
+    });
+
+    // 自动生成 slug
+    var titleInput = document.getElementById('inputTitle');
+    var slugInput = document.getElementById('inputSlug');
+    if (titleInput && slugInput && !isEdit) {
+      titleInput.addEventListener('input', function () {
+        if (slugInput.dataset.manual) return;
+        slugInput.value = titleInput.value
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-')
+          .substring(0, 80);
+      });
+      slugInput.addEventListener('input', function () {
+        slugInput.dataset.manual = '1';
+      });
+    }
+
+    function fillDocsForm(item) {
+      setInput('inputTitle', item.title);
+      setInput('inputSlug', item.slug);
+      setInput('inputCategory', item.category);
+      setInput('inputSortOrder', String(item.sort_order || 0));
+      setInput('inputStatus', item.status || 'draft');
+      setInput('inputContent', item.content || '');
+    }
+
+    function getDocsFormData() {
+      return {
+        title: getVal('inputTitle'),
+        slug: getVal('inputSlug'),
+        category: getVal('inputCategory'),
+        sort_order: parseInt(getVal('inputSortOrder')) || 0,
+        status: getVal('inputStatus') || 'draft',
+        content: getVal('inputContent')
       };
     }
   }

@@ -33,7 +33,7 @@ try {
         $totalStmt = $db->query("SELECT COUNT(*) FROM news $where");
         $total = (int) $totalStmt->fetchColumn();
 
-        $stmt = $db->prepare("SELECT id, title, slug, excerpt, cover, cover_caption, author, tags, date, status, is_pinned FROM news $where ORDER BY is_pinned DESC, date DESC LIMIT :limit OFFSET :offset");
+        $stmt = $db->prepare("SELECT id, title, slug, excerpt, cover, cover_caption, author, tags, date, status, is_pinned, view_count FROM news $where ORDER BY is_pinned DESC, date DESC LIMIT :limit OFFSET :offset");
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', ($page - 1) * $limit, PDO::PARAM_INT);
         $stmt->execute();
@@ -42,6 +42,7 @@ try {
         foreach ($rows as &$row) {
             $row['id'] = (int) $row['id'];
             $row['is_pinned'] = (int) $row['is_pinned'];
+            $row['view_count'] = (int) $row['view_count'];
             $row['tags'] = json_decode($row['tags'], true) ?: [];
         }
         unset($row);
@@ -71,6 +72,10 @@ try {
             json_response(['success' => false, 'error' => '文章不存在'], 404);
         }
 
+        // 浏览量 +1
+        $db->prepare("UPDATE news SET view_count = view_count + 1 WHERE slug = :slug")->execute([':slug' => $slug]);
+        $row['view_count'] = (int) $row['view_count'] + 1;
+
         $row['id'] = (int) $row['id'];
         $row['tags'] = json_decode($row['tags'], true) ?: [];
 
@@ -96,6 +101,7 @@ try {
 
         $row['id'] = (int) $row['id'];
         $row['is_pinned'] = (int) $row['is_pinned'];
+        $row['view_count'] = (int) $row['view_count'];
         $row['tags'] = json_decode($row['tags'], true) ?: [];
 
         json_response(['success' => true, 'data' => $row]);
@@ -120,7 +126,7 @@ try {
         $totalStmt->execute($params);
         $total = (int) $totalStmt->fetchColumn();
 
-        $stmt = $db->prepare("SELECT id, title, slug, excerpt, content, cover, cover_caption, author, tags, date, status, is_pinned, created_at, updated_at FROM news $where ORDER BY is_pinned DESC, date DESC LIMIT :limit OFFSET :offset");
+        $stmt = $db->prepare("SELECT id, title, slug, excerpt, content, cover, cover_caption, author, tags, date, status, is_pinned, view_count, created_at, updated_at FROM news $where ORDER BY is_pinned DESC, date DESC LIMIT :limit OFFSET :offset");
         foreach ($params as $k => $v) {
             $stmt->bindValue($k, $v);
         }
@@ -132,6 +138,7 @@ try {
         foreach ($rows as &$row) {
             $row['id'] = (int) $row['id'];
             $row['is_pinned'] = (int) $row['is_pinned'];
+            $row['view_count'] = (int) $row['view_count'];
             $row['created_at'] = (int) $row['created_at'];
             $row['updated_at'] = (int) $row['updated_at'];
             $row['tags'] = json_decode($row['tags'], true) ?: [];

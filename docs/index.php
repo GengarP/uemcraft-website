@@ -1,9 +1,9 @@
 <?php
 /**
- * news/index.php — 新闻路由
+ * docs/index.php — 指南与文档路由
  *
- * /news/           → 列表页
- * /news/{slug}     → 详情页
+ * /docs/           → 文档首页（显示分类列表）
+ * /docs/{slug}     → 文档详情页
  *
  * 需要 Apache .htaccess 配置 URL 重写
  */
@@ -14,50 +14,31 @@ require_once __DIR__ . '/../api/common.php';
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $slug = '';
 
-// 匹配 /news/{slug} 模式
-if (preg_match('#^/news/([a-zA-Z0-9_-]+)/?$#', $path, $m)) {
+// 匹配 /docs/{slug} 模式
+if (preg_match('#^/docs/([a-zA-Z0-9_-]+)/?$#', $path, $m)) {
     $slug = trim($m[1]);
 }
 
 $isDetail = $slug !== '';
 
 // 详情页 SEO 数据
-$page_title   = '资讯动态 — UEMCraft';
-$page_desc    = 'UEMCraft 资讯动态——应急管理大学 Minecraft 同好会的最新消息与公告。';
-$page_image   = '';
-$page_url     = 'https://uemcraft.cn/news/' . ($slug ? urlencode($slug) : '');
-$article_date = '';
-$article_author = '';
-$article_tags = [];
+$page_title = '指南与文档 — UEMCraft';
+$page_desc  = 'UEMCraft 指南与文档——服务器规则、新手教程、建筑指南等。';
 
 if ($isDetail) {
     try {
         $db   = getSiteDb();
-        $stmt = $db->prepare("SELECT title, slug, excerpt, cover, author, tags, date FROM news WHERE slug = :slug AND status = 'published'");
+        $stmt = $db->prepare("SELECT title, category FROM docs WHERE slug = :slug AND status = 'published'");
         $stmt->execute([':slug' => $slug]);
         $row = $stmt->fetch();
 
         if ($row) {
-            $page_title     = ($row['title'] ?: '文章') . ' — 资讯动态 — UEMCraft';
-            $page_desc      = $row['excerpt'] ?: $page_desc;
-            $page_image     = $row['cover'] ?? '';
-            $article_date   = $row['date'] ?? '';
-            $article_author = $row['author'] ?? '';
-            $article_tags   = json_decode($row['tags'] ?? '[]', true) ?: [];
+            $page_title = ($row['title'] ?: '文档') . ' — 指南与文档 — UEMCraft';
         }
     } catch (Throwable $e) {
-        error_log('[news/index.php] ' . $e->getMessage());
+        error_log('[docs/index.php] ' . $e->getMessage());
     }
 }
-
-// 绝对图片 URL
-$abs_image = '';
-if ($page_image !== '') {
-    $abs_image = strpos($page_image, 'http') === 0 ? $page_image : 'https://uemcraft.cn' . $page_image;
-}
-
-// ISO 日期
-$iso_date = $article_date ? $article_date . 'T00:00:00+08:00' : '';
 ?>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -66,35 +47,7 @@ $iso_date = $article_date ? $article_date . 'T00:00:00+08:00' : '';
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <meta name="description" content="<?php echo htmlspecialchars($page_desc, ENT_QUOTES, 'UTF-8'); ?>">
   <meta name="theme-color" content="#213d87">
-  <meta name="robots" content="index, follow">
   <title><?php echo htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8'); ?></title>
-  <link rel="canonical" href="https://uemcraft.cn/news/<?php echo $slug ? urlencode($slug) : ''; ?>">
-
-<?php if ($isDetail): ?>
-  <!-- JSON-LD 结构化数据 -->
-  <script type="application/ld+json">
-  <?php
-  $ld = [
-      '@context' => 'https://schema.org',
-      '@type'    => 'NewsArticle',
-      'headline' => $page_title,
-      'description' => $page_desc,
-      'mainEntityOfPage' => ['@type' => 'WebPage', '@id' => $page_url],
-      'publisher' => [
-          '@type' => 'Organization',
-          'name'  => 'UEMCraft',
-          'logo'  => ['@type' => 'ImageObject', 'url' => 'https://uemcraft.cn/assets/img/logo-256.webp'],
-      ],
-  ];
-  if ($iso_date) $ld['datePublished'] = $iso_date;
-  if ($article_author) $ld['author'] = ['@type' => 'Person', 'name' => $article_author];
-  if ($abs_image) $ld['image'] = $abs_image;
-  if ($article_tags) $ld['keywords'] = implode(', ', $article_tags);
-  echo json_encode($ld, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-  ?>
-  </script>
-<?php endif; ?>
-
   <link rel="icon" href="../favicon.ico" type="images/x-icon">
   <script>
     (function(){
@@ -112,15 +65,13 @@ $iso_date = $article_date ? $article_date . 'T00:00:00+08:00' : '';
       }
     })();
   </script>
-  <link rel="stylesheet" href="/css/tokens.css?v=509b48d">
-  <link rel="stylesheet" href="/css/base.css?v=509b48d">
-  <link rel="stylesheet" href="/css/layout.css?v=509b48d">
-  <link rel="stylesheet" href="/css/components.css?v=509b48d">
-  <link rel="stylesheet" href="/css/pages.css?v=509b48d">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/pages.css">
 </head>
 <body>
-
-<a href="#main" class="skip-link">跳转到主内容</a>
 
 <!-- ====== Header ====== -->
 <header class="site-header" role="banner">
@@ -132,8 +83,8 @@ $iso_date = $article_date ? $article_date . 'T00:00:00+08:00' : '';
       <a href="/index.html">首页</a>
       <div class="nav-dropdown"><a href="/about.html" class="nav-drop-trigger">关于我们</a><div class="nav-drop-menu"><a href="/join.html">加入我们</a><a href="/gallery/">作品展示</a><a href="https://skin.uemcraft.cn/" target="_blank" rel="noopener">皮肤站</a></div></div>
       <a href="/events.html">活动中心</a>
-      <a href="/news/" class="is-active">资讯动态</a>
-      <a href="/docs/">指南与文档</a>
+      <a href="/news/">资讯动态</a>
+      <a href="/docs/" class="is-active">指南与文档</a>
       <a href="/wall/">留言墙</a>
     </nav>
     <div class="header-actions">
@@ -193,8 +144,8 @@ $iso_date = $article_date ? $article_date . 'T00:00:00+08:00' : '';
   <a href="/gallery/" class="mobile-sub">作品展示</a>
   <a href="https://skin.uemcraft.cn/" class="mobile-sub" target="_blank" rel="noopener">皮肤站</a>
   <a href="/events.html">活动中心</a>
-  <a href="/news/" class="is-active">资讯动态</a>
-  <a href="/docs/">指南与文档</a>
+  <a href="/news/">资讯动态</a>
+  <a href="/docs/" class="is-active">指南与文档</a>
   <a href="/wall/">留言墙</a>
 </nav>
 
@@ -202,36 +153,46 @@ $iso_date = $article_date ? $article_date . 'T00:00:00+08:00' : '';
 <main id="main">
 
 <?php if ($isDetail): ?>
-<!-- 文章详情页 -->
-<section class="page-hero">
-  <div class="container">
-    <h1 id="articleTitle">文章标题</h1>
-    <p class="hero-sub" id="articleSub">加载中…</p>
-    <nav class="breadcrumb" aria-label="面包屑">
-      <a href="/index.html">首页</a> <span>/</span> <a href="/news/">资讯动态</a> <span>/</span> <span id="articleCrumb">文章标题</span>
-    </nav>
-  </div>
-</section>
-
-<section class="section">
-  <div class="container" style="max-width:800px;">
-    <figure class="article-hero reveal" id="articleCover" style="display:none;"></figure>
-    <div class="article-meta reveal" id="articleMeta" style="display:none;"></div>
-    <article class="article-body reveal" id="articleContent"></article>
-    <div class="reveal" style="margin-top:var(--space-3xl); padding-top:var(--space-xl); border-top:2px solid var(--c-border); display:flex; justify-content:space-between; flex-wrap:wrap; gap:var(--space-md);">
-      <a href="/news/" class="btn btn-outline">← 返回资讯列表</a>
+<!-- 文档详情页：VitePress 风格三栏布局 -->
+<div class="docs-layout" data-current-slug="<?php echo htmlspecialchars($slug, ENT_QUOTES, 'UTF-8'); ?>">
+  <!-- 左侧边栏 -->
+  <aside class="docs-sidebar" id="docsSidebar">
+    <div class="docs-sidebar-header">
+      <a href="/docs/" class="docs-sidebar-title">指南与文档</a>
     </div>
-  </div>
-</section>
+    <button class="docs-sidebar-toggle" id="docsSidebarToggle" aria-label="展开目录" aria-expanded="false">
+      <span>目录</span>
+      <span class="docs-sidebar-toggle-icon">▼</span>
+    </button>
+    <nav class="docs-sidebar-nav" id="docsSidebarNav">
+      <div class="docs-sidebar-loading">加载中…</div>
+    </nav>
+  </aside>
+
+  <!-- 主内容区 -->
+  <article class="docs-content">
+    <div class="docs-breadcrumb">
+      <a href="/docs/">指南与文档</a> <span>/</span> <span id="docsCrumb">加载中…</span>
+    </div>
+    <div class="docs-body" id="docsBody"></div>
+    <div class="docs-footer-nav" id="docsFooterNav"></div>
+  </article>
+
+  <!-- 右侧目录 -->
+  <aside class="docs-toc" id="docsToc">
+    <div class="docs-toc-title">目录</div>
+    <nav class="docs-toc-nav" id="docsTocNav"></nav>
+  </aside>
+</div>
 
 <?php else: ?>
-<!-- 新闻列表页 -->
+<!-- 文档首页 -->
 <section class="page-hero">
   <div class="container">
-    <h1>资讯动态</h1>
-    <p class="hero-sub">关注 UEMCraft 的最新消息与公告</p>
+    <h1>指南与文档</h1>
+    <p class="hero-sub">服务器规则、新手教程、建筑指南与常见问题</p>
     <nav class="breadcrumb" aria-label="面包屑">
-      <a href="/index.html">首页</a> <span>/</span> <span>资讯动态</span>
+      <a href="/index.html">首页</a> <span>/</span> <span>指南与文档</span>
     </nav>
   </div>
 </section>
@@ -239,10 +200,12 @@ $iso_date = $article_date ? $article_date . 'T00:00:00+08:00' : '';
 <section class="section section-alt">
   <div class="container">
     <div class="section-head reveal">
-      <span class="section-label">INFOMATION</span>
-      <h2>所有资讯</h2>
+      <span class="section-label">DOCUMENTATION</span>
+      <h2>文档列表</h2>
     </div>
-    <div class="reveal" id="newsList" style="max-width:760px;margin-inline:auto;display:flex;flex-direction:column;gap:var(--space-md);"></div>
+    <div class="docs-index-grid reveal" id="docsIndexGrid">
+      <div class="docs-index-loading">加载中…</div>
+    </div>
   </div>
 </section>
 <?php endif; ?>
@@ -304,14 +267,11 @@ $iso_date = $article_date ? $article_date . 'T00:00:00+08:00' : '';
 
 <button class="back-to-top" aria-label="回到顶部" title="回到顶部">↑</button>
 
-<!-- Markdown 引擎：marked.js（自托管，零依赖，避免 CDN 阻塞） -->
+<!-- Markdown 引擎 -->
 <script defer src="/js/marked.umd.js"></script>
-
-<!-- 内容数据与渲染 -->
 <script defer src="/js/utils.js"></script>
 <script defer src="/js/cjk-spacing.js"></script>
 <script defer src="/js/code-highlight.js"></script>
-<script defer src="/js/content.js"></script>
 
 <!-- 全局交互脚本 -->
 <script defer src="/js/nav.js"></script>
@@ -319,10 +279,12 @@ $iso_date = $article_date ? $article_date . 'T00:00:00+08:00' : '';
 <script defer src="/js/theme.js"></script>
 <script defer src="/js/reveal.js"></script>
 
+<!-- 文档页面逻辑 -->
+<script defer src="/js/docs.js"></script>
+
 <?php if ($isDetail): ?>
-<!-- 传递 slug 给前端 -->
 <script>
-  window.__NEWS_SLUG__ = '<?php echo addslashes($slug); ?>';
+  window.__DOCS_SLUG__ = '<?php echo addslashes($slug); ?>';
 </script>
 <?php endif; ?>
 

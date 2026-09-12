@@ -79,15 +79,24 @@ function sortArticles(articles) {
 }
 
 /* ---- 卡片渲染 ---- */
+function formatViews(n) {
+  n = parseInt(n, 10) || 0;
+  if (n >= 10000) return (n / 10000).toFixed(1).replace(/\.0$/, '') + 'w';
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+  return String(n);
+}
+
 function renderNewsCard(item) {
   var a = document.createElement('a');
   a.className = 'news-card' + (item.is_pinned ? ' is-pinned' : '');
   a.href = newsUrl(item.slug);
   var pinBadge = item.is_pinned ? '<span class="pinned-badge">置顶</span>' : '';
+  var views = '<span class="news-views">' + formatViews(item.view_count) + ' 阅读</span>';
   a.innerHTML =
     '<div class="news-date">' + pinBadge + escapeHtml(formatDate(item.date)) + '</div>' +
     '<div class="news-title">' + escapeHtml(item.title) + '</div>' +
-    '<div class="news-excerpt">' + escapeHtml(item.excerpt) + '</div>';
+    '<div class="news-excerpt">' + escapeHtml(item.excerpt) + '</div>' +
+    views;
   return a;
 }
 
@@ -228,6 +237,13 @@ function buildMetaHtml(item) {
     html += '<div class="article-meta-item">' +
               '<span class="article-meta-label">作者</span>' +
               '<span class="article-meta-value">' + escapeHtml(item.author) + '</span>' +
+            '</div>';
+  }
+  if (item.view_count !== undefined) {
+    html += '<span class="article-meta-sep" aria-hidden="true">-</span>';
+    html += '<div class="article-meta-item">' +
+              '<span class="article-meta-label">阅读</span>' +
+              '<span class="article-meta-value">' + formatViews(item.view_count) + '</span>' +
             '</div>';
   }
   if (item.tags && item.tags.length) {

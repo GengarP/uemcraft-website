@@ -28,6 +28,7 @@
       ['/news/', '资讯动态'],
       ['/events.html', '活动中心'],
       ['/gallery/', '作品展示'],
+      ['/docs/', '指南与文档'],
       ['/wall/', '留言墙']
     ];
     for (var i = 0; i < footerLinks.length; i++) {
@@ -45,7 +46,7 @@
 
     // 相关链接
     html += '<div class="footer-col"><h4>相关链接</h4><ul>';
-    html += '<li><a href="https://www.yitmc.cn" target="_blank" rel="noopener">燕理MC玩家创作协会</a></li>';
+    html += '<li><a href="https://www.yitmc.cn" target="_blank" rel="noopener">燕理 MC 玩家创作协会</a></li>';
     html += '<li><a href="https://www.mualliance.cn/" target="_blank" rel="noopener">MUA 高校联盟</a></li>';
     html += '<li><a href="https://www.ncist.edu.cn/" target="_blank" rel="noopener">应急管理大学</a></li>';
     html += '</ul></div>';

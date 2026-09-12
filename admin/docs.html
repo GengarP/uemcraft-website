@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <meta name="robots" content="noindex,nofollow">
   <meta name="theme-color" content="#213d87">
-  <title>活动管理 — UEMCraft</title>
+  <title>文档管理 — UEMCraft</title>
   <link rel="icon" href="../favicon.ico" type="images/x-icon">
   <script>
     (function(){
@@ -42,9 +42,9 @@
   <div class="container admin-nav-inner">
     <a href="index.html" class="admin-nav-link">仪表盘</a>
     <a href="news.html" class="admin-nav-link">新闻管理</a>
-    <a href="events.html" class="admin-nav-link is-active">活动管理</a>
+    <a href="events.html" class="admin-nav-link">活动管理</a>
     <a href="gallery.html" class="admin-nav-link">作品管理</a>
-    <a href="docs.html" class="admin-nav-link">文档管理</a>
+    <a href="docs.html" class="admin-nav-link is-active">文档管理</a>
     <a href="servers.html" class="admin-nav-link">服务器管理</a>
     <a href="images.html" class="admin-nav-link">图片管理</a>
     <a href="wall.html" class="admin-nav-link">留言墙管理</a>
@@ -57,10 +57,10 @@
 
 <section class="page-hero">
   <div class="container">
-    <h1>活动管理</h1>
-    <p class="hero-sub">创建、编辑、管理活动</p>
+    <h1>文档管理</h1>
+    <p class="hero-sub">创建、编辑、管理指南与文档</p>
     <nav class="breadcrumb" aria-label="面包屑">
-      <a href="/index.html">首页</a> <span>/</span> <a href="index.html">管理后台</a> <span>/</span> <span>活动</span>
+      <a href="/index.html">首页</a> <span>/</span> <a href="index.html">管理后台</a> <span>/</span> <span>文档</span>
     </nav>
   </div>
 </section>
@@ -71,23 +71,18 @@
     <div class="admin-toolbar">
       <div class="admin-tabs" role="tablist" aria-label="状态筛选">
         <button class="admin-tab is-active" data-status="all">全部</button>
-        <button class="admin-tab" data-status="upcoming">即将开始</button>
-        <button class="admin-tab" data-status="ongoing">进行中</button>
-        <button class="admin-tab" data-status="past">已结束</button>
+        <button class="admin-tab" data-status="published">已发布</button>
+        <button class="admin-tab" data-status="draft">草稿</button>
       </div>
       <div class="admin-toolbar-right">
-        <div class="view-toggle">
-          <button class="view-toggle-btn is-active" data-view="list" title="列表视图">☰</button>
-          <button class="view-toggle-btn" data-view="grid" title="网格视图">▦</button>
-        </div>
         <span class="text-muted">共 <strong id="totalCount">0</strong> 条</span>
-        <a href="events-edit.html" class="btn btn-primary btn-sm">+ 新建活动</a>
+        <a href="docs-edit.html" class="btn btn-primary btn-sm">+ 新建文档</a>
         <button class="btn btn-ghost btn-sm" id="logoutBtn2">退出</button>
       </div>
     </div>
 
-    <div id="eventsList" class="admin-list">
-      <div class="wall-loading">正在加载活动…</div>
+    <div id="docsList" class="admin-list">
+      <div class="wall-loading">正在加载文档…</div>
     </div>
 
     <div id="pagination" class="wall-pagination" style="display:none;">

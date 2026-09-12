@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <meta name="robots" content="noindex,nofollow">
   <meta name="theme-color" content="#213d87">
-  <title id="pageTitle">编辑活动 — UEMCraft</title>
+  <title id="pageTitle">编辑文档 — UEMCraft</title>
   <link rel="icon" href="../favicon.ico" type="images/x-icon">
   <script>
     (function(){
@@ -42,9 +42,9 @@
   <div class="container admin-nav-inner">
     <a href="index.html" class="admin-nav-link">仪表盘</a>
     <a href="news.html" class="admin-nav-link">新闻管理</a>
-    <a href="events.html" class="admin-nav-link is-active">活动管理</a>
+    <a href="events.html" class="admin-nav-link">活动管理</a>
     <a href="gallery.html" class="admin-nav-link">作品管理</a>
-    <a href="docs.html" class="admin-nav-link">文档管理</a>
+    <a href="docs.html" class="admin-nav-link is-active">文档管理</a>
     <a href="servers.html" class="admin-nav-link">服务器管理</a>
     <a href="images.html" class="admin-nav-link">图片管理</a>
     <a href="wall.html" class="admin-nav-link">留言墙管理</a>
@@ -57,94 +57,58 @@
 
 <section class="page-hero">
   <div class="container">
-    <h1 id="heroTitle">新建活动</h1>
-    <p class="hero-sub" id="heroSub">填写活动信息并保存</p>
+    <h1 id="heroTitle">新建文档</h1>
+    <p class="hero-sub" id="heroSub">填写文档信息并保存</p>
     <nav class="breadcrumb" aria-label="面包屑">
-      <a href="/index.html">首页</a> <span>/</span> <a href="index.html">管理后台</a> <span>/</span> <a href="events.html">活动</a> <span>/</span> <span id="crumbAction">新建</span>
+      <a href="/index.html">首页</a> <span>/</span> <a href="index.html">管理后台</a> <span>/</span> <a href="docs.html">文档</a> <span>/</span> <span id="crumbAction">新建</span>
     </nav>
   </div>
 </section>
 
 <section class="section">
   <div class="container">
-    <form id="eventForm" class="admin-edit-form" novalidate>
+    <form id="docsForm" class="admin-edit-form" novalidate>
       <div class="form-row">
         <div class="form-group form-group--full">
           <label for="inputTitle">标题 <span class="required">*</span></label>
-          <input type="text" id="inputTitle" class="form-input" placeholder="活动标题" required maxlength="255">
+          <input type="text" id="inputTitle" class="form-input" placeholder="文档标题" required maxlength="255">
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
           <label for="inputSlug">Slug <span class="required">*</span></label>
-          <input type="text" id="inputSlug" class="form-input" placeholder="url-slug" required pattern="[a-z0-9\-]+">
+          <input type="text" id="inputSlug" class="form-input" placeholder="url-slug（字母、数字、连字符）" required pattern="[a-z0-9\-]+">
+          <small class="form-help">用于 URL，如 <code>server-rules</code></small>
+        </div>
+        <div class="form-group">
+          <label for="inputCategory">分类</label>
+          <input type="text" id="inputCategory" class="form-input" placeholder="如：新手教程" list="categoryList" maxlength="100">
+          <datalist id="categoryList"></datalist>
+          <small class="form-help">相同分类的文档会自动归为一组</small>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="inputSortOrder">排序</label>
+          <input type="number" id="inputSortOrder" class="form-input" placeholder="0" value="0" min="0">
+          <small class="form-help">数字越小越靠前</small>
         </div>
         <div class="form-group">
           <label for="inputStatus">状态</label>
           <select id="inputStatus" class="form-input">
-            <option value="upcoming">即将开始</option>
-            <option value="ongoing">进行中</option>
-            <option value="past">已结束</option>
+            <option value="draft">草稿</option>
+            <option value="published">已发布</option>
           </select>
         </div>
       </div>
 
       <div class="form-row">
-        <div class="form-group">
-          <label for="inputDateLabel">时间标签</label>
-          <input type="text" id="inputDateLabel" class="form-input" placeholder="如：2026.10">
-        </div>
-        <div class="form-group">
-          <label for="inputDateStart">开始日期</label>
-          <input type="date" id="inputDateStart" class="form-input">
-        </div>
-        <div class="form-group">
-          <label for="inputDateEnd">结束日期</label>
-          <input type="date" id="inputDateEnd" class="form-input">
-        </div>
-      </div>
-
-      <div class="form-row">
         <div class="form-group form-group--full">
-          <label for="inputCover">封面图 URL</label>
-          <input type="text" id="inputCover" class="form-input" placeholder="/assets/img/news/xxx.jpg">
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group form-group--full">
-          <label for="inputLink">外部链接</label>
-          <input type="text" id="inputLink" class="form-input" placeholder="/news/xxx 或 https://...">
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label for="inputFeatured">置顶</label>
-          <select id="inputFeatured" class="form-input">
-            <option value="0">否</option>
-            <option value="1">是</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="inputSortOrder">排序权重</label>
-          <input type="number" id="inputSortOrder" class="form-input" value="0" min="0">
-          <small class="form-help">数值越小越靠前</small>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group form-group--full">
-          <label for="inputExcerpt">摘要</label>
-          <textarea id="inputExcerpt" class="form-textarea" rows="3" placeholder="活动简介" maxlength="500"></textarea>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group form-group--full">
-          <label for="inputContent">详情（Markdown）</label>
-          <textarea id="inputContent" class="form-textarea admin-content-textarea" rows="15" placeholder="Markdown 格式详情（可选）"></textarea>
+          <label for="inputContent">正文 <span class="required">*</span></label>
+          <textarea id="inputContent" class="form-textarea admin-content-textarea" rows="25" placeholder="Markdown 格式正文"></textarea>
+          <small class="form-help">支持 Markdown 语法，标题（h2/h3）会自动生成右侧目录</small>
         </div>
       </div>
 
@@ -152,7 +116,7 @@
 
       <div class="form-actions">
         <button type="submit" class="btn btn-primary" id="saveBtn">保存</button>
-        <a href="events.html" class="btn btn-ghost">取消</a>
+        <a href="docs.html" class="btn btn-ghost">取消</a>
       </div>
     </form>
   </div>

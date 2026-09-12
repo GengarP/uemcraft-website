@@ -18,6 +18,7 @@
     if (document.getElementById('newsList')) initNewsList();
     else if (document.getElementById('eventsList')) initEventsList();
     else if (document.getElementById('worksList')) initWorksList();
+    else if (document.getElementById('docsList')) initDocsList();
     else if (document.getElementById('serversList')) initServersList();
     else if (document.getElementById('imagesGrid')) initImagesPage();
   }).catch(function () {});
@@ -332,6 +333,104 @@
     nextBtn.addEventListener('click', function () { currentPage++; load(); });
 
     setupViewToggle(listEl);
+    load();
+  }
+
+  // ============================================================
+  //  文档列表
+  // ============================================================
+  function initDocsList() {
+    var currentStatus = 'all', currentPage = 1, limit = 50;
+    var listEl = document.getElementById('docsList');
+    var totalEl = document.getElementById('totalCount');
+    var pagEl = document.getElementById('pagination');
+    var prevBtn = document.getElementById('prevPage');
+    var nextBtn = document.getElementById('nextPage');
+    var infoEl = document.getElementById('pageInfo');
+
+    function load() {
+      var url = '../api/docs.php?action=admin_list&page=' + currentPage + '&limit=' + limit;
+      if (currentStatus !== 'all') url += '&status=' + currentStatus;
+      listEl.innerHTML = '<div class="wall-loading">正在加载…</div>';
+
+      Auth.api(url).then(function (json) {
+        if (!json.success) { listEl.innerHTML = '<div class="wall-empty">加载失败</div>'; return; }
+        totalEl.textContent = json.total;
+        var items = json.data || [];
+        if (items.length === 0) {
+          listEl.innerHTML = '<div class="wall-empty">暂无文档</div>';
+          pagEl.style.display = 'none';
+          return;
+        }
+        listEl.innerHTML = items.map(renderCard).join('');
+        bindActions(listEl);
+        updatePagination(json.page, json.pages, json.total);
+      }).catch(function () { listEl.innerHTML = '<div class="wall-empty">加载失败</div>'; });
+    }
+
+    function renderCard(item) {
+      var sm = { published: '已发布', draft: '草稿' };
+      var scm = { published: 'is-approved', draft: 'is-hidden' };
+      var sl = sm[item.status] || item.status, sc = scm[item.status] || '';
+      return '<article class="admin-card" data-id="' + item.id + '">'
+        + '<div class="admin-card-info"><span class="admin-card-name">' + Auth.escapeHtml(item.title) + '</span>'
+        + '<div class="admin-card-title-row">'
+        + (item.category ? '<span class="admin-badge">' + Auth.escapeHtml(item.category) + '</span>' : '')
+        + '<span class="admin-badge ' + sc + '">' + sl + '</span>'
+        + '<span class="admin-card-date">排序: ' + item.sort_order + '</span></div></div>'
+        + '<div class="admin-card-header"><div class="admin-card-meta"><span class="admin-card-name">' + Auth.escapeHtml(item.title) + '</span>'
+        + (item.category ? '<span class="admin-badge">' + Auth.escapeHtml(item.category) + '</span>' : '')
+        + '<span class="admin-badge ' + sc + '">' + sl + '</span></div>'
+        + '<div class="admin-card-actions">'
+        + '<button class="btn btn-ghost btn-sm" data-action="toggle" data-id="' + item.id + '" data-status="' + item.status + '">' + (item.status === 'published' ? '设为草稿' : '发布') + '</button>'
+        + '<a href="docs-edit.html?id=' + item.id + '" class="btn btn-ghost btn-sm">编辑</a>'
+        + '<button class="btn btn-ghost btn-sm admin-btn-danger" data-action="delete" data-id="' + item.id + '">删除</button></div></div>'
+        + '<div class="admin-card-body"><small class="text-muted">slug: ' + Auth.escapeHtml(item.slug) + ' · 排序: ' + item.sort_order + '</small></div>'
+        + '<div class="admin-card-actions admin-card-actions--grid">'
+        + '<button class="btn btn-ghost btn-sm" data-action="toggle" data-id="' + item.id + '" data-status="' + item.status + '">' + (item.status === 'published' ? '草稿' : '发布') + '</button>'
+        + '<a href="docs-edit.html?id=' + item.id + '" class="btn btn-ghost btn-sm">编辑</a>'
+        + '<button class="btn btn-ghost btn-sm admin-btn-danger" data-action="delete" data-id="' + item.id + '">删除</button></div></article>';
+    }
+
+    function bindActions(container) {
+      container.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        var action = btn.getAttribute('data-action'), id = btn.getAttribute('data-id');
+        if (action === 'toggle') {
+          var ns = btn.getAttribute('data-status') === 'published' ? 'draft' : 'published';
+          Auth.api('../api/docs.php?action=update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: parseInt(id), status: ns }) })
+            .then(function (json) { if (json.success) load(); else alert('操作失败：' + (json.error || '未知错误')); });
+        }
+        if (action === 'delete') {
+          if (!confirm('确定要删除这篇文档吗？此操作不可撤销。')) return;
+          Auth.api('../api/docs.php?action=delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: parseInt(id) }) })
+            .then(function (json) { if (json.success) load(); else alert('删除失败：' + (json.error || '未知错误')); });
+        }
+      });
+    }
+
+    var tabs = document.querySelectorAll('.admin-tab');
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        tabs.forEach(function (t) { t.classList.remove('is-active'); });
+        tab.classList.add('is-active');
+        currentStatus = tab.getAttribute('data-status');
+        currentPage = 1;
+        load();
+      });
+    });
+
+    function updatePagination(page, pages, total) {
+      if (pages <= 1) { pagEl.style.display = 'none'; return; }
+      pagEl.style.display = 'flex';
+      prevBtn.disabled = page <= 1;
+      nextBtn.disabled = page >= pages;
+      infoEl.textContent = page + ' / ' + pages + '（共 ' + total + ' 条）';
+    }
+    prevBtn.addEventListener('click', function () { currentPage--; load(); });
+    nextBtn.addEventListener('click', function () { currentPage++; load(); });
+
     load();
   }
 

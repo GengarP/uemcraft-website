@@ -15,8 +15,9 @@
         { label: '皮肤站',   path: 'https://skin.uemcraft.cn/', external: true }
       ]
     },
-    { label: '资讯动态',   path: '/news/',         match: ['/news/'] },
     { label: '活动中心',   path: '/events.html',   match: ['/events.html'] },
+    { label: '资讯动态',   path: '/news/',         match: ['/news/'] },
+    { label: '指南与文档', path: '/docs/',         match: ['/docs/'] },
     { label: '留言墙',     path: '/wall/',         match: ['/wall/'] }
   ];
 

@@ -157,12 +157,30 @@ function createSiteTables($db, $driver) {
             date VARCHAR(10) NOT NULL,
             status VARCHAR(16) NOT NULL DEFAULT 'draft',
             is_pinned TINYINT NOT NULL DEFAULT 0,
+            view_count INT UNSIGNED NOT NULL DEFAULT 0,
             created_at INT NOT NULL,
             updated_at INT NOT NULL,
             PRIMARY KEY (id),
             UNIQUE KEY idx_news_slug (slug),
             KEY idx_news_date (date),
             KEY idx_news_status (status)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        $db->exec("CREATE TABLE IF NOT EXISTS docs (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            category VARCHAR(100) NOT NULL DEFAULT '',
+            title VARCHAR(255) NOT NULL,
+            slug VARCHAR(255) NOT NULL,
+            content MEDIUMTEXT NOT NULL,
+            sort_order INT NOT NULL DEFAULT 0,
+            status VARCHAR(16) NOT NULL DEFAULT 'published',
+            created_at INT NOT NULL,
+            updated_at INT NOT NULL,
+            PRIMARY KEY (id),
+            UNIQUE KEY idx_docs_slug (slug),
+            KEY idx_docs_cat (category),
+            KEY idx_docs_status (status),
+            KEY idx_docs_sort (sort_order)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
         $db->exec("CREATE TABLE IF NOT EXISTS events (
@@ -227,6 +245,7 @@ function createSiteTables($db, $driver) {
         date          TEXT NOT NULL,
         status        TEXT NOT NULL DEFAULT 'draft',
         is_pinned     INTEGER NOT NULL DEFAULT 0,
+        view_count    INTEGER NOT NULL DEFAULT 0,
         created_at    INTEGER NOT NULL,
         updated_at    INTEGER NOT NULL
     )");
@@ -277,6 +296,22 @@ function createSiteTables($db, $driver) {
     $db->exec("CREATE INDEX idx_works_slug   ON works(slug)");
     $db->exec("CREATE INDEX idx_works_status ON works(status)");
     $db->exec("CREATE INDEX idx_works_sort   ON works(sort_order)");
+
+    $db->exec("CREATE TABLE docs (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        category    TEXT NOT NULL DEFAULT '',
+        title       TEXT NOT NULL,
+        slug        TEXT NOT NULL UNIQUE,
+        content     TEXT NOT NULL DEFAULT '',
+        sort_order  INTEGER NOT NULL DEFAULT 0,
+        status      TEXT NOT NULL DEFAULT 'published',
+        created_at  INTEGER NOT NULL,
+        updated_at  INTEGER NOT NULL
+    )");
+    $db->exec("CREATE INDEX idx_docs_slug   ON docs(slug)");
+    $db->exec("CREATE INDEX idx_docs_cat    ON docs(category)");
+    $db->exec("CREATE INDEX idx_docs_status ON docs(status)");
+    $db->exec("CREATE INDEX idx_docs_sort   ON docs(sort_order)");
 }
 
 function migrateSiteTables($db, $driver) {
@@ -473,6 +508,60 @@ function migrateSiteTables($db, $driver) {
             $db->exec("ALTER TABLE servers ADD COLUMN hide_address INTEGER NOT NULL DEFAULT 0");
         }
     }
+
+    // 迁移：news 表新增 view_count 列（浏览量）
+    try {
+        $test = $db->query("SELECT view_count FROM news LIMIT 0");
+    } catch (PDOException $e) {
+        if ($driver === 'mysql') {
+            $db->exec("ALTER TABLE news ADD COLUMN view_count INT UNSIGNED NOT NULL DEFAULT 0");
+        } else {
+            $db->exec("ALTER TABLE news ADD COLUMN view_count INTEGER NOT NULL DEFAULT 0");
+        }
+    }
+
+    // 迁移：新增 docs 表
+    if ($driver === 'mysql') {
+        $db->exec("CREATE TABLE IF NOT EXISTS docs (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            category VARCHAR(100) NOT NULL DEFAULT '',
+            title VARCHAR(255) NOT NULL,
+            slug VARCHAR(255) NOT NULL,
+            content MEDIUMTEXT NOT NULL,
+            sort_order INT NOT NULL DEFAULT 0,
+            status VARCHAR(16) NOT NULL DEFAULT 'published',
+            created_at INT NOT NULL,
+            updated_at INT NOT NULL,
+            PRIMARY KEY (id),
+            UNIQUE KEY idx_docs_slug (slug),
+            KEY idx_docs_cat (category),
+            KEY idx_docs_status (status),
+            KEY idx_docs_sort (sort_order)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    } else {
+        try {
+            $db->exec("CREATE TABLE docs (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                category    TEXT NOT NULL DEFAULT '',
+                title       TEXT NOT NULL,
+                slug        TEXT NOT NULL UNIQUE,
+                content     TEXT NOT NULL DEFAULT '',
+                sort_order  INTEGER NOT NULL DEFAULT 0,
+                status      TEXT NOT NULL DEFAULT 'published',
+                created_at  INTEGER NOT NULL,
+                updated_at  INTEGER NOT NULL
+            )");
+            $db->exec("CREATE INDEX IF NOT EXISTS idx_docs_slug   ON docs(slug)");
+            $db->exec("CREATE INDEX IF NOT EXISTS idx_docs_cat    ON docs(category)");
+            $db->exec("CREATE INDEX IF NOT EXISTS idx_docs_status ON docs(status)");
+            $db->exec("CREATE INDEX IF NOT EXISTS idx_docs_sort   ON docs(sort_order)");
+        } catch (PDOException $e) {
+            if (strpos($e->getMessage(), 'already exists') === false) {
+                throw $e;
+            }
+        }
+    }
+
     return;
 }
 
