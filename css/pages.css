@@ -1238,21 +1238,25 @@
   border-top:1px solid var(--c-border);
   margin:var(--space-xl) 0;
 }
-.docs-body table {
-  width:100%;
-  border-collapse:collapse;
-  margin:var(--space-lg) 0;
-  font-size:var(--fs-sm);
-  border:2px solid var(--c-border);
-  display:block;
+.docs-table-wrapper {
   overflow-x:auto;
   -webkit-overflow-scrolling:touch;
+  margin:var(--space-lg) 0;
+}
+.docs-body table {
+  width:100%;
+  min-width:0;
+  border-collapse:collapse;
+  margin:0;
+  font-size:var(--fs-sm);
+  border:2px solid var(--c-border);
 }
 .docs-body th,.docs-body td {
   padding:var(--space-sm) var(--space-md);
   border:1px solid var(--c-border);
   text-align:left;
   vertical-align:top;
+  white-space:nowrap;
 }
 .docs-body th { background:var(--c-surface-2); font-weight:700; }
 .docs-body tr:nth-child(even) { background:var(--c-bg-section-alt); }

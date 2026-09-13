@@ -16,6 +16,19 @@
 
   var enhanceCodeBlocks = (window.CodeHighlight && window.CodeHighlight.enhanceCodeBlocks) || function () {};
 
+  /* ---- 表格包装：为 <table> 添加可滚动容器 ---- */
+  function wrapTables(container) {
+    var tables = container.querySelectorAll('table');
+    tables.forEach(function (table) {
+      // 已包装则跳过
+      if (table.parentNode.classList && table.parentNode.classList.contains('docs-table-wrapper')) return;
+      var wrapper = document.createElement('div');
+      wrapper.className = 'docs-table-wrapper';
+      table.parentNode.insertBefore(wrapper, table);
+      wrapper.appendChild(table);
+    });
+  }
+
   /* ---- 数据加载 ---- */
   function fetchDocsList() {
     return fetch('/api/docs.php?action=list')
@@ -193,6 +206,7 @@
         if (typeof marked !== 'undefined') {
           marked.setOptions({ gfm: true, breaks: false, headerIds: true, mangle: false, sanitize: false });
           body.innerHTML = marked.parse(doc.content || '');
+          wrapTables(body);
           enhanceCodeBlocks(body);
         } else {
           body.innerHTML = '<p>Markdown 引擎加载失败，请刷新重试。</p>';
