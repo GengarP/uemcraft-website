@@ -71,83 +71,13 @@ if ($isDetail) {
   <link rel="stylesheet" href="/css/components.css">
   <link rel="stylesheet" href="/css/pages.css">
 </head>
-<body<?php if ($isDetail) echo ' class="docs-detail"'; ?>>
+<body>
 
-<!-- ====== Header ====== -->
-<header class="site-header" role="banner">
-  <div class="header-inner">
-    <a href="/index.html" class="header-logo" aria-label="UEMCraft 首页">
-      <img src="/assets/img/minecraft_title.png" alt="UEMCraft" class="header-logo-img">
-    </a>
-    <nav class="header-nav" aria-label="主导航">
-      <a href="/index.html">首页</a>
-      <div class="nav-dropdown"><a href="/about.html" class="nav-drop-trigger">关于我们</a><div class="nav-drop-menu"><a href="/join.html">加入我们</a><a href="/gallery/">作品展示</a><a href="https://skin.uemcraft.cn/" target="_blank" rel="noopener">皮肤站</a></div></div>
-      <a href="/events.html">活动中心</a>
-      <a href="/news/">资讯动态</a>
-      <a href="/docs/" class="is-active">指南与文档</a>
-      <a href="/wall/">留言墙</a>
-    </nav>
-    <div class="header-actions">
-      <div class="settings-wrapper">
-        <button class="settings-toggle" aria-label="设置" title="设置">
-          <img src="/assets/svg/setting.svg" alt="" width="20" height="20" class="settings-icon">
-        </button>
-        <div class="settings-panel" aria-hidden="true">
-          <div class="settings-group">
-            <span class="settings-label">外观</span>
-            <div class="theme-options">
-              <button class="theme-option" data-theme="light" title="亮色模式">
-                <span class="iconfont-theme icon-sun" aria-hidden="true"></span>
-              </button>
-              <button class="theme-option" data-theme="dark" title="深色模式">
-                <span class="iconfont-theme icon-moon" aria-hidden="true"></span>
-              </button>
-            </div>
-          </div>
-          <div class="settings-group">
-            <span class="settings-label">背景纹理</span>
-            <div class="texture-grid">
-              <button class="texture-option" data-texture="none" title="无纹理">无</button>
-              <button class="texture-option" data-texture="bricks" title="砖块">
-                <img src="/assets/img/background_textures/bricks.png" alt="砖块">
-              </button>
-              <button class="texture-option" data-texture="cobblestone" title="圆石">
-                <img src="/assets/img/background_textures/cobblestone.png" alt="圆石">
-              </button>
-              <button class="texture-option" data-texture="dirt" title="泥土">
-                <img src="/assets/img/background_textures/dirt.png" alt="泥土">
-              </button>
-              <button class="texture-option" data-texture="end_stone" title="末地石">
-                <img src="/assets/img/background_textures/end_stone.png" alt="末地石">
-              </button>
-              <button class="texture-option" data-texture="stone" title="石头">
-                <img src="/assets/img/background_textures/stone.png" alt="石头">
-              </button>
-              <button class="texture-option" data-texture="stone_bricks" title="石砖">
-                <img src="/assets/img/background_textures/stone_bricks.png" alt="石砖">
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <button class="hamburger" aria-label="菜单" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
-    </div>
-  </div>
-</header>
-
-<nav class="mobile-nav" aria-label="移动端导航">
-  <a href="/index.html">首页</a>
-  <a href="/about.html">关于我们</a>
-  <a href="/join.html" class="mobile-sub">加入我们</a>
-  <a href="/gallery/" class="mobile-sub">作品展示</a>
-  <a href="https://skin.uemcraft.cn/" class="mobile-sub" target="_blank" rel="noopener">皮肤站</a>
-  <a href="/events.html">活动中心</a>
-  <a href="/news/">资讯动态</a>
-  <a href="/docs/" class="is-active">指南与文档</a>
-  <a href="/wall/">留言墙</a>
-</nav>
+<?php if ($isDetail): ?>
+<script>window.__docsDetail = true;</script>
+<?php endif; ?>
+<script src="/js/components-header.js"></script>
+<a href="#main" class="skip-link">跳转到主内容</a>
 
 <!-- ====== Main ====== -->
 <main id="main">
