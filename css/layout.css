@@ -236,10 +236,10 @@
 /* Mobile nav drawer */
 .mobile-nav {
   position:fixed;
-  top:0; right:0; bottom:0; left:0;
+  top:var(--header-h); right:0; bottom:0; left:0;
   background:var(--c-surface);
   z-index:999;
-  padding:calc(var(--header-h) + var(--space-md)) var(--space-xl) var(--space-xl);
+  padding:var(--space-md) var(--space-xl) var(--space-xl);
   display:flex;
   flex-direction:column;
   gap:var(--space-sm);
