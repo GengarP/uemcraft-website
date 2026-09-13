@@ -1256,7 +1256,9 @@
   border:1px solid var(--c-border);
   text-align:left;
   vertical-align:top;
-  white-space:nowrap;
+  max-width:20ch;
+  word-break:break-word;
+  overflow-wrap:break-word;
 }
 .docs-body th { background:var(--c-surface-2); font-weight:700; }
 .docs-body tr:nth-child(even) { background:var(--c-bg-section-alt); }
