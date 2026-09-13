@@ -1356,7 +1356,7 @@
   text-align:center;
   padding:var(--space-2xl);
 }
-.docs-index-category {}
+/*.docs-index-category {}*/
 .docs-index-cat-title {
   font-size:var(--fs-h4);
   font-weight:700;

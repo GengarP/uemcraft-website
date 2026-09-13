@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var settingsPanel  = document.querySelector('.settings-panel');
   var mobileNav = document.querySelector('.mobile-nav');
   var hamburger = document.querySelector('.hamburger');
+  var header = document.querySelector('.site-header');
 
   /* ---- 主题 ---- */
   function getTheme() {
@@ -63,6 +64,8 @@ document.addEventListener('DOMContentLoaded', function () {
         mobileNav.classList.remove('is-open');
         hamburger.classList.remove('is-open');
         hamburger.setAttribute('aria-expanded', 'false');
+        if (header) header.classList.remove('mobile-nav-open');
+        document.documentElement.style.overflow = '';
         document.body.style.overflow = '';
       }
       var isOpen = settingsPanel.classList.toggle('is-open');

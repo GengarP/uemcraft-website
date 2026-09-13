@@ -262,7 +262,6 @@
   font-size:1.1rem;
   font-weight:600;
   border-radius:var(--radius);
-  transition:background var(--duration),color var(--duration);
   opacity:0;
   transform:translateY(-8px);
   transition:opacity .18s ease-out,transform .18s ease-out,background var(--duration),color var(--duration);
@@ -276,6 +275,7 @@
 .mobile-nav.is-open a:nth-child(6) { transition-delay:.19s; }
 .mobile-nav.is-open a:nth-child(7) { transition-delay:.22s; }
 .mobile-nav.is-open a:nth-child(8) { transition-delay:.25s; }
+.mobile-nav.is-open a:nth-child(9) { transition-delay:.28s; }
 .mobile-nav a:hover,
 .mobile-nav a.is-active {
   background:var(--c-surface-2);
@@ -476,6 +476,12 @@ a.footer-badge:focus-visible {
   .header-nav { display:none; }
   .header-actions .btn { display:none; }
   .hamburger { display:flex; }
+  /* 移动端滚动时保持实色背景，避免半透明+blur导致header视觉消失 */
+  .site-header.is-scrolled {
+    background:var(--c-surface);
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
+  }
   .site-header.mobile-nav-open {
     background:var(--c-surface);
     border-bottom-color:transparent;
