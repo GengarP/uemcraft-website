@@ -13,8 +13,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
   /* ---- 移动端导航 ---- */
   function lockScroll(on) {
-    document.documentElement.style.overflow = on ? 'hidden' : '';
-    document.body.style.overflow = on ? 'hidden' : '';
+    if (on) {
+      var scrollY = window.scrollY || window.pageYOffset;
+      document.body.style.position = 'fixed';
+      document.body.style.top = '-' + scrollY + 'px';
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.dataset.scrollY = scrollY;
+    } else {
+      var savedY = parseInt(document.body.dataset.scrollY || '0', 10);
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      delete document.body.dataset.scrollY;
+      window.scrollTo(0, savedY);
+    }
   }
   function closeMobileNav() {
     mobileNav.classList.remove('is-open');

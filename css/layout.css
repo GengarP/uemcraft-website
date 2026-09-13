@@ -500,14 +500,9 @@ a.footer-badge:focus-visible {
   .header-nav { display:none; }
   .header-actions .btn { display:none; }
   .hamburger { display:flex; }
-  /* 移动端滚动时保持实色背景，半透明+blur在移动端不可靠 */
-  .site-header.is-scrolled {
-    background:var(--c-surface);
-    backdrop-filter:none;
-    -webkit-backdrop-filter:none;
-  }
-  /* 抽屉打开时header提到drawer之上，确保X按钮可点击 */
+  /* 抽屉打开时header提到drawer之上，确保X按钮可点击；改用fixed防止sticky失效 */
   .site-header.mobile-nav-open {
+    position:fixed;
     z-index:1003;
   }
   .header-logo-img { height:26px; }
