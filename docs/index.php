@@ -71,7 +71,7 @@ if ($isDetail) {
   <link rel="stylesheet" href="/css/components.css">
   <link rel="stylesheet" href="/css/pages.css">
 </head>
-<body>
+<body<?php if ($isDetail) echo ' class="docs-detail"'; ?>>
 
 <!-- ====== Header ====== -->
 <header class="site-header" role="banner">

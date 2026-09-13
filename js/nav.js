@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var header    = document.querySelector('.site-header');
   var hamburger = document.querySelector('.hamburger');
   var mobileNav = document.querySelector('.mobile-nav');
+  var backdrop  = document.querySelector('.mobile-nav-backdrop');
   var backTop   = document.querySelector('.back-to-top');
   var settingsToggle = document.querySelector('.settings-toggle');
   var settingsPanel  = document.querySelector('.settings-panel');
@@ -17,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   function closeMobileNav() {
     mobileNav.classList.remove('is-open');
+    if (backdrop) backdrop.classList.remove('is-open');
     hamburger.classList.remove('is-open');
     hamburger.setAttribute('aria-expanded', 'false');
     if (header) header.classList.remove('mobile-nav-open');
@@ -31,6 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
         settingsPanel.setAttribute('aria-hidden', 'true');
       }
       var open = mobileNav.classList.toggle('is-open');
+      if (backdrop) backdrop.classList.toggle('is-open', open);
       hamburger.classList.toggle('is-open', open);
       hamburger.setAttribute('aria-expanded', open);
       if (header) header.classList.toggle('mobile-nav-open', open);
@@ -42,10 +45,10 @@ document.addEventListener('DOMContentLoaded', function () {
       link.addEventListener('click', closeMobileNav);
     });
 
-    // 点击遮罩空白区域关闭
-    mobileNav.addEventListener('click', function (e) {
-      if (e.target === mobileNav) closeMobileNav();
-    });
+    // 点击遮罩关闭
+    if (backdrop) {
+      backdrop.addEventListener('click', closeMobileNav);
+    }
 
     // 窗口跨断点自动关闭
     var mqDesktop = window.matchMedia('(min-width: 992px)');

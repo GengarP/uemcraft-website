@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var settingsPanel  = document.querySelector('.settings-panel');
   var mobileNav = document.querySelector('.mobile-nav');
   var hamburger = document.querySelector('.hamburger');
+  var backdrop  = document.querySelector('.mobile-nav-backdrop');
   var header = document.querySelector('.site-header');
 
   /* ---- 主题 ---- */
@@ -62,6 +63,7 @@ document.addEventListener('DOMContentLoaded', function () {
       // 打开设置时关闭移动导航
       if (mobileNav && hamburger) {
         mobileNav.classList.remove('is-open');
+        if (backdrop) backdrop.classList.remove('is-open');
         hamburger.classList.remove('is-open');
         hamburger.setAttribute('aria-expanded', 'false');
         if (header) header.classList.remove('mobile-nav-open');

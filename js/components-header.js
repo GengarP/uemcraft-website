@@ -116,7 +116,8 @@
     html += '<button class="hamburger" aria-label="菜单" aria-expanded="false"><span></span><span></span><span></span></button>';
     html += '</div></header>';
 
-    // Mobile nav
+    // Mobile nav + backdrop
+    html += '<div class="mobile-nav-backdrop" aria-hidden="true"></div>';
     html += '<nav class="mobile-nav" aria-label="移动端导航">' + mobileLinks + '</nav>';
 
     document.write(html);
