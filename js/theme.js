@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
         hamburger.setAttribute('aria-expanded', 'false');
         if (header) header.classList.remove('mobile-nav-open');
         document.documentElement.style.overflow = '';
-        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
       }
       var isOpen = settingsPanel.classList.toggle('is-open');
       settingsPanel.setAttribute('aria-hidden', !isOpen);
