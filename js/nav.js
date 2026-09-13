@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
     mobileNav.classList.remove('is-open');
     hamburger.classList.remove('is-open');
     hamburger.setAttribute('aria-expanded', 'false');
+    if (header) header.classList.remove('mobile-nav-open');
     lockScroll(false);
   }
 
@@ -32,6 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var open = mobileNav.classList.toggle('is-open');
       hamburger.classList.toggle('is-open', open);
       hamburger.setAttribute('aria-expanded', open);
+      if (header) header.classList.toggle('mobile-nav-open', open);
       lockScroll(open);
     });
 
