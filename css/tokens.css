@@ -72,12 +72,12 @@
 /* ---- 亮色模式（默认） ---- */
 :root {
   /* 背景层级 */
-  --c-bg:        #F0F2F7;
-  --c-bg-2:      #E4E8F0;
-  --c-bg-section-alt: #EBEDF3;
-  --c-surface:   #FFFFFF;
-  --c-surface-2: #F5F7FA;
-  --c-border:    #D5DAE5;
+  --c-bg:        #EDEEF3;
+  --c-bg-2:      #E2E4EB;
+  --c-bg-section-alt: #E6E8EF;
+  --c-surface:   #F6F7FA;
+  --c-surface-2: #EFF0F5;
+  --c-border:    #CDD1DD;
 
   /* 主题色系（蓝） */
   --c-primary:      #2B5BD9;
@@ -87,9 +87,9 @@
   --c-accent-4:     #392187;
 
   /* 文字 */
-  --c-text:       #1A1D28;
-  --c-text-muted: #6A7185;
-  --c-heading:    #0F1420;
+  --c-text:       #2A2D3A;
+  --c-text-muted: #6B7186;
+  --c-heading:    #1C1F2B;
 
   /* 功能色 */
   --c-gold:  #C88A15;
@@ -98,11 +98,11 @@
 
   /* 像素/方块特质 */
   --radius:       0;
-  --shadow-hard:  4px 4px 0 rgba(0,0,0,.18);
-  --shadow-hard-sm: 2px 2px 0 rgba(0,0,0,.14);
-  --shadow-hover: 6px 6px 0 rgba(0,0,0,.22);
-  --shadow-card:  0 2px 12px rgba(0,0,0,.06);
-  --shadow-nav:   0 2px 16px rgba(0,0,0,.10);
+  --shadow-hard:  4px 4px 0 rgba(0,0,0,.15);
+  --shadow-hard-sm: 2px 2px 0 rgba(0,0,0,.12);
+  --shadow-hover: 6px 6px 0 rgba(0,0,0,.20);
+  --shadow-card:  0 2px 12px rgba(0,0,0,.05);
+  --shadow-nav:   0 2px 16px rgba(0,0,0,.08);
 
   /* 像素网格纹理 */
   --pixel-grid: repeating-linear-gradient(

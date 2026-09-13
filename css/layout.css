@@ -500,19 +500,6 @@ a.footer-badge:focus-visible {
   .header-nav { display:none; }
   .header-actions .btn { display:none; }
   .hamburger { display:flex; }
-  /* 移动端滚动时保持实色背景，避免半透明+blur导致header视觉消失 */
-  .site-header.is-scrolled {
-    background:var(--c-surface);
-    backdrop-filter:none;
-    -webkit-backdrop-filter:none;
-  }
-  .site-header.mobile-nav-open {
-    background:var(--c-surface);
-    border-bottom-color:transparent;
-    box-shadow:none;
-    backdrop-filter:none;
-    -webkit-backdrop-filter:none;
-  }
   .header-logo-img { height:26px; }
   .footer-grid { grid-template-columns:1fr 1fr; gap:var(--space-lg); }
 }
