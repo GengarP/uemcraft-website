@@ -11,6 +11,17 @@ document.addEventListener('DOMContentLoaded', function () {
   var settingsPanel  = document.querySelector('.settings-panel');
 
   /* ---- 移动端导航 ---- */
+  function lockScroll(on) {
+    document.documentElement.style.overflow = on ? 'hidden' : '';
+    document.body.style.overflow = on ? 'hidden' : '';
+  }
+  function closeMobileNav() {
+    mobileNav.classList.remove('is-open');
+    hamburger.classList.remove('is-open');
+    hamburger.setAttribute('aria-expanded', 'false');
+    lockScroll(false);
+  }
+
   if (hamburger && mobileNav) {
     hamburger.addEventListener('click', function () {
       // 打开导航时关闭设置面板
@@ -21,28 +32,23 @@ document.addEventListener('DOMContentLoaded', function () {
       var open = mobileNav.classList.toggle('is-open');
       hamburger.classList.toggle('is-open', open);
       hamburger.setAttribute('aria-expanded', open);
-      document.body.style.overflow = open ? 'hidden' : '';
+      lockScroll(open);
     });
 
     // 点击导航链接后关闭
     mobileNav.querySelectorAll('a').forEach(function (link) {
-      link.addEventListener('click', function () {
-        mobileNav.classList.remove('is-open');
-        hamburger.classList.remove('is-open');
-        hamburger.setAttribute('aria-expanded', 'false');
-        document.body.style.overflow = '';
-      });
+      link.addEventListener('click', closeMobileNav);
+    });
+
+    // 点击遮罩空白区域关闭
+    mobileNav.addEventListener('click', function (e) {
+      if (e.target === mobileNav) closeMobileNav();
     });
 
     // 窗口跨断点自动关闭
     var mqDesktop = window.matchMedia('(min-width: 992px)');
     mqDesktop.addEventListener('change', function (e) {
-      if (e.matches) {
-        mobileNav.classList.remove('is-open');
-        hamburger.classList.remove('is-open');
-        hamburger.setAttribute('aria-expanded', 'false');
-        document.body.style.overflow = '';
-      }
+      if (e.matches) closeMobileNav();
     });
   }
 

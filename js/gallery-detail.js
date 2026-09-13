@@ -20,6 +20,18 @@
   /* ---- 代码高亮（委托给 code-highlight.js） ---- */
   var enhanceCodeBlocks = (window.CodeHighlight && window.CodeHighlight.enhanceCodeBlocks) || function () {};
 
+  /* ---- 表格包装：为 <table> 添加可滚动容器 ---- */
+  function wrapTables(container) {
+    var tables = container.querySelectorAll('table');
+    tables.forEach(function (table) {
+      if (table.parentNode.classList && table.parentNode.classList.contains('detail-table-wrapper')) return;
+      var wrapper = document.createElement('div');
+      wrapper.className = 'detail-table-wrapper';
+      table.parentNode.insertBefore(wrapper, table);
+      wrapper.appendChild(table);
+    });
+  }
+
   /* ---- 相册状态 ---- */
   var galleryImages = [];
   var currentGalleryIdx = 0;
@@ -219,6 +231,7 @@
         if (typeof marked !== 'undefined') {
           marked.setOptions({ gfm: true, breaks: false, headerIds: true, mangle: false, sanitize: false });
           bodyEl.innerHTML = marked.parse(md);
+          wrapTables(bodyEl);
           enhanceCodeBlocks(bodyEl);
         } else {
           bodyEl.innerHTML = '<p>' + escapeHtml(md) + '</p>';

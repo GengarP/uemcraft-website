@@ -159,6 +159,18 @@ function renderEventListItem(item, index) {
 /* ---- 代码高亮（委托给 code-highlight.js） ---- */
 var enhanceCodeBlocks = (window.CodeHighlight && window.CodeHighlight.enhanceCodeBlocks) || function () {};
 
+/* ---- 表格包装：为 <table> 添加可滚动容器 ---- */
+function wrapTables(container) {
+  var tables = container.querySelectorAll('table');
+  tables.forEach(function (table) {
+    if (table.parentNode.classList && table.parentNode.classList.contains('article-table-wrapper')) return;
+    var wrapper = document.createElement('div');
+    wrapper.className = 'article-table-wrapper';
+    table.parentNode.insertBefore(wrapper, table);
+    wrapper.appendChild(table);
+  });
+}
+
 /* ---- SEO 辅助函数 ---- */
 function setMetaAttr(attr, value, content) {
   var el = document.querySelector('meta[' + attr + '="' + value + '"]');
@@ -304,6 +316,7 @@ function renderArticleData(item) {
       marked.setOptions({ gfm: true, breaks: false, headerIds: true, mangle: false, sanitize: false });
       // API 返回的字段是 content（不是 markdown）
       contentEl.innerHTML = marked.parse(item.content || item.markdown || '');
+      wrapTables(contentEl);
       enhanceCodeBlocks(contentEl);
     } else {
       contentEl.innerHTML = '<p>Markdown 引擎加载失败，请刷新重试。</p>';

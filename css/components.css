@@ -734,10 +734,16 @@
   margin:var(--space-xl) 0;
 }
 /* Tables */
+.article-table-wrapper {
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  margin:var(--space-lg) 0;
+}
 .article-body table {
   width:100%;
+  min-width:0;
   border-collapse:collapse;
-  margin:var(--space-lg) 0;
+  margin:0;
   font-size:var(--fs-sm);
   border:2px solid var(--c-border);
   border-radius:var(--radius);
@@ -748,6 +754,9 @@
   border:1px solid var(--c-border);
   text-align:left;
   vertical-align:top;
+  max-width:20ch;
+  word-break:break-word;
+  overflow-wrap:break-word;
 }
 .article-body th {
   background:var(--c-surface-2);
@@ -1576,8 +1585,9 @@ a.works-card { text-decoration:none; color:inherit; }
 }
 .detail-body ul,.detail-body ol { padding-left:var(--space-xl); margin-bottom:var(--space-md); }
 .detail-body li { margin-bottom:var(--space-xs); }
-.detail-body table { width:100%; border-collapse:collapse; margin:var(--space-md) 0; }
-.detail-body th,.detail-body td { padding:var(--space-sm); border:1px solid var(--c-border); text-align:left; }
+.detail-table-wrapper { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:var(--space-md) 0; }
+.detail-body table { width:100%; min-width:0; border-collapse:collapse; margin:0; }
+.detail-body th,.detail-body td { padding:var(--space-sm); border:1px solid var(--c-border); text-align:left; max-width:20ch; word-break:break-word; overflow-wrap:break-word; }
 .detail-body th { background:var(--c-bg); font-weight:700; }
 
 /* Sidebar — clean typography style (inspired by about.html) */
