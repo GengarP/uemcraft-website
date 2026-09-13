@@ -1001,8 +1001,9 @@
   display:grid;
   grid-template-columns:260px 1fr 220px;
   min-height:calc(100vh - var(--header-h));
-  max-width:1400px;
-  margin:0 auto;
+  width:100%;
+  max-width:none;
+  margin:0;
 }
 
 /* 左侧边栏 */
@@ -1105,6 +1106,7 @@
   padding:var(--space-xl) var(--space-2xl);
   min-width:0;
   max-width:800px;
+  overflow-x:hidden;
 }
 
 /* 面包屑 */
@@ -1139,7 +1141,12 @@
 .docs-body a { color:var(--c-primary); text-decoration:underline; }
 .docs-body a:hover { color:var(--c-primary-hi); }
 .docs-body ul,.docs-body ol { padding-left:var(--space-xl); margin-bottom:var(--space-md); }
+.docs-body ol { list-style:decimal; }
+.docs-body ul { list-style:disc; }
+.docs-body ol ol { list-style:lower-alpha; }
+.docs-body ul ul { list-style:circle; }
 .docs-body li { margin-bottom:var(--space-xs); }
+.docs-body li::marker { color:var(--c-text-muted); }
 .docs-body blockquote {
   border-left:3px solid var(--c-primary);
   padding:var(--space-sm) var(--space-lg);
@@ -1156,6 +1163,8 @@
   padding:.15em .4em;
   border-radius:0;
   font-size:.9em;
+  word-break:break-all;
+  overflow-wrap:break-word;
 }
 .docs-body .code-block {
   margin:var(--space-lg) 0;
@@ -1236,6 +1245,9 @@
   margin:var(--space-lg) 0;
   font-size:var(--fs-sm);
   border:2px solid var(--c-border);
+  display:block;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
 }
 .docs-body th,.docs-body td {
   padding:var(--space-sm) var(--space-md);
@@ -1381,13 +1393,14 @@
   .docs-toc { display:none; }
 }
 @media (max-width:768px) {
-  .docs-layout { grid-template-columns:1fr; }
+  .docs-layout { grid-template-columns:1fr; overflow-x:hidden; }
   .docs-sidebar {
     position:static;
     height:auto;
     border-right:none;
     border-bottom:1px solid var(--c-border);
     padding:var(--space-md);
+    overflow-x:hidden;
   }
   .docs-sidebar-toggle { display:flex; align-items:center; justify-content:space-between; }
   .docs-sidebar-nav {
@@ -1395,7 +1408,7 @@
     margin-top:var(--space-sm);
   }
   .docs-sidebar.is-open .docs-sidebar-nav { display:flex; }
-  .docs-content { padding:var(--space-lg) var(--space-md); }
+  .docs-content { padding:var(--space-lg) var(--space-md); max-width:100%; overflow-x:auto; }
   .docs-pager { grid-template-columns:1fr; }
   .docs-toc { display:none; }
 }
