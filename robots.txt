@@ -2,5 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /api/
+Disallow: /scripts/
 
-Sitemap: https://uemcraft.cn/api/sitemap.php
+Sitemap: https://uemcraft.cn/sitemap.xml
