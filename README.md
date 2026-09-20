@@ -2,166 +2,233 @@
 
 > 应急管理大学 Minecraft 同好会官方网站 — [uemcraft.cn](https://uemcraft.cn)
 
-以纯静态为主，HTML5 + CSS3 + Vanilla JS，零框架零依赖。新闻、活动、作品、服务器、留言墙均通过 PHP + SQLite/MySQL 后端管理，需部署到支持 PHP 的服务器。
+HTML5 + CSS3 + Vanilla JS 前端，PHP + SQLite/MySQL 后端，零框架零依赖。所有内容通过 `/admin/` 管理后台管理。
 
 ## 项目结构
 
 ```
-├── index.html              首页
-├── about.html              关于
-├── events.html             活动
-├── join.html               加入我们
-├── 404.html                404 页面
-├── admin/                  管理后台（需 PHP 后端）
-│   ├── login.html          登录页
-│   ├── index.html          仪表盘
-│   ├── news.html           新闻管理
-│   ├── news-edit.html      新闻编辑/新建
-│   ├── events.html         活动管理
-│   ├── events-edit.html    活动编辑/新建
-│   ├── gallery.html        作品管理
-│   ├── gallery-edit.html   作品编辑/新建
-│   └── css/admin.css       后台样式
-├── gallery/
-│   ├── index.html          作品展示（API 驱动 + 分类筛选）
-│   └── detail.html         作品详情（?id=，Modrinth 风格双栏布局）
-├── news/
-│   └── index.php           新闻路由（列表 + 详情，路径式 URL）
-├── wall/
-│   ├── index.html          留言墙（需 PHP 后端）
-│   └── admin.html          留言墙管理端
-├── api/
-│   ├── common.php          公共函数库（PDO、认证、响应）
-│   ├── news.php            新闻 API（CRUD + 管理）
-│   ├── events.php          活动 API（CRUD + 管理）
-│   ├── works.php           作品 API（CRUD + 管理）
-│   ├── servers.php         服务器 API（列表 + 管理 CRUD）
-│   └── wall.php            留言墙 API（含 AI 审核）
-├── scripts/
-│   └── migrate-to-db.php   数据迁移脚本
-├── css/
-│   ├── tokens.css          设计令牌
-│   ├── base.css / layout.css / components.css / pages.css
-├── js/
-│   ├── components.js       共享组件（导航栏 + 页脚，document.write 同步注入）
-│   ├── page-transition.js  页面跳转动画（帷幕遮罩 + 像素涟漪 + 顶部进度条）
-│   ├── main.js             全局（导航/主题/滚动）
-│   ├── content.js          内容渲染（从 API 加载新闻和活动）
-│   ├── server.js           服务器状态卡片（后端代理查询 + MOTD 渲染）
-│   ├── gallery.js          作品展示（API 加载 + 分类筛选 + 卡片跳转）
-│   ├── gallery-detail.js   作品详情（Markdown + 相册 + 下载链接）
-│   ├── hero-gallery.js     Hero 背景画廊（滑动切换 + 视差滚动）
-│   ├── admin-auth.js       统一管理认证模块
-│   ├── admin.js            后台仪表盘/列表逻辑
-│   ├── admin-edit.js       后台编辑表单逻辑
-│   ├── wall.js             留言墙前端
-│   ├── wall-admin.js       留言墙管理端
-│   ├── marked.umd.js       Markdown 解析库
-│   └── ...
-├── assets/                 静态资源
-├── package.json
-├── favicon.ico / robots.txt / sitemap.xml
+├── index / about / events / join / 404.html   页面
+├── admin/            管理后台（仪表盘、新闻、活动、作品、服务器、留言墙）
+├── api/              PHP API（common.php / news / events / works / servers / wall）
+├── gallery/          作品展示 + 详情页
+├── news/             新闻路由（index.php）
+├── wall/             留言墙 + 管理端
+├── css/              样式（tokens → base → layout → components → pages）
+├── js/               脚本（components / main / content / gallery / server / admin …）
+├── assets/           静态资源（图片、字体、文档）
+└── scripts/          数据迁移脚本
 ```
 
-## 内容管理
+## 环境要求
 
-所有内容通过管理后台（`/admin/`）增删改查，数据存储在数据库中。
+| 项目 | 要求 |
+|------|------|
+| PHP | 7.4+ |
+| PHP 扩展 | PDO, SQLite3（默认）或 PDO, MySQL |
+| Web 服务器 | Nginx / Apache / 宝塔 |
+| 数据库 | SQLite（零配置，运行期自动生成）或 MySQL 5.7+ / MariaDB 10.3+ |
 
-### 新闻
+> 纯静态托管（GitHub Pages、Vercel 等）无法运行 PHP 后端。
 
-通过 `/admin/news.html` 管理，支持：
-- 创建/编辑/删除新闻文章
-- Markdown 格式正文，前端用 marked.js 渲染
-- 标签、封面图、摘要、作者等元数据
-- 草稿/已发布状态切换
+## 本地开发
 
-文章 URL：`/news/<slug>`（需配置 Apache URL 重写）
+```bash
+# PHP 内置服务器（推荐，API 正常工作）
+php -S localhost:8080
 
-### 活动
+# 或 Node.js（仅静态页面，API 不可用）
+npx serve .
+```
 
-通过 `/admin/events.html` 管理，支持：
-- 创建/编辑/删除活动
-- 状态：即将开始 / 进行中 / 已结束
-- 置顶/精选功能
-- 封面图、外部链接
-- 首页近期活动使用交替图文布局（左图右文 / 右图左文交替排列）
+访问 `http://localhost:8080`。首次请求 API 时自动在 `api/` 目录生成 SQLite 数据库文件。
 
-### 作品
+## 部署
 
-通过 `/admin/gallery.html` 管理，支持：
-- 创建/编辑/删除作品
-- 封面图 + 大图，分类筛选
-- 作者、简短描述、详细描述（Markdown）
-- 相册多图管理、动态下载链接（名称 + URL）
-- 状态：已发布 / 草稿
-- 前端 `/gallery/` 以卡片网格展示，点击跳转详情页
-- 详情页 `/gallery/detail.html?id=` — Modrinth 风格双栏布局：相册 + Markdown 描述 + 作者 + 下载按钮
+### 1. 准备环境变量
 
-### 服务器
-
-通过 `/admin/` 服务器管理页面管理，支持：
-- 创建/编辑/删除服务器条目
-- 地址、端口、备注、排序、置顶
-- **隐藏地址**：开启后前端不展示真实 IP，查询经由后端代理转发
-- 前端首页自动查询服务器状态（在线人数、版本、延迟、MOTD）
-- 外部查询通过后端代理（`/api/servers.php?action=batch_query`），真实 IP 不暴露给前端
-
-### 留言墙
-
-通过 `/wall/admin.html` 管理（或统一后台入口），支持：
-- 审核（通过/屏蔽）、行内编辑、删除
-- AI 自动审核（硅基流动 Qwen3.5-4B）
-
-## 后端架构
-
-### API 端点
-
-| 文件 | 端点 | 说明 |
-|------|------|------|
-| `api/news.php` | `?action=list` / `?action=detail&slug=xxx` | 公开：新闻列表/详情 |
-| `api/news.php` | `?action=admin_list` / `?action=admin_detail&id=xxx` | 管理：新闻列表/详情 |
-| `api/news.php` | `?action=create` / `?action=update` / `?action=delete` | 管理：CRUD |
-| `api/events.php` | `?action=list` / `?action=upcoming` / `?action=past` | 公开：活动列表 |
-| `api/events.php` | `?action=admin_list` / `?action=admin_detail&id=xxx` | 管理：活动列表/详情 |
-| `api/events.php` | `?action=create` / `?action=update` / `?action=delete` | 管理：CRUD |
-| `api/works.php` | `?action=list` / `?action=detail&id=xxx` / `?action=detail&slug=xxx` | 公开：作品列表/详情 |
-| `api/works.php` | `?action=admin_list` / `?action=admin_detail&id=xxx` | 管理：作品列表/详情 |
-| `api/works.php` | `?action=create` / `?action=update` / `?action=delete` | 管理：CRUD |
-| `api/servers.php` | `?action=list` / `?action=featured` | 公开：服务器列表/置顶（隐藏地址自动掩码） |
-| `api/servers.php` | `?action=batch_query` | 公开：后端代理批量查询（发 ID，隐藏真实 IP） |
-| `api/servers.php` | `?action=admin_list` / `?action=admin_detail&id=xxx` | 管理：服务器列表/详情 |
-| `api/servers.php` | `?action=create` / `?action=update` / `?action=delete` | 管理：CRUD |
-| `api/wall.php` | `?action=list` / `?action=post` | 公开：留言列表/发表 |
-| `api/wall.php` | `?action=admin_list` / `?action=audit` / `?action=edit` / `?action=delete` | 管理：审核/编辑/删除 |
-
-管理接口需请求头 `X-Admin-Token`。
-
-### 数据库
-
-默认 SQLite（零配置），可切换 MySQL。
-
-- `api/site.db` — 新闻 + 活动 + 作品 + 服务器（运行期自动生成）
-- `api/wall.db` — 留言墙（运行期自动生成）
-
-### 环境变量
+创建 `.env` 或在服务器面板中设置：
 
 | 变量 | 必填 | 说明 |
 |------|------|------|
-| `ADMIN_TOKEN` | 是 | 统一管理后台令牌 |
-| `SITE_DB_DRIVER` | 否 | `sqlite`（默认）/ `mysql` |
-| `SITE_DB_HOST/PORT/NAME/USER/PASS` | 否 | site.db MySQL 连接参数 |
-| `WALL_DB_DRIVER` | 否 | `sqlite`（默认）/ `mysql` |
-| `WALL_DB_HOST/PORT/NAME/USER/PASS` | 否 | wall.db MySQL 连接参数 |
-| `WALL_ADMIN_TOKEN` | 否 | 留言墙管理令牌（兼容，优先读 `ADMIN_TOKEN`） |
+| `ADMIN_TOKEN` | 是 | 管理后台登录令牌（请使用强随机字符串） |
+| `SITE_DB_DRIVER` | 否 | `sqlite`（默认）或 `mysql` |
+| `SITE_DB_HOST/PORT/NAME/USER/PASS` | 否 | MySQL 连接参数（driver=mysql 时必填） |
+| `WALL_DB_DRIVER` | 否 | `sqlite`（默认）或 `mysql` |
+| `WALL_DB_HOST/PORT/NAME/USER/PASS` | 否 | 留言墙 MySQL 连接参数 |
+| `WALL_ADMIN_TOKEN` | 否 | 留言墙专用令牌（兼容，优先读 `ADMIN_TOKEN`） |
 | `MODERATION_API_KEY` | 否 | 硅基流动 API Key，启用留言 AI 审核 |
 | `MODERATION_MODEL` | 否 | 审核模型，默认 `Qwen/Qwen3.5-4B` |
 
-## 数据迁移
-
-从旧版 Markdown 文件 + data.js 迁移到数据库：
+生成随机令牌：
 
 ```bash
-# 1. 导出 data.js 中的活动数据（如需要）
+openssl rand -hex 32
+```
+
+### 2. 上传文件
+
+将整个项目目录上传到服务器 Web 根目录（或子目录）。
+
+确保 `api/` 目录可写（SQLite 需要创建 `.db` 文件）：
+
+```bash
+chmod -R 755 api/
+chown -R www-data:www-data api/   # Debian/Ubuntu
+# chown -R nginx:nginx api/       # CentOS + Nginx
+```
+
+### 3. 配置 Web 服务器
+
+#### Nginx
+
+```nginx
+server {
+    listen 80;
+    server_name uemcraft.cn;
+    root /var/www/uemcraft;
+    index index.html index.php;
+
+    # 新闻路径式 URL 重写
+    location /news/ {
+        try_files $uri $uri/ /news/index.php?slug=$uri&$args;
+    }
+
+    # PHP 处理
+    location ~ \.php$ {
+        fastcgi_pass unix:/run/php/php8.2-fpm.sock;  # 按实际 PHP 版本调整
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    # 禁止访问数据库文件和内部文件
+    location ~ /\.(db|env|htaccess) {
+        deny all;
+    }
+
+    # 禁止直接访问 api/ 目录列表
+    location /api/ {
+        if (!-f $request_filename) { return 404; }
+    }
+}
+```
+
+#### Apache（.htaccess）
+
+在网站根目录创建或编辑 `.htaccess`：
+
+```apache
+RewriteEngine On
+
+# 新闻路径式 URL 重写
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^news/([a-zA-Z0-9_-]+)/?$ news/index.php?slug=$1 [L,QSA]
+
+# 禁止访问数据库文件
+<FilesMatch "\.(db|env)$">
+    Require all denied
+</FilesMatch>
+
+# 禁止目录浏览
+Options -Indexes
+```
+
+确保 `mod_rewrite` 已启用：
+
+```bash
+sudo a2enmod rewrite
+sudo systemctl restart apache2
+```
+
+#### 宝塔面板
+
+1. **添加站点**：宝塔面板 → 网站 → 添加站点 → 填写域名、根目录
+2. **PHP 版本**：网站设置 → PHP 版本 → 选择 PHP 7.4+
+3. **伪静态**：网站设置 → 伪静态 → 选择「自定义」，添加：
+
+```nginx
+location /news/ {
+    if (!-e $request_filename) {
+        rewrite ^/news/([a-zA-Z0-9_-]+)/?$ /news/index.php?slug=$1 last;
+    }
+}
+```
+
+4. **环境变量**：网站设置 → PHP 管理 → 配置文件 → 在 `php.ini` 末尾添加：
+
+```ini
+env[ADMIN_TOKEN] = 你的令牌
+```
+
+或使用宝塔的「PHP 配置」→「环境变量」功能。
+
+5. **目录权限**：确保 `api/` 目录归属为 `www:www`
+
+### 4. 配置 HTTPS（推荐）
+
+```bash
+# 宝塔面板：网站设置 → SSL → Let's Encrypt 一键申请
+
+# 或 certbot（Nginx）
+sudo certbot --nginx -d uemcraft.cn
+
+# 或 certbot（Apache）
+sudo certbot --apache -d uemcraft.cn
+```
+
+### 5. 登录管理后台
+
+访问 `/admin/login.html`，输入 `ADMIN_TOKEN` 对应的令牌即可开始管理内容。
+
+首次访问 API 端点时，SQLite 数据库（`api/site.db`、`api/wall.db`）会自动创建并建表，无需手动初始化。
+
+### Nginx + PHP-FPM 一键部署脚本（Debian/Ubuntu）
+
+```bash
+#!/bin/bash
+# 安装 Nginx + PHP + SQLite
+apt update && apt install -y nginx php-fpm php-sqlite3 php-mbstring certbot python3-certbot-nginx
+
+# 设置项目目录
+SITE_DIR=/var/www/uemcraft
+mkdir -p $SITE_DIR
+# cp -r /path/to/project/* $SITE_DIR/
+chown -R www-data:www-data $SITE_DIR/api/
+
+# 写入 Nginx 配置
+cat > /etc/nginx/sites-available/uemcraft <<'EOF'
+server {
+    listen 80;
+    server_name uemcraft.cn;
+    root /var/www/uemcraft;
+    index index.html index.php;
+    location /news/ {
+        try_files $uri $uri/ /news/index.php?slug=$uri&$args;
+    }
+    location ~ \.php$ {
+        fastcgi_pass unix:/run/php/php*-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+    location ~ /\.(db|env) { deny all; }
+}
+EOF
+
+ln -sf /etc/nginx/sites-available/uemcraft /etc/nginx/sites-enabled/
+nginx -t && systemctl reload nginx
+
+# 申请 HTTPS
+certbot --nginx -d uemcraft.cn --non-interactive --agree-tos -m admin@uemcraft.cn
+
+echo "部署完成！设置环境变量 ADMIN_TOKEN 后访问 /admin/login.html"
+```
+
+## 数据迁移
+
+从旧版 Markdown + data.js 迁移到数据库：
+
+```bash
+# 导出 data.js 中的活动数据
 node -e "
 const fs = require('fs');
 const content = fs.readFileSync('js/data.js', 'utf8');
@@ -172,161 +239,12 @@ if (match) {
 }
 "
 
-# 2. 运行迁移（SQLite）
+# 运行迁移
 php scripts/migrate-to-db.php
 
-# 或 MySQL
+# MySQL
 SITE_DB_DRIVER=mysql SITE_DB_NAME=uemcraft SITE_DB_USER=root SITE_DB_PASS=密码 php scripts/migrate-to-db.php
 ```
-
-## 设计系统
-
-- **风格**："像素现代" — 零圆角硬矩形、硬阴影、像素网格纹理
-- **配色**：CSS 自定义属性定义于 `tokens.css`，支持亮色/深色主题
-- **主题色**：`#213d87`（深蓝）
-- **字体**：Noto Sans SC（中文）+ Fusion Pixel（英文等宽）+ Minecraft AE（MOTD 展示）
-- **图标**：iconfont 字体图标
-- **外链标识**：导航栏 `target="_blank"` 链接自动追加 `↗` 角标
-- **活动列表**：交替图文布局（左图右文 / 右图左文），图片 hover 缩放
-
-### 共享组件（components.js）
-
-所有页面通过 `components.js` 统一注入导航栏和页脚，避免重复 HTML。使用 IIFE + `document.write()` 同步写入 DOM，确保后续 `defer` 脚本（`nav.js`、`theme.js` 等）能立即查询到元素。
-
-**加载方式**：不带 `defer` / `async` 的同步脚本，放在 `</main>` 之后、`defer` 脚本之前。
-
-```
-</main>
-<script src="/js/components.js"></script>    ← 同步执行，注入 header + footer
-<script defer src="/js/nav.js"></script>      ← DOMContentLoaded 时查询元素
-```
-
-**渲染内容**：
-
-- **导航栏**：品牌 logo + 桌面导航（含下拉菜单）+ 设置面板（主题切换 + 纹理选择）+ 汉堡按钮 + 移动端全屏导航
-- **页脚**：四列网格（品牌信息 / 快速链接 / 联系方式 / 相关链接）+ 底部版权 + ICP 备案 + 回到顶部按钮
-
-**导航高亮**：通过 `currentPath()` 获取当前路径，匹配 `NAV_ITEMS` 中的 `match` 数组，自动为当前页面链接添加 `.is-active` 类。
-
-**使用方式**：HTML 中只需一行 `<script src="/js/components.js"></script>`，无需手动编写导航和页脚 HTML。
-
-### 页面跳转动画（page-transition.js）
-
-所有页面加载 `page-transition.js`，提供统一的跳转过渡体验，包含三个视觉层：
-
-**1. GitHub 风格顶部进度条**
-
-点击内部链接时，在页面顶部显示渐进式进度条。通过 `sessionStorage('pt-navigating')` 标记跳转状态，新页面加载时自动收尾动画。进度条模拟加载过程（随机步进，上限 85%），`window.load` 后完成剩余部分。
-
-**2. 帷幕遮罩**
-
-页面跳转时显示左右合拢的帷幕效果（`.page-transition-overlay`），中心展示加载动画（logo + "加载中…" 文字），500ms 后执行跳转。
-
-**3. 全屏像素涟漪（Canvas2D）**
-
-帷幕激活期间，在遮罩层上用 Canvas2D 绘制从中心扩散的像素化圆形涟漪：
-
-- **渲染**：`arc()` 绘制圆形路径，`strokeStyle` 透明度随半径增大线性衰减
-- **像素化**：Canvas 尺寸按 `pixelScale=16` 缩小，CSS 放大 + `image-rendering: pixelated` 实现像素风格
-- **多层叠加**：每 1500ms 生成新涟漪，形成持续扩散的视觉效果
-- **动画参数**：120 帧完成一次扩散，目标半径为画布 60%，透明度按 `(1-progress)^1.5` 衰减
-
-**链接拦截逻辑**：拦截所有同源内部链接（排除 `#` 锚点、`mailto:`、`tel:`、`target="_blank"`、下载链接、API 请求），触发完整过渡动画后跳转。
-
-### 服务器状态卡片
-
-首页服务器区域（`#serverSection`）由 `js/server.js` 动态渲染，数据来自 `/api/servers.php`，状态查询外部 MC 查询 API。
-
-卡片结构：头部（favicon + 服务器名 + 在线/离线徽章 + 地址复制）→ MOTD 区域（Minecraft 像素字体，支持 § 颜色代码）→ 统计底栏（在线人数 / 延迟 / 版本）。左侧彩色竖线标识状态（绿=在线，红=离线）。
-
-## 本地预览
-
-```bash
-# PHP 内置服务器（推荐，支持 API）
-php -S localhost:8080
-
-# 或 Node.js
-npx serve .
-```
-
-然后访问 `http://localhost:8080`。
-
-## 部署
-
-1. 将全部文件部署到支持 PHP 的服务器
-2. 设置环境变量 `ADMIN_TOKEN`（管理后台令牌）
-3. 可选：设置 MySQL 相关环境变量
-4. 配置 Apache URL 重写（见下方）
-5. 访问 `/admin/login.html` 登录管理后台
-
-**PHP 要求**：PHP 7.4+，PDO + SQLite3 或 PDO + MySQL
-
-可选平台：
-- **宝塔面板** — 上传文件，配置 PHP + Nginx
-- **VPS** — Nginx + PHP-FPM
-- **虚拟主机** — 上传文件，确保 PHP 可执行
-
-> **注意**：纯静态托管（GitHub Pages 等）无法运行 PHP 后端。数据库文件（`api/*.db`）为运行期自动生成，勿提交。
-
-### Apache URL 重写配置
-
-新闻详情页使用路径式 URL（`/news/{slug}`），需要 Apache URL 重写支持。
-
-#### 方式一：.htaccess（推荐）
-
-在网站根目录创建 `.htaccess` 文件：
-
-```apache
-RewriteEngine On
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^news/([a-zA-Z0-9_-]+)/?$ news/index.php?slug=$1 [L,QSA]
-```
-
-#### 方式二：Apache 配置文件
-
-如果无法使用 `.htaccess`，在 Apache 配置文件（如 `httpd.conf` 或虚拟主机配置）中添加：
-
-```apache
-<Directory "/path/to/your/website">
-    RewriteEngine On
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^news/([a-zA-Z0-9_-]+)/?$ news/index.php?slug=$1 [L,QSA]
-</Directory>
-```
-
-#### 方式三：宝塔面板
-
-1. 进入宝塔面板 → 网站 → 设置 → 伪静态
-2. 选择「自定义」规则
-3. 添加以下内容：
-
-```nginx
-location /news/ {
-    if (!-e $request_filename) {
-        rewrite ^/news/([a-zA-Z0-9_-]+)/?$ /news/index.php?slug=$1 last;
-    }
-}
-```
-
-#### Nginx 配置
-
-如果使用 Nginx，在 `server` 块中添加：
-
-```nginx
-location /news/ {
-    try_files $uri $uri/ /news/index.php?slug=$uri;
-    rewrite ^/news/([a-zA-Z0-9_-]+)/?$ /news/index.php?slug=$1 last;
-}
-```
-
-### URL 格式
-
-配置完成后，新闻 URL 格式为：
-
-- 列表页：`/news/`
-- 详情页：`/news/{slug}`（如 `/news/welcome-to-uemcraft`）
 
 ## 相关链接
 

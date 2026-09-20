@@ -1835,6 +1835,15 @@ a.works-card { text-decoration:none; color:inherit; }
 .event-list-item.is-even {
   flex-direction:row-reverse;
 }
+.event-list-item.is-even .event-list-body {
+  text-align:right;
+}
+.event-list-item.is-even .event-list-meta {
+  justify-content:flex-end;
+}
+.event-list-item.is-even .event-list-actions {
+  text-align:right;
+}
 .event-list-img {
   flex:0 0 45%;
   min-width:0;
@@ -1911,6 +1920,12 @@ a.works-card { text-decoration:none; color:inherit; }
   .event-list-item,
   .event-list-item.is-even {
     flex-direction:column;
+  }
+  .event-list-item.is-even .event-list-body {
+    text-align:left;
+  }
+  .event-list-item.is-even .event-list-meta {
+    justify-content:flex-start;
   }
   .event-list-img {
     flex:none;
