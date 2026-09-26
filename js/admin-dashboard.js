@@ -9,8 +9,8 @@
   var Auth = window.UEMAdminAuth;
   if (!Auth) return;
 
-  // DOM 检测：仅在仪表盘页运行
-  if (!document.querySelector('.admin-dashboard-grid')) return;
+  // DOM 检测：仅在仪表盘页运行（页头改为 .admin-page-header 后，仪表盘容器是 .admin-dashboard-list）
+  if (!document.querySelector('.admin-dashboard-list')) return;
 
   Auth.requireAuth().then(function () {
     // 新闻统计

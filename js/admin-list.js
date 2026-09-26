@@ -11,7 +11,7 @@
 
   // 跳过登录页和仪表盘（由各自模块处理）
   if (document.getElementById('loginForm')) return;
-  if (document.querySelector('.admin-dashboard-grid') && !document.getElementById('newsList')) return;
+  if (document.querySelector('.admin-dashboard-list') && !document.getElementById('newsList')) return;
 
   // 需要认证
   Auth.requireAuth().then(function () {
