@@ -341,11 +341,12 @@
 
 /* ---- Site Footer ---- */
 /* 两段式：左侧品牌区 / 右侧链接分区，底部为居中单列备案行 */
+/* 不设 margin-top：与正文之间不留间距，靠 border-top 直接分隔。
+   末段区块的底部内距也已归零（见 base.css 的 main > .section:last-child）。 */
 .site-footer {
   background:var(--c-surface);
   border-top:2px solid var(--c-border);
   padding-block:var(--space-2xl) var(--space-lg);
-  margin-top:var(--space-3xl);
 }
 .footer-grid {
   display:grid;

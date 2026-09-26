@@ -149,6 +149,14 @@ html {
 .section-sm {
   padding-block:var(--space-2xl);
 }
+/* 末段区块不带底部内距：与页脚之间不留间距，直接由页脚的上边框分隔。
+   原来 .section 的 80px 底部内距会和 .site-footer 的 80px 上外边距叠加，
+   在页脚前堆出 160px 空白（gallery 用 .section-sm 是 128px，docs/404 是 80px），
+   同一站内还是三种值。 */
+main > .section:last-child,
+main > .section-sm:last-child {
+  padding-bottom:0;
+}
 .section-alt {
   background:var(--c-bg-section-alt);
 }
