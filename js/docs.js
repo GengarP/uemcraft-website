@@ -1,6 +1,6 @@
 /* ============================================================
-   docs.js — 指南与文档页面逻辑
-   处理文档列表页和详情页的内容加载与渲染。
+   docs.js — 指南与文档阅读页逻辑
+   文档列表与页内目录都渲染在左侧边栏；未选择文档时正文区保留占位提示。
    ============================================================ */
 (function () {
   'use strict';
@@ -26,6 +26,83 @@
       wrapper.className = 'docs-table-wrapper';
       table.parentNode.insertBefore(wrapper, table);
       wrapper.appendChild(table);
+    });
+  }
+
+  /* ---- 图片：补 <figure> 说明 + 点击放大 ---- */
+  var lightboxEl = null;
+
+  function ensureLightbox() {
+    if (lightboxEl) return lightboxEl;
+
+    lightboxEl = document.createElement('div');
+    lightboxEl.className = 'docs-lightbox';
+    lightboxEl.setAttribute('role', 'dialog');
+    lightboxEl.setAttribute('aria-modal', 'true');
+    lightboxEl.setAttribute('aria-hidden', 'true');
+    lightboxEl.innerHTML =
+      '<button type="button" class="docs-lightbox-close" aria-label="关闭">×</button>' +
+      '<img src="" alt="">';
+    document.body.appendChild(lightboxEl);
+
+    function close() {
+      lightboxEl.classList.remove('is-open');
+      lightboxEl.setAttribute('aria-hidden', 'true');
+      document.documentElement.style.overflow = '';
+    }
+
+    lightboxEl.querySelector('.docs-lightbox-close').addEventListener('click', close);
+    lightboxEl.addEventListener('click', function (e) {
+      // 点击图片本身不关闭，点击背景关闭
+      if (e.target !== lightboxEl.querySelector('img')) close();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && lightboxEl.classList.contains('is-open')) close();
+    });
+
+    return lightboxEl;
+  }
+
+  function enhanceImages(container) {
+    var imgs = container.querySelectorAll('img');
+    imgs.forEach(function (img) {
+      // 图片加载失败时不显示破图占位，避免误以为内容缺失
+      img.loading = 'lazy';
+      img.addEventListener('error', function () {
+        img.classList.add('is-broken');
+      });
+
+      // 有 alt 时包成 <figure>，把 alt 作为图注显示
+      var alt = img.getAttribute('alt');
+      if (alt && !img.closest('figure') && !img.closest('a')) {
+        var figure = document.createElement('figure');
+        img.parentNode.insertBefore(figure, img);
+        figure.appendChild(img);
+        var cap = document.createElement('figcaption');
+        cap.textContent = alt;
+        figure.appendChild(cap);
+      }
+
+      // 点击放大
+      if (!img.closest('a')) {
+        img.classList.add('is-zoomable');
+        img.addEventListener('click', function () {
+          var lb = ensureLightbox();
+          var lbImg = lb.querySelector('img');
+          lbImg.src = img.currentSrc || img.src;
+          lbImg.alt = alt || '';
+          lb.classList.add('is-open');
+          lb.setAttribute('aria-hidden', 'false');
+          document.documentElement.style.overflow = 'hidden';
+        });
+      }
+    });
+  }
+
+  /* ---- 代码块内的空行/超长行不再溢出 ---- */
+  function tidyCodeBlocks(container) {
+    container.querySelectorAll('pre').forEach(function (pre) {
+      pre.setAttribute('tabindex', '0');
     });
   }
 
@@ -117,28 +194,31 @@
     container.innerHTML = html;
   }
 
-  /* ---- TOC 生成 ---- */
+  /* ---- 页内目录（渲染到左侧边栏下方） ---- */
   function buildTOC(contentEl) {
     var tocNav = document.getElementById('docsTocNav');
-    if (!tocNav) return;
+    var tocBox = document.getElementById('docsSidebarToc');
+    if (!tocNav || !tocBox) return;
 
     var headings = contentEl.querySelectorAll('h2, h3');
     if (headings.length === 0) {
-      var tocAside = document.getElementById('docsToc');
-      if (tocAside) tocAside.style.display = 'none';
+      tocBox.hidden = true;
+      tocNav.innerHTML = '';
       return;
     }
+    headings.forEach(function (h, i) {
+      if (!h.id) h.id = 'heading-' + i;
+    });
+    tocBox.hidden = false;
 
     var html = '';
-    headings.forEach(function (h, i) {
-      var id = h.id || ('heading-' + i);
-      h.id = id;
+    headings.forEach(function (h) {
       var level = h.tagName === 'H3' ? ' docs-toc-link-h3' : '';
-      html += '<a href="#' + id + '" class="docs-toc-link' + level + '">' + escapeHtml(h.textContent) + '</a>';
+      html += '<a href="#' + h.id + '" class="docs-toc-link' + level + '">' + escapeHtml(h.textContent) + '</a>';
     });
     tocNav.innerHTML = html;
 
-    // Scroll spy
+    // 滚动高亮当前小节
     var links = tocNav.querySelectorAll('.docs-toc-link');
     function onScroll() {
       var scrollY = window.scrollY + 120;
@@ -147,14 +227,14 @@
         if (h.offsetTop <= scrollY) current = h;
       });
       links.forEach(function (link) {
-        link.classList.toggle('is-active', current && link.getAttribute('href') === '#' + current.id);
+        link.classList.toggle('is-active', !!current && link.getAttribute('href') === '#' + current.id);
       });
     }
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
   }
 
-  /* ---- 侧边栏移动端折叠 ---- */
+  /* ---- 侧边栏移动端折叠（文档列表 + 本页目录一起收起） ---- */
   function initSidebarToggle() {
     var toggle = document.getElementById('docsSidebarToggle');
     var sidebar = document.getElementById('docsSidebar');
@@ -165,9 +245,9 @@
       toggle.setAttribute('aria-expanded', expanded);
     });
 
-    // 点击链接后关闭
+    // 点击任意链接（文档或目录）后收起
     sidebar.addEventListener('click', function (e) {
-      if (e.target.classList.contains('docs-sidebar-link')) {
+      if (e.target.closest('.docs-sidebar-link, .docs-toc-link')) {
         sidebar.classList.remove('is-open');
         toggle.setAttribute('aria-expanded', 'false');
       }
@@ -176,82 +256,54 @@
 
   /* ---- 初始化 ---- */
   function init() {
+    var body = document.getElementById('docsBody');
+    if (!body) return;
+
     var currentSlug = window.__DOCS_SLUG__ || '';
+    initSidebarToggle();
 
-    // 文档详情页
-    if (document.getElementById('docsBody')) {
-      if (!currentSlug) return;
+    // 无论有没有 slug，左侧文档列表都要渲染
+    fetchDocsList().then(function (docs) {
+      renderSidebar(docs, currentSlug);
 
-      // 加载侧边栏 + 详情
-      Promise.all([
-        fetchDocsList(),
-        fetchDocBySlug(currentSlug)
-      ]).then(function (results) {
-        var docs = results[0];
-        var doc = results[1];
+      // 未选择文档：保留 PHP 输出的占位提示
+      if (!currentSlug) return null;
 
-        renderSidebar(docs, currentSlug);
-
+      return fetchDocBySlug(currentSlug).then(function (doc) {
         if (!doc) {
           document.title = '文档不存在 — 指南与文档 — UEMCraft';
-          document.getElementById('docsBody').innerHTML = '<p>文档不存在，<a href="/docs/">返回文档列表</a>。</p>';
+          var crumb = document.getElementById('docsCrumb');
+          if (crumb) crumb.textContent = '文档不存在';
+          body.innerHTML = '<p>该文档不存在或尚未发布，请在左侧重新选择。</p>';
           return;
         }
 
         document.title = doc.title + ' — 指南与文档 — UEMCraft';
-        var crumb = document.getElementById('docsCrumb');
-        if (crumb) crumb.textContent = doc.title;
+        var crumbEl = document.getElementById('docsCrumb');
+        if (crumbEl) crumbEl.textContent = doc.title;
 
-        var body = document.getElementById('docsBody');
-        if (typeof marked !== 'undefined') {
-          marked.setOptions({ gfm: true, breaks: false, headerIds: true, mangle: false, sanitize: false });
-          body.innerHTML = marked.parse(doc.content || '');
-          wrapTables(body);
-          enhanceCodeBlocks(body);
-        } else {
+        if (typeof marked === 'undefined') {
           body.innerHTML = '<p>Markdown 引擎加载失败，请刷新重试。</p>';
-        }
-
-        buildTOC(body);
-        renderFooterNav(docs, currentSlug);
-      }).catch(function () {
-        var body = document.getElementById('docsBody');
-        if (body) body.innerHTML = '<p>加载文档失败，请刷新重试。</p>';
-      });
-
-      initSidebarToggle();
-      return;
-    }
-
-    // 文档首页
-    var indexGrid = document.getElementById('docsIndexGrid');
-    if (indexGrid) {
-      fetchDocsList().then(function (docs) {
-        if (docs.length === 0) {
-          indexGrid.innerHTML = '<div class="docs-index-empty">暂无文档，敬请期待。</div>';
           return;
         }
 
-        var grouped = groupByCategory(docs);
-        var html = '';
+        marked.setOptions({ gfm: true, breaks: false, headerIds: true, mangle: false, sanitize: false });
+        body.innerHTML = marked.parse(doc.content || '');
+        wrapTables(body);
+        enhanceImages(body);
+        tidyCodeBlocks(body);
+        enhanceCodeBlocks(body);
 
-        grouped.order.forEach(function (cat) {
-          html += '<div class="docs-index-category">';
-          html += '<h3 class="docs-index-cat-title">' + escapeHtml(cat) + '</h3>';
-          html += '<div class="docs-index-cat-list">';
-          grouped.groups[cat].forEach(function (doc) {
-            html += '<a href="/docs/' + encodeURIComponent(doc.slug) + '" class="docs-index-card">';
-            html += '<span class="docs-index-card-title">' + escapeHtml(doc.title) + '</span>';
-            html += '</a>';
-          });
-          html += '</div></div>';
-        });
-
-        indexGrid.innerHTML = html;
-      }).catch(function () {
-        indexGrid.innerHTML = '<p style="color:var(--c-text-muted);">加载文档列表失败，请刷新重试。</p>';
+        buildTOC(body);
+        renderFooterNav(docs, currentSlug);
       });
-    }
+    }).catch(function () {
+      var nav = document.getElementById('docsSidebarNav');
+      if (nav) nav.innerHTML = '<div class="docs-sidebar-empty">加载文档列表失败，请刷新重试。</div>';
+      if (currentSlug) {
+        body.innerHTML = '<p>加载文档失败，请刷新重试。</p>';
+      }
+    });
   }
 
   document.addEventListener('DOMContentLoaded', init);

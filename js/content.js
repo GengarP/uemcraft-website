@@ -104,7 +104,7 @@ function renderNewsEmptyCard() {
   var div = document.createElement('div');
   div.className = 'news-card news-card-empty';
   div.setAttribute('aria-hidden', 'true');
-  div.innerHTML = '<div class="news-date">·····</div><div class="news-title">敬请期待</div><div class="news-excerpt">更多动态即将发布</div>';
+  div.innerHTML = '<div class="news-date">-----</div><div class="news-title">敬请期待</div><div class="news-excerpt">更多动态即将发布</div>';
   return div;
 }
 

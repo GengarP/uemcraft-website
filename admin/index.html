@@ -31,85 +31,120 @@
   <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
-<script src="/js/components-header.js"></script>
+<script src="/js/components-admin.js"></script>
 
 <a href="#main" class="skip-link">跳转到主内容</a>
 
 
 
-<!-- ====== Admin Nav ====== -->
-<div class="admin-nav">
-  <div class="container admin-nav-inner">
-    <a href="index.html" class="admin-nav-link is-active">仪表盘</a>
-    <a href="news.html" class="admin-nav-link">新闻管理</a>
-    <a href="events.html" class="admin-nav-link">活动管理</a>
-    <a href="gallery.html" class="admin-nav-link">作品管理</a>
-    <a href="docs.html" class="admin-nav-link">文档管理</a>
-    <a href="servers.html" class="admin-nav-link">服务器管理</a>
-    <a href="images.html" class="admin-nav-link">图片管理</a>
-    <a href="wall.html" class="admin-nav-link">留言墙管理</a>
-    <button class="btn btn-ghost btn-sm" id="logoutBtn">退出登录</button>
-  </div>
-</div>
 
 <!-- ====== Main ====== -->
 <main id="main">
 
-<section class="page-hero">
-  <div class="container">
-    <h1>管理后台</h1>
-    <p class="hero-sub">UEMCraft 内容管理系统</p>
-    <nav class="breadcrumb" aria-label="面包屑">
-      <a href="/index.html">首页</a> <span>/</span> <span>管理后台</span>
-    </nav>
-  </div>
-</section>
+<div class="admin-page-header">
+  <h1>管理后台</h1>
+  <p class="hero-sub">UEMCraft 内容管理系统</p>
+  <nav class="breadcrumb" aria-label="面包屑">
+    <a href="/index.html">首页</a> <span>/</span> <span>管理后台</span>
+  </nav>
+</div>
 
 <section class="section">
   <div class="container">
-    <div class="admin-dashboard-grid">
-      <a href="news.html" class="admin-dashboard-card">
-        <div class="admin-dashboard-card-icon">
-          <span class="icon-block" aria-hidden="true">新</span>
-        </div>
-        <h3>新闻管理</h3>
-        <p class="text-muted">已发布 <strong id="newsPublished">-</strong> 篇 · 草稿 <strong id="newsDraft">-</strong> 篇</p>
+    <div class="admin-dashboard-list">
+
+      <a href="news.html" class="admin-dashboard-row">
+        <span class="admin-dashboard-row-icon" aria-hidden="true">新</span>
+        <span class="admin-dashboard-row-main">
+          <span class="admin-dashboard-row-name">新闻管理</span>
+          <span class="admin-dashboard-row-desc">创建、编辑、发布新闻文章</span>
+        </span>
+        <span class="admin-dashboard-row-stats">
+          <span class="admin-stat">已发布 <strong id="newsPublished">-</strong> 篇</span>
+          <span class="admin-meta-sep" aria-hidden="true"></span>
+          <span class="admin-stat">草稿 <strong id="newsDraft">-</strong> 篇</span>
+        </span>
+        <span class="admin-dashboard-row-arrow" aria-hidden="true">→</span>
       </a>
-      <a href="events.html" class="admin-dashboard-card">
-        <div class="admin-dashboard-card-icon">
-          <span class="icon-block icon-block--accent2" aria-hidden="true">活</span>
-        </div>
-        <h3>活动管理</h3>
-        <p class="text-muted">近期 <strong id="eventsUpcoming">-</strong> 个 · 往期 <strong id="eventsPast">-</strong> 个</p>
+
+      <a href="events.html" class="admin-dashboard-row">
+        <span class="admin-dashboard-row-icon" aria-hidden="true">活</span>
+        <span class="admin-dashboard-row-main">
+          <span class="admin-dashboard-row-name">活动管理</span>
+          <span class="admin-dashboard-row-desc">发布活动、维护状态与精选</span>
+        </span>
+        <span class="admin-dashboard-row-stats">
+          <span class="admin-stat">近期 <strong id="eventsUpcoming">-</strong> 个</span>
+          <span class="admin-meta-sep" aria-hidden="true"></span>
+          <span class="admin-stat">往期 <strong id="eventsPast">-</strong> 个</span>
+        </span>
+        <span class="admin-dashboard-row-arrow" aria-hidden="true">→</span>
       </a>
-      <a href="gallery.html" class="admin-dashboard-card">
-        <div class="admin-dashboard-card-icon">
-          <span class="icon-block icon-block--accent4" aria-hidden="true">作</span>
-        </div>
-        <h3>作品管理</h3>
-        <p class="text-muted">已发布 <strong id="worksPublished">-</strong> 件 · 草稿 <strong id="worksDraft">-</strong> 件</p>
+
+      <a href="gallery.html" class="admin-dashboard-row">
+        <span class="admin-dashboard-row-icon" aria-hidden="true">作</span>
+        <span class="admin-dashboard-row-main">
+          <span class="admin-dashboard-row-name">作品管理</span>
+          <span class="admin-dashboard-row-desc">社员作品、相册与下载链接</span>
+        </span>
+        <span class="admin-dashboard-row-stats">
+          <span class="admin-stat">已发布 <strong id="worksPublished">-</strong> 件</span>
+          <span class="admin-meta-sep" aria-hidden="true"></span>
+          <span class="admin-stat">草稿 <strong id="worksDraft">-</strong> 件</span>
+        </span>
+        <span class="admin-dashboard-row-arrow" aria-hidden="true">→</span>
       </a>
-      <a href="servers.html" class="admin-dashboard-card">
-        <div class="admin-dashboard-card-icon">
-          <span class="icon-block icon-block--accent4" aria-hidden="true">服</span>
-        </div>
-        <h3>服务器管理</h3>
-        <p class="text-muted">已配置 <strong id="serverCount">-</strong> 台服务器</p>
+
+      <a href="docs.html" class="admin-dashboard-row">
+        <span class="admin-dashboard-row-icon" aria-hidden="true">文</span>
+        <span class="admin-dashboard-row-main">
+          <span class="admin-dashboard-row-name">文档管理</span>
+          <span class="admin-dashboard-row-desc">指南与文档、分类与排序</span>
+        </span>
+        <span class="admin-dashboard-row-stats">
+          <span class="admin-stat">已发布 <strong id="docsPublished">-</strong> 篇</span>
+          <span class="admin-meta-sep" aria-hidden="true"></span>
+          <span class="admin-stat">草稿 <strong id="docsDraft">-</strong> 篇</span>
+        </span>
+        <span class="admin-dashboard-row-arrow" aria-hidden="true">→</span>
       </a>
-      <a href="images.html" class="admin-dashboard-card">
-        <div class="admin-dashboard-card-icon">
-          <span class="icon-block icon-block--accent3" aria-hidden="true">图</span>
-        </div>
-        <h3>图片管理</h3>
-        <p class="text-muted">浏览 · 上传 · 管理图片资源</p>
+
+      <a href="servers.html" class="admin-dashboard-row">
+        <span class="admin-dashboard-row-icon" aria-hidden="true">服</span>
+        <span class="admin-dashboard-row-main">
+          <span class="admin-dashboard-row-name">服务器管理</span>
+          <span class="admin-dashboard-row-desc">服务器地址、版本与状态</span>
+        </span>
+        <span class="admin-dashboard-row-stats">
+          <span class="admin-stat">已配置 <strong id="serverCount">-</strong> 台</span>
+        </span>
+        <span class="admin-dashboard-row-arrow" aria-hidden="true">→</span>
       </a>
-      <a href="wall.html" class="admin-dashboard-card">
-        <div class="admin-dashboard-card-icon">
-          <span class="icon-block icon-block--accent5" aria-hidden="true">墙</span>
-        </div>
-        <h3>留言墙管理</h3>
-        <p class="text-muted">审核 · 编辑 · 删除留言</p>
+
+      <a href="images.html" class="admin-dashboard-row">
+        <span class="admin-dashboard-row-icon" aria-hidden="true">图</span>
+        <span class="admin-dashboard-row-main">
+          <span class="admin-dashboard-row-name">图片管理</span>
+          <span class="admin-dashboard-row-desc">浏览、上传、重命名图片资源</span>
+        </span>
+        <span class="admin-dashboard-row-stats">
+          浏览 / 上传 / 删除
+        </span>
+        <span class="admin-dashboard-row-arrow" aria-hidden="true">→</span>
       </a>
+
+      <a href="wall.html" class="admin-dashboard-row">
+        <span class="admin-dashboard-row-icon" aria-hidden="true">墙</span>
+        <span class="admin-dashboard-row-main">
+          <span class="admin-dashboard-row-name">留言墙管理</span>
+          <span class="admin-dashboard-row-desc">审核、编辑、删除留言</span>
+        </span>
+        <span class="admin-dashboard-row-stats">
+          审核 / 编辑 / 删除
+        </span>
+        <span class="admin-dashboard-row-arrow" aria-hidden="true">→</span>
+      </a>
+
     </div>
   </div>
 </section>

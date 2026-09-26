@@ -174,60 +174,7 @@ $iso_date = $article_date ? $article_date . 'T00:00:00+08:00' : '';
 
 </main>
 
-<!-- ====== Footer ====== -->
-<footer class="site-footer" role="contentinfo">
-  <div class="footer-grid">
-    <div class="footer-col">
-      <div class="footer-logo">
-        <img src="/assets/img/logo-256.webp" alt="UEMCraft" width="32" height="32">
-        <span>应急管理大学 Minecraft 同好会</span>
-      </div>
-      <p>以 Minecraft 为平台，建设校园数字复原与创作社区。<br>MUA 成员组织。</p>
-      <div class="footer-badges">
-        <a href="/index.html" class="footer-badge">UEMCraft</a>
-        <a href="https://www.mualliance.cn/" target="_blank" rel="noopener" class="footer-badge">MUA</a>
-      </div>
-    </div>
-    <div class="footer-col">
-      <h4>快速链接</h4>
-      <ul>
-        <li><a href="/index.html">首页</a></li>
-        <li><a href="/about.html">关于我们</a></li>
-        <li><a href="/news/">资讯动态</a></li>
-        <li><a href="/events.html">活动中心</a></li>
-        <li><a href="/gallery/">作品展示</a></li>
-        <li><a href="/docs/">指南与文档</a></li>
-        <li><a href="/wall/">留言墙</a></li>
-        <li><a href="/join.html">加入我们</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <h4>联系方式</h4>
-      <ul>
-        <li><a href="https://qm.qq.com/q/VYDnv3ZJwC" target="_blank" class="footer-contact-link"><span class="iconfont icon-QQ" aria-hidden="true"></span> QQ</a></li>
-        <li><a href="https://pd.qq.com/s/94uyddngr" target="_blank" class="footer-contact-link"><span class="iconfont icon-qqchannel" aria-hidden="true"></span> QQ 频道</a></li>
-        <li><a href="https://space.bilibili.com/3546888496221012" target="_blank" class="footer-contact-link"><span class="iconfont icon-bilibili-fill" aria-hidden="true"></span> Bilibili</a></li>
-        <li><a href="https://v.douyin.com/Q44xZngm3ls/" target="_blank" class="footer-contact-link"><span class="iconfont icon-douyin" aria-hidden="true"></span> 抖音</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <h4>相关链接</h4>
-      <ul>
-        <li><a href="https://www.yitmc.cn" target="_blank" rel="noopener">燕理 MC 玩家创作协会</a></li>
-        <li><a href="https://www.mualliance.cn/" target="_blank" rel="noopener">MUA 高校联盟</a></li>
-        <li><a href="https://www.ncist.edu.cn/" target="_blank" rel="noopener">应急管理大学</a></li>
-      </ul>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <p class="fb-left"><span class="copy-sym">&copy;</span> <span id="year"></span> 应急管理大学 Minecraft 同好会 - UEMCraft</p>
-    <p class="fb-right"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">赣ICP备2026018930号</a></p>
-    <p class="fb-left"><a href="https://www.minecraft.net/zh-hans" target="_blank" rel="noopener">Minecraft</a> 是微软公司的商标 - 本站为社群非商业用途</p>
-    <p class="fb-right"><a href="https://beian.mps.gov.cn/" target="_blank" rel="noopener" class="beian-icon"><img src="/assets/img/备案图标.png" alt="公安备案" style="height:14px;width:auto;">赣公网安备 36072102000273号</a></p>
-  </div>
-</footer>
-
-<button class="back-to-top" aria-label="回到顶部" title="回到顶部">↑</button>
+<script src="/js/components-footer.js"></script>
 
 <!-- Markdown 引擎：marked.js（自托管，零依赖，避免 CDN 阻塞） -->
 <script defer src="/js/marked.umd.js"></script>

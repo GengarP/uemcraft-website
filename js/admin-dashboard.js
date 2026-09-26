@@ -49,6 +49,17 @@
       }
     }).catch(function () {});
 
+    // 文档统计
+    Auth.api('../api/docs.php?action=admin_list&limit=1&status=all').then(function (json) {
+      if (json.success) {
+        var total = json.total || 0;
+        Auth.api('../api/docs.php?action=admin_list&limit=1&status=published').then(function (r) {
+          Auth.setText('docsPublished', r.success ? (r.total || 0) : 0);
+          Auth.setText('docsDraft', total - (r.success ? (r.total || 0) : 0));
+        });
+      }
+    }).catch(function () {});
+
     // 服务器统计
     Auth.api('../api/servers.php?action=admin_list&limit=1').then(function (json) {
       if (json.success) {

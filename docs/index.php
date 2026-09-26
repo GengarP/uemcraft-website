@@ -1,10 +1,11 @@
 <?php
 /**
- * docs/index.php — 指南与文档路由
+ * docs/index.php — 指南与文档阅读页
  *
- * /docs/           → 文档首页（显示分类列表）
- * /docs/{slug}     → 文档详情页
+ * /docs/           → 阅读页，未选择文档时正文区提示「请在左侧选择要阅读的文章」
+ * /docs/{slug}     → 阅读页，加载指定文档
  *
+ * 没有独立的文档列表页；文档列表与本页目录都在左侧边栏，无右侧目录栏。
  * 需要 Apache .htaccess 配置 URL 重写
  */
 
@@ -82,120 +83,50 @@ if ($isDetail) {
 <!-- ====== Main ====== -->
 <main id="main">
 
-<?php if ($isDetail): ?>
-<!-- 文档详情页：VitePress 风格三栏布局 -->
+<!-- 阅读页：左侧边栏（文档列表 + 本页目录） + 正文 -->
 <div class="docs-layout" data-current-slug="<?php echo htmlspecialchars($slug, ENT_QUOTES, 'UTF-8'); ?>">
+
   <!-- 左侧边栏 -->
   <aside class="docs-sidebar" id="docsSidebar">
     <div class="docs-sidebar-header">
       <a href="/docs/" class="docs-sidebar-title">指南与文档</a>
     </div>
     <button class="docs-sidebar-toggle" id="docsSidebarToggle" aria-label="展开目录" aria-expanded="false">
-      <span>目录</span>
+      <span>文档目录</span>
       <span class="docs-sidebar-toggle-icon">▼</span>
     </button>
-    <nav class="docs-sidebar-nav" id="docsSidebarNav">
-      <div class="docs-sidebar-loading">加载中…</div>
-    </nav>
+    <div class="docs-sidebar-scroll" id="docsSidebarScroll">
+      <nav class="docs-sidebar-nav" id="docsSidebarNav" aria-label="文档列表">
+        <div class="docs-sidebar-loading">加载中…</div>
+      </nav>
+      <div class="docs-sidebar-toc" id="docsSidebarToc" hidden>
+        <div class="docs-sidebar-toc-title">本页目录</div>
+        <nav class="docs-toc-nav" id="docsTocNav" aria-label="本页目录"></nav>
+      </div>
+    </div>
   </aside>
 
   <!-- 主内容区 -->
   <article class="docs-content">
     <div class="docs-breadcrumb">
-      <a href="/docs/">指南与文档</a> <span>/</span> <span id="docsCrumb">加载中…</span>
+      <a href="/docs/">指南与文档</a> <span>/</span>
+      <span id="docsCrumb"><?php echo $isDetail ? '加载中…' : '未选择文档'; ?></span>
     </div>
-    <div class="docs-body" id="docsBody"></div>
+    <div class="docs-body" id="docsBody"><?php if (!$isDetail): ?>
+      <div class="docs-empty">
+        <div class="docs-empty-mark" aria-hidden="true">文</div>
+        <p class="docs-empty-title">请在左侧选择要阅读的文章</p>
+        <p class="docs-empty-hint">左侧按分类列出了全部指南与文档。选定后这里显示正文，左侧下方会自动生成本页目录。</p>
+      </div>
+    <?php endif; ?></div>
     <div class="docs-footer-nav" id="docsFooterNav"></div>
   </article>
 
-  <!-- 右侧目录 -->
-  <aside class="docs-toc" id="docsToc">
-    <div class="docs-toc-title">目录</div>
-    <nav class="docs-toc-nav" id="docsTocNav"></nav>
-  </aside>
 </div>
-
-<?php else: ?>
-<!-- 文档首页 -->
-<section class="page-hero">
-  <div class="container">
-    <h1>指南与文档</h1>
-    <p class="hero-sub">服务器规则、新手教程、建筑指南与常见问题</p>
-    <nav class="breadcrumb" aria-label="面包屑">
-      <a href="/index.html">首页</a> <span>/</span> <span>指南与文档</span>
-    </nav>
-  </div>
-</section>
-
-<section class="section section-alt">
-  <div class="container">
-    <div class="section-head reveal">
-      <span class="section-label">DOCUMENTATION</span>
-      <h2>文档列表</h2>
-    </div>
-    <div class="docs-index-grid reveal" id="docsIndexGrid">
-      <div class="docs-index-loading">加载中…</div>
-    </div>
-  </div>
-</section>
-<?php endif; ?>
 
 </main>
 
-<!-- ====== Footer ====== -->
-<footer class="site-footer" role="contentinfo">
-  <div class="footer-grid">
-    <div class="footer-col">
-      <div class="footer-logo">
-        <img src="/assets/img/logo-256.webp" alt="UEMCraft" width="32" height="32">
-        <span>应急管理大学 Minecraft 同好会</span>
-      </div>
-      <p>以 Minecraft 为平台，建设校园数字复原与创作社区。<br>MUA 成员组织。</p>
-      <div class="footer-badges">
-        <a href="/index.html" class="footer-badge">UEMCraft</a>
-        <a href="https://www.mualliance.cn/" target="_blank" rel="noopener" class="footer-badge">MUA</a>
-      </div>
-    </div>
-    <div class="footer-col">
-      <h4>快速链接</h4>
-      <ul>
-        <li><a href="/index.html">首页</a></li>
-        <li><a href="/about.html">关于我们</a></li>
-        <li><a href="/news/">资讯动态</a></li>
-        <li><a href="/events.html">活动中心</a></li>
-        <li><a href="/gallery/">作品展示</a></li>
-        <li><a href="/docs/">指南与文档</a></li>
-        <li><a href="/wall/">留言墙</a></li>
-        <li><a href="/join.html">加入我们</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <h4>联系方式</h4>
-      <ul>
-        <li><a href="https://qm.qq.com/q/VYDnv3ZJwC" target="_blank" class="footer-contact-link"><span class="iconfont icon-QQ" aria-hidden="true"></span> QQ</a></li>
-        <li><a href="https://pd.qq.com/s/94uyddngr" target="_blank" class="footer-contact-link"><span class="iconfont icon-qqchannel" aria-hidden="true"></span> QQ 频道</a></li>
-        <li><a href="https://space.bilibili.com/3546888496221012" target="_blank" class="footer-contact-link"><span class="iconfont icon-bilibili-fill" aria-hidden="true"></span> Bilibili</a></li>
-        <li><a href="https://v.douyin.com/Q44xZngm3ls/" target="_blank" class="footer-contact-link"><span class="iconfont icon-douyin" aria-hidden="true"></span> 抖音</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <h4>相关链接</h4>
-      <ul>
-        <li><a href="https://www.yitmc.cn" target="_blank" rel="noopener">燕理 MC 玩家创作协会</a></li>
-        <li><a href="https://www.mualliance.cn/" target="_blank" rel="noopener">MUA 高校联盟</a></li>
-        <li><a href="https://www.ncist.edu.cn/" target="_blank" rel="noopener">应急管理大学</a></li>
-      </ul>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <p class="fb-left"><span class="copy-sym">&copy;</span> <span id="year"></span> 应急管理大学 Minecraft 同好会 - UEMCraft</p>
-    <p class="fb-right"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">赣ICP备2026018930号</a></p>
-    <p class="fb-left"><a href="https://www.minecraft.net/zh-hans" target="_blank" rel="noopener">Minecraft</a> 是微软公司的商标 - 本站为社群非商业用途</p>
-    <p class="fb-right"><a href="https://beian.mps.gov.cn/" target="_blank" rel="noopener" class="beian-icon"><img src="/assets/img/备案图标.png" alt="公安备案" style="height:14px;width:auto;">赣公网安备 36072102000273号</a></p>
-  </div>
-</footer>
-
-<button class="back-to-top" aria-label="回到顶部" title="回到顶部">↑</button>
+<script src="/js/components-footer.js"></script>
 
 <!-- Markdown 引擎 -->
 <script defer src="/js/marked.umd.js"></script>

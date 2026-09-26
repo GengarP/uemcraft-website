@@ -340,6 +340,7 @@
 .breadcrumb a:hover { text-decoration:underline; }
 
 /* ---- Site Footer ---- */
+/* 两段式：左侧品牌区 / 右侧链接分区，底部为居中单列备案行 */
 .site-footer {
   background:var(--c-surface);
   border-top:2px solid var(--c-border);
@@ -348,11 +349,42 @@
 }
 .footer-grid {
   display:grid;
-  grid-template-columns:1.5fr 1fr 1fr 1fr;
-  gap:var(--space-lg) var(--space-xl);
+  grid-template-columns:minmax(240px,1fr) minmax(0,2.4fr);
+  gap:var(--space-2xl);
   max-width:var(--max-width);
   margin-inline:auto;
   padding-inline:var(--space-lg);
+}
+
+/* 品牌区 */
+.footer-brand {
+  padding-right:var(--space-2xl);
+  border-right:2px solid var(--c-border);
+}
+.footer-brand p,
+.footer-col p,
+.footer-col li {
+  font-size:var(--fs-sm);
+  color:var(--c-text-muted);
+  margin-bottom:var(--space-xs);
+  line-height:1.6;
+}
+.footer-brand p { max-width:32ch; }
+.footer-logo {
+  display:flex;
+  align-items:center;
+  gap:var(--space-sm);
+  margin-bottom:var(--space-md);
+}
+.footer-logo img { width:36px; height:36px; border-radius:0; flex-shrink:0; }
+.footer-logo span { font-weight:700; color:var(--c-heading); font-size:var(--fs-sm); line-height:1.35; }
+.footer-badges { display:flex; gap:var(--space-xs); flex-wrap:wrap; margin-top:var(--space-md); }
+
+/* 链接分区 */
+.footer-links {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:var(--space-lg) var(--space-xl);
 }
 .footer-col h4 {
   font-size:var(--fs-sm);
@@ -361,20 +393,16 @@
   text-transform:uppercase;
   letter-spacing:.06em;
   margin-bottom:var(--space-md);
+  padding-bottom:var(--space-sm);
+  border-bottom:1px solid var(--c-border);
   font-weight:700;
 }
-.footer-col p,
-.footer-col li {
-  font-size:var(--fs-sm);
-  color:var(--c-text-muted);
-  margin-bottom:var(--space-xs);
-  line-height:1.5;
-}
 .footer-col ul {
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:0 var(--space-md);
+  display:flex;
+  flex-direction:column;
+  gap:2px;
 }
+.footer-col li { margin-bottom:0; }
 .footer-contact-link {
   display:inline-flex !important;
   align-items:center;
@@ -382,6 +410,8 @@
 }
 .footer-contact-link .iconfont {
   font-size:18px;
+  width:18px;
+  text-align:center;
   opacity:.65;
   transition:opacity var(--duration);
 }
@@ -394,15 +424,7 @@
 .footer-col a:hover {
   color:var(--c-primary);
 }
-.footer-logo {
-  display:flex;
-  align-items:center;
-  gap:var(--space-sm);
-  margin-bottom:var(--space-md);
-}
-.footer-logo img { width:32px; height:32px; border-radius:0; }
-.footer-logo span { font-weight:700; color:var(--c-heading); font-size:var(--fs-sm); }
-.footer-badges { display:flex; gap:var(--space-xs); flex-wrap:wrap; margin-top:var(--space-sm); }
+
 .footer-badge {
   display:inline-flex;
   align-items:center;
@@ -426,6 +448,8 @@ a.footer-badge:focus-visible {
   border-color:var(--c-primary);
   transform:translateY(-1px);
 }
+
+/* 底部备案行：居中单列 */
 .footer-bottom {
   max-width:var(--max-width);
   margin-inline:auto;
@@ -435,18 +459,31 @@ a.footer-badge:focus-visible {
   border-top:1px solid var(--c-border);
   font-size:var(--fs-xs);
   color:var(--c-text-muted);
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  row-gap:var(--space-xs);
-  column-gap:var(--space-lg);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:var(--space-xs);
+  text-align:center;
 }
 .footer-bottom p { margin:0; }
-.footer-bottom .fb-left { text-align:left; }
-.footer-bottom .fb-right { text-align:right; }
 .footer-bottom a { color:inherit; text-decoration:none; }
-.footer-bottom .fb-left a { text-decoration:underline; }
 .footer-bottom a:hover { text-decoration:underline; }
+.footer-bottom .fb-copy { color:var(--c-text); }
+.footer-bottom .fb-beian {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:var(--space-sm);
+  flex-wrap:wrap;
+}
 .footer-bottom .beian-icon { display:inline-flex; align-items:center; gap:4px; }
+/* 备案行分隔线（CSS 绘制，不使用「·」——Minecraft AE 无该字形） */
+.footer-sep {
+  display:inline-block;
+  width:1px;
+  height:.9em;
+  background:var(--c-border);
+}
 /* 版权符号回退字体（Minecraft AE 不含 ©） */
 .footer-bottom .copy-sym { font-family:system-ui,-apple-system,sans-serif; }
 
@@ -505,26 +542,26 @@ a.footer-badge:focus-visible {
     z-index:1003;
   }
   .header-logo-img { height:26px; }
-  .footer-grid { grid-template-columns:1fr 1fr; gap:var(--space-lg); }
+  /* 品牌区与链接区改为上下堆叠，分隔线由竖线改为横线 */
+  .footer-grid { grid-template-columns:1fr; gap:var(--space-xl); }
+  .footer-brand {
+    padding-right:0;
+    padding-bottom:var(--space-lg);
+    border-right:none;
+    border-bottom:2px solid var(--c-border);
+  }
+  .footer-brand p { max-width:none; }
 }
 
 @media (max-width:768px) {
   .grid-2, .grid-3, .grid-4 { grid-template-columns:1fr; }
-  .footer-grid { grid-template-columns:1fr 1fr; text-align:left; gap:var(--space-lg); }
+  .footer-links { grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--space-lg); }
   .footer-logo, .footer-badges { justify-content:flex-start; }
-  .footer-col ul { grid-template-columns:1fr 1fr; }
-  .footer-bottom { grid-template-columns:1fr; text-align:center; gap:var(--space-xs); }
-  .footer-bottom .fb-left,
-  .footer-bottom .fb-right { text-align:center; }
-  /* 重排顺序：版权 → 商标 → ICP → 公安 */
-  .footer-bottom .fb-left:nth-child(1) { order:1; }
-  .footer-bottom .fb-left:nth-child(3) { order:2; }
-  .footer-bottom .fb-right:nth-child(2) { order:3; }
-  .footer-bottom .fb-right:nth-child(4) { order:4; }
 }
 
 @media (max-width:540px) {
-  .footer-grid { grid-template-columns:1fr; gap:var(--space-lg); }
+  .footer-links { grid-template-columns:1fr; gap:var(--space-lg); }
+  .footer-bottom { gap:var(--space-sm); }
 }
 
 @media (max-width:480px) {
