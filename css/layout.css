@@ -37,7 +37,7 @@
   gap:var(--space-lg);
 }
 
-/* docs 详情页：导航栏内容左右贴边 */
+/* docs 阅读页：导航栏内容左右贴边，与全幅两栏布局对齐（.docs-detail 由 docs/index.php 写在 <body> 上） */
 .docs-detail .header-inner {
   max-width:none;
 }

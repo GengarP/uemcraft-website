@@ -40,8 +40,8 @@
 
   /* ---- 渲染导航栏 ---- */
   function renderNav() {
-    // 详情页标记：body 加 docs-detail 类
-    if (window.__docsDetail) document.body.classList.add('docs-detail');
+    // 注：docs 页的 .docs-detail（导航栏内容左右贴边）由 docs/index.php 直接写在
+    // <body> 上。文档页现在只有阅读页一种形态，不再需要按有无 slug 动态添加。
     // 桌面导航链接
     var navLinks = '';
     for (var i = 0; i < NAV_ITEMS.length; i++) {

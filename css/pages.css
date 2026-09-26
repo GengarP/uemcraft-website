@@ -1111,22 +1111,55 @@
   padding:var(--space-sm);
 }
 
-/* 本页目录（位于左侧边栏文档列表下方） */
-.docs-sidebar-toc {
-  padding-top:var(--space-md);
-  border-top:2px solid var(--c-border);
+/* 侧栏条目：链接 + 折叠三角 + 内嵌本页目录（激活项才有后两者） */
+.docs-sidebar-item {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
 }
-.docs-sidebar-toc[hidden] { display:none; }
-.docs-sidebar-toc-title {
-  font-size:var(--fs-xs);
-  font-weight:700;
+.docs-sidebar-item > .docs-sidebar-link {
+  flex:1;
+  min-width:0;
+}
+/* 折叠三角 */
+.docs-sidebar-caret {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:24px;
+  height:24px;
+  padding:0;
+  background:transparent;
+  border:none;
   color:var(--c-text-muted);
-  text-transform:uppercase;
-  letter-spacing:.06em;
-  padding:0 var(--space-sm);
-  margin-bottom:var(--space-sm);
-  font-family:var(--font-mono);
+  cursor:pointer;
+  flex-shrink:0;
+  transition:color var(--duration);
 }
+.docs-sidebar-caret:hover { color:var(--c-primary); }
+.docs-sidebar-caret-icon {
+  font-size:.6rem;
+  line-height:1;
+  /* 收起时指右（▸），展开时指下（▾） */
+  transform:rotate(-90deg);
+  transition:transform .2s ease;
+}
+.docs-sidebar-item.is-expanded .docs-sidebar-caret-icon { transform:rotate(0deg); }
+
+/* 本页目录：内嵌在激活文档条目下方，占满整行（flex-wrap 换行） */
+.docs-sidebar-subtoc {
+  flex-basis:100%;
+  display:none;
+  flex-direction:column;
+  gap:2px;
+  /* 左缩进 + 一条竖向引导线，让目录看起来挂在文档条目下面 */
+  margin:2px 0 var(--space-sm) calc(var(--space-sm) + .2rem);
+  padding-left:var(--space-sm);
+  border-left:2px solid var(--c-border);
+}
+.docs-sidebar-item.is-expanded .docs-sidebar-subtoc { display:flex; }
+/* 目录由 JS 异步填充，填充前是空的——不要让空盒子先撑出一段间距 */
+.docs-sidebar-item.is-expanded .docs-sidebar-subtoc:empty { display:none; }
 
 /* 主内容区 */
 .docs-content {
@@ -1209,6 +1242,9 @@
 .docs-body li { margin-bottom:var(--space-xs); }
 .docs-body li::marker { color:var(--c-text-muted); }
 .docs-body blockquote {
+  /* 宽度随内容收缩，短引用不再拉满整行 */
+  width:fit-content;
+  max-width:100%;
   border-left:3px solid var(--c-primary);
   padding:var(--space-sm) var(--space-lg);
   margin:var(--space-md) 0;
@@ -1228,6 +1264,10 @@
   overflow-wrap:break-word;
 }
 .docs-body .code-block {
+  /* 宽度随最长的代码行收缩（pre 是 white-space:pre，其 max-content 决定盒子宽度），
+     但不超过正文宽度；超出时由内部 pre 的 overflow-x 横向滚动。 */
+  width:fit-content;
+  max-width:100%;
   margin:var(--space-lg) 0;
   background:var(--c-bg-2);
   border:2px solid var(--c-border);
@@ -1322,8 +1362,10 @@
   margin:var(--space-lg) 0;
 }
 .docs-body table {
-  width:100%;
-  min-width:0;
+  /* 表格宽度随内容收缩（width:auto 是表格默认的 shrink-to-fit），
+     列宽已由单元格的 max-width:20ch 约束；超宽时由 .docs-table-wrapper 横向滚动。 */
+  width:auto;
+  max-width:100%;
   border-collapse:collapse;
   margin:0;
   font-size:var(--fs-sm);
@@ -1488,12 +1530,7 @@
   color:var(--c-heading);
 }
 
-/* 本页目录链接（渲染在左侧边栏的 .docs-sidebar-toc 内） */
-.docs-toc-nav {
-  display:flex;
-  flex-direction:column;
-  gap:2px;
-}
+/* 本页目录链接（渲染在 .docs-sidebar-subtoc 内，层级缩进由 -h3 变体区分） */
 .docs-toc-link {
   display:block;
   padding:.3rem var(--space-sm);

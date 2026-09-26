@@ -72,11 +72,8 @@ if ($isDetail) {
   <link rel="stylesheet" href="/css/components.css">
   <link rel="stylesheet" href="/css/pages.css">
 </head>
-<body>
+<body class="docs-detail">
 
-<?php if ($isDetail): ?>
-<script>window.__docsDetail = true;</script>
-<?php endif; ?>
 <script src="/js/components-header.js"></script>
 <a href="#main" class="skip-link">跳转到主内容</a>
 
@@ -99,10 +96,6 @@ if ($isDetail) {
       <nav class="docs-sidebar-nav" id="docsSidebarNav" aria-label="文档列表">
         <div class="docs-sidebar-loading">加载中…</div>
       </nav>
-      <div class="docs-sidebar-toc" id="docsSidebarToc" hidden>
-        <div class="docs-sidebar-toc-title">本页目录</div>
-        <nav class="docs-toc-nav" id="docsTocNav" aria-label="本页目录"></nav>
-      </div>
     </div>
   </aside>
 

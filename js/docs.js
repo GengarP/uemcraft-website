@@ -153,13 +153,40 @@
       html += '<div class="docs-sidebar-group">';
       html += '<div class="docs-sidebar-group-title">' + escapeHtml(cat) + '</div>';
       grouped.groups[cat].forEach(function (doc) {
-        var active = doc.slug === currentSlug ? ' is-active' : '';
-        html += '<a href="/docs/' + encodeURIComponent(doc.slug) + '" class="docs-sidebar-link' + active + '">' + escapeHtml(doc.title) + '</a>';
+        var isActive = doc.slug === currentSlug;
+        // 激活项默认展开：多一个三角折叠按钮 + 承载本页目录的容器，由 buildTOC 填充
+        html += '<div class="docs-sidebar-item' + (isActive ? ' is-active is-expanded' : '') + '">';
+        html += '<a href="/docs/' + encodeURIComponent(doc.slug) + '" class="docs-sidebar-link'
+          + (isActive ? ' is-active' : '') + '">' + escapeHtml(doc.title) + '</a>';
+        if (isActive) {
+          html += '<button type="button" class="docs-sidebar-caret" aria-expanded="true"'
+            + ' aria-controls="docsSubtoc" aria-label="收起本页目录">'
+            + '<span class="docs-sidebar-caret-icon" aria-hidden="true">▼</span></button>';
+          html += '<nav class="docs-sidebar-subtoc" id="docsSubtoc" aria-label="本页目录"></nav>';
+        }
+        html += '</div>';
       });
       html += '</div>';
     });
 
     nav.innerHTML = html || '<div class="docs-sidebar-empty">暂无文档</div>';
+  }
+
+  /* ---- 折叠三角：事件委托，绑定一次即可，不受重新渲染影响 ---- */
+  function initCaretToggle() {
+    var nav = document.getElementById('docsSidebarNav');
+    if (!nav) return;
+
+    nav.addEventListener('click', function (e) {
+      var caret = e.target.closest('.docs-sidebar-caret');
+      if (!caret) return;
+      e.preventDefault();
+      var item = caret.closest('.docs-sidebar-item');
+      if (!item) return;
+      var expanded = item.classList.toggle('is-expanded');
+      caret.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      caret.setAttribute('aria-label', expanded ? '收起本页目录' : '展开本页目录');
+    });
   }
 
   /* ---- 详情页：上一篇/下一篇导航 ---- */
@@ -194,24 +221,31 @@
     container.innerHTML = html;
   }
 
-  /* ---- 页内目录（渲染到左侧边栏下方） ---- */
+  /* ---- 页内目录（内嵌在侧栏激活文档条目下方，默认展开） ---- */
   function buildTOC(contentEl) {
-    var tocNav = document.getElementById('docsTocNav');
-    var tocBox = document.getElementById('docsSidebarToc');
-    if (!tocNav || !tocBox) return;
+    var tocNav = document.getElementById('docsSubtoc');
+    if (!tocNav) return;
 
+    var item = tocNav.closest('.docs-sidebar-item');
+    var caret = item ? item.querySelector('.docs-sidebar-caret') : null;
     var headings = contentEl.querySelectorAll('h2, h3');
+
+    // 没有 h2/h3：整个展开项退回成普通条目，不留一个点不动的三角
     if (headings.length === 0) {
-      tocBox.hidden = true;
-      tocNav.innerHTML = '';
+      if (caret) caret.remove();
+      tocNav.remove();
+      if (item) item.classList.remove('is-expanded');
       return;
     }
+
     headings.forEach(function (h, i) {
       if (!h.id) h.id = 'heading-' + i;
     });
-    tocBox.hidden = false;
 
     var html = '';
+    // 展开状态由这里与 renderSidebar 共同保证，避免目录建好了却收着
+    if (item) item.classList.add('is-expanded');
+
     headings.forEach(function (h) {
       var level = h.tagName === 'H3' ? ' docs-toc-link-h3' : '';
       html += '<a href="#' + h.id + '" class="docs-toc-link' + level + '">' + escapeHtml(h.textContent) + '</a>';
@@ -261,6 +295,7 @@
 
     var currentSlug = window.__DOCS_SLUG__ || '';
     initSidebarToggle();
+    initCaretToggle();
 
     // 无论有没有 slug，左侧文档列表都要渲染
     fetchDocsList().then(function (docs) {
