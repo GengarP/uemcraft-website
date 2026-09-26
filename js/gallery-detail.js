@@ -72,10 +72,15 @@
   }
 
   if (lightbox) {
+    // 缩放 / 拖拽平移由共享模块提供（换图时会自动复位）
+    if (window.UEMLightbox) window.UEMLightbox.enhance(lightbox);
+
     lightbox.querySelector('.lightbox-close').addEventListener('click', closeLightbox);
     lightbox.querySelector('.lightbox-prev').addEventListener('click', function () { navigateLightbox(-1); });
     lightbox.querySelector('.lightbox-next').addEventListener('click', function () { navigateLightbox(1); });
     lightbox.addEventListener('click', function (e) {
+      // 只在点击遮罩空白处关闭；图片与缩放控件都在 .lightbox-stage 内，
+      // 拖拽平移也发生在那里，不能把拖拽误判成“点击背景”
       if (e.target === lightbox) closeLightbox();
     });
   }

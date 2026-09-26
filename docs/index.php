@@ -133,6 +133,9 @@ if ($isDetail) {
 <script defer src="/js/theme.js"></script>
 <script defer src="/js/reveal.js"></script>
 
+<!-- 图片查看器（与作品页共用） -->
+<script defer src="/js/lightbox.js"></script>
+
 <!-- 文档页面逻辑 -->
 <script defer src="/js/docs.js"></script>
 

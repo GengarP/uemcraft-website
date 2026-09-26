@@ -1242,9 +1242,6 @@
 .docs-body li { margin-bottom:var(--space-xs); }
 .docs-body li::marker { color:var(--c-text-muted); }
 .docs-body blockquote {
-  /* 宽度随内容收缩，短引用不再拉满整行 */
-  width:fit-content;
-  max-width:100%;
   border-left:3px solid var(--c-primary);
   padding:var(--space-sm) var(--space-lg);
   margin:var(--space-md) 0;
@@ -1264,10 +1261,6 @@
   overflow-wrap:break-word;
 }
 .docs-body .code-block {
-  /* 宽度随最长的代码行收缩（pre 是 white-space:pre，其 max-content 决定盒子宽度），
-     但不超过正文宽度；超出时由内部 pre 的 overflow-x 横向滚动。 */
-  width:fit-content;
-  max-width:100%;
   margin:var(--space-lg) 0;
   background:var(--c-bg-2);
   border:2px solid var(--c-border);
@@ -1362,10 +1355,8 @@
   margin:var(--space-lg) 0;
 }
 .docs-body table {
-  /* 表格宽度随内容收缩（width:auto 是表格默认的 shrink-to-fit），
-     列宽已由单元格的 max-width:20ch 约束；超宽时由 .docs-table-wrapper 横向滚动。 */
-  width:auto;
-  max-width:100%;
+  width:100%;
+  min-width:0;
   border-collapse:collapse;
   margin:0;
   font-size:var(--fs-sm);
@@ -1439,57 +1430,6 @@
   max-width:44ch;
   margin:0;
   line-height:1.7;
-}
-
-/* 图片灯箱 */
-.docs-lightbox {
-  position:fixed;
-  inset:0;
-  z-index:2000;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:var(--space-xl);
-  background:rgba(10,12,20,.9);
-  opacity:0;
-  visibility:hidden;
-  pointer-events:none;
-  transition:opacity var(--duration),visibility var(--duration);
-}
-.docs-lightbox.is-open {
-  opacity:1;
-  visibility:visible;
-  pointer-events:auto;
-}
-.docs-lightbox img {
-  max-width:100%;
-  max-height:100%;
-  border:2px solid var(--c-border);
-  box-shadow:var(--shadow-hard);
-  background:var(--c-surface);
-}
-.docs-lightbox-close {
-  position:absolute;
-  top:var(--space-lg);
-  right:var(--space-lg);
-  width:44px;
-  height:44px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:var(--c-surface);
-  border:2px solid var(--c-border);
-  border-radius:var(--radius);
-  color:var(--c-text);
-  font-size:1.5rem;
-  line-height:1;
-  cursor:pointer;
-  transition:background var(--duration),color var(--duration),border-color var(--duration);
-}
-.docs-lightbox-close:hover {
-  background:var(--c-primary);
-  border-color:var(--c-primary);
-  color:#fff;
 }
 
 /* 上一篇/下一篇导航 */
@@ -1577,5 +1517,4 @@
   .docs-content { padding:var(--space-lg) var(--space-md); max-width:100%; overflow-x:auto; }
   .docs-pager { grid-template-columns:1fr; }
   .docs-empty { padding:var(--space-2xl) var(--space-md); }
-  .docs-lightbox { padding:var(--space-md); }
 }

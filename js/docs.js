@@ -35,15 +35,21 @@
   function ensureLightbox() {
     if (lightboxEl) return lightboxEl;
 
+    // 与作品页共用 .lightbox 结构，缩放/拖拽由 js/lightbox.js 统一提供
     lightboxEl = document.createElement('div');
-    lightboxEl.className = 'docs-lightbox';
+    lightboxEl.className = 'lightbox';
     lightboxEl.setAttribute('role', 'dialog');
     lightboxEl.setAttribute('aria-modal', 'true');
+    lightboxEl.setAttribute('aria-label', '图片预览');
     lightboxEl.setAttribute('aria-hidden', 'true');
     lightboxEl.innerHTML =
-      '<button type="button" class="docs-lightbox-close" aria-label="关闭">×</button>' +
-      '<img src="" alt="">';
+      '<button type="button" class="lightbox-close" aria-label="关闭"></button>' +
+      '<div class="lightbox-body">' +
+      '<img class="lightbox-img" src="" alt="">' +
+      '</div>';
     document.body.appendChild(lightboxEl);
+
+    if (window.UEMLightbox) window.UEMLightbox.enhance(lightboxEl);
 
     function close() {
       lightboxEl.classList.remove('is-open');
@@ -51,10 +57,11 @@
       document.documentElement.style.overflow = '';
     }
 
-    lightboxEl.querySelector('.docs-lightbox-close').addEventListener('click', close);
+    lightboxEl.querySelector('.lightbox-close').addEventListener('click', close);
     lightboxEl.addEventListener('click', function (e) {
-      // 点击图片本身不关闭，点击背景关闭
-      if (e.target !== lightboxEl.querySelector('img')) close();
+      // 只在点击遮罩空白处时关闭：图片与缩放控件都在 .lightbox-stage 里，
+      // 拖拽平移也发生在那里，不能把拖拽误判成“点击背景”
+      if (e.target === lightboxEl) close();
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && lightboxEl.classList.contains('is-open')) close();
@@ -88,7 +95,7 @@
         img.classList.add('is-zoomable');
         img.addEventListener('click', function () {
           var lb = ensureLightbox();
-          var lbImg = lb.querySelector('img');
+          var lbImg = lb.querySelector('.lightbox-img');
           lbImg.src = img.currentSrc || img.src;
           lbImg.alt = alt || '';
           lb.classList.add('is-open');
