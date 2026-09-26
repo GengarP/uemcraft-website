@@ -16,6 +16,12 @@
  * 仅判定合规才 status=approved 公开；不合规或服务不可用均入库为
  * status=hidden 待人工复核。管理员可在后台恢复 approved 或删除。
  *
+ * 审核理由：AI 返回的 reason 存入 messages.review_reason，随 admin_list
+ * 一起返回给后台展示，便于人工复核时知道被判违规的原因。该字段不对外公开：
+ * 公开接口只 SELECT id/name/content/created_at，POST 的响应里也不含它。
+ * AI 未给出理由时按情况写入 REASON_AI_UNAVAILABLE / REASON_AI_NO_REASON。
+ * 管理员手动审核不会覆盖它——它记录的是 AI 当时的判断。
+ *
  * 数据库：默认 SQLite（零配置，库文件 api/wall.db，自动建表）；
  * 切换 MySQL 只需设置环境变量 WALL_DB_DRIVER=mysql，
  * 以及 WALL_DB_HOST / WALL_DB_PORT / WALL_DB_NAME / WALL_DB_USER / WALL_DB_PASS。
@@ -32,6 +38,11 @@ define('STATUS_ALLOWED', ['approved', 'hidden']);
 define('MODERATION_API_URL', 'https://api.siliconflow.cn/v1/chat/completions');
 define('MODERATION_MODEL', getenv('MODERATION_MODEL') ?: 'Qwen/Qwen3.5-4B');
 define('MODERATION_TIMEOUT', 8);
+// AI 审核理由的字符上限（与建表的 review_reason 列宽对应）
+define('MODERATION_REASON_MAX', 200);
+// AI 未给出理由时写入的占位说明，便于人工复核时区分「AI 判违规但没给理由」与「AI 压根没跑」
+define('REASON_AI_UNAVAILABLE', 'AI 审核不可用，待人工复核');
+define('REASON_AI_NO_REASON', 'AI 未给出理由');
 
 // ---- wall.php 专属函数 ----
 
@@ -49,13 +60,38 @@ function checkRateLimit($db, $ip) {
 }
 
 /**
+ * 规整 AI 给出的审核理由：压缩空白、按字符数截断（中文按字算，不能用 substr）。
+ */
+function cleanReviewReason($reason) {
+    $reason = trim(preg_replace('/\s+/u', ' ', (string) $reason));
+    if ($reason === '') {
+        return '';
+    }
+    // 按「字」截断：中文用 substr 会切出半个字
+    if (function_exists('mb_substr')) {
+        return mb_substr($reason, 0, MODERATION_REASON_MAX, 'UTF-8');
+    }
+    $chars = preg_split('//u', $reason, -1, PREG_SPLIT_NO_EMPTY);
+    if ($chars === false) {
+        // 连 UTF-8 都不是，只能按字节截
+        return substr($reason, 0, MODERATION_REASON_MAX);
+    }
+    return count($chars) > MODERATION_REASON_MAX
+        ? implode('', array_slice($chars, 0, MODERATION_REASON_MAX))
+        : $reason;
+}
+
+/**
  * 调用硅基流动 Qwen3.5-4B 审核留言是否合规。
- * 返回 'approved'（合规）| 'hidden'（不合规）| null（服务不可用/未配置/解析失败）。
+ *
+ * @return array{status:?string,reason:string}
+ *         status 为 'approved'（合规）| 'hidden'（不合规）| null（服务不可用/未配置/解析失败）；
+ *         reason 为 AI 给出的简短理由，取不到时为空字符串。
  */
 function moderateContent($name, $content) {
     $apiKey = getenv('MODERATION_API_KEY');
     if (!$apiKey || !function_exists('curl_init')) {
-        return null;
+        return ['status' => null, 'reason' => ''];
     }
 
     $system = "你是留言墙内容审核员，判断用户昵称及留言是否合规、是否适合公开发布。"
@@ -96,26 +132,41 @@ function moderateContent($name, $content) {
 
     if ($resp === false || $err !== '' || $httpCode !== 200) {
         error_log('[wall.php] 审核请求失败: ' . $err . ' http=' . $httpCode);
-        return null;
+        return ['status' => null, 'reason' => ''];
     }
 
     $json = json_decode($resp, true);
     $text = $json['choices'][0]['message']['content'] ?? '';
     if ($text === '') {
-        return null;
+        return ['status' => null, 'reason' => ''];
     }
 
     $result = json_decode(trim($text), true);
     if (is_array($result) && array_key_exists('allowed', $result)) {
-        return $result['allowed'] ? 'approved' : 'hidden';
+        return [
+            'status' => $result['allowed'] ? 'approved' : 'hidden',
+            'reason' => cleanReviewReason($result['reason'] ?? ''),
+        ];
     }
 
+    // 兜底：整体 JSON 解析失败时（例如模型在 JSON 前后加了说明文字），
+    // 仍尝试从文本里抠出 allowed 与 reason
     if (preg_match('/"allowed"\s*:\s*(true|false)/i', $text, $m)) {
-        return strtolower($m[1]) === 'true' ? 'approved' : 'hidden';
+        $reason = '';
+        if (preg_match('/"reason"\s*:\s*"((?:[^"\\\\]|\\\\.)*)"/u', $text, $rm)) {
+            // 抠出来的是 JSON 字符串的内容，用 json_decode 还原转义才正确
+            // （stripslashes 只是去掉反斜杠，会把 \n 变成 n）
+            $decoded = json_decode('"' . $rm[1] . '"', true);
+            $reason = is_string($decoded) ? $decoded : stripslashes($rm[1]);
+        }
+        return [
+            'status' => strtolower($m[1]) === 'true' ? 'approved' : 'hidden',
+            'reason' => cleanReviewReason($reason),
+        ];
     }
 
     error_log('[wall.php] 审核结果解析失败: ' . $text);
-    return null;
+    return ['status' => null, 'reason' => ''];
 }
 
 // ---- 路由 ----
@@ -178,10 +229,17 @@ try {
             json_response(['success' => false, 'error' => '操作太频繁，请 ' . $wait . ' 秒后再试'], 429);
         }
 
-        $status = moderateContent($name, $content) === 'approved' ? 'approved' : 'hidden';
+        $review = moderateContent($name, $content);
+        $status = $review['status'] === 'approved' ? 'approved' : 'hidden';
 
-        $stmt = $db->prepare("INSERT INTO messages (name, content, ip, status, created_at) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$name, $content, $ip, $status, time()]);
+        // 留下审核理由供人工复核：AI 给了就用 AI 的，没给就写明是哪种情况
+        $reason = $review['reason'];
+        if ($reason === '') {
+            $reason = $review['status'] === null ? REASON_AI_UNAVAILABLE : REASON_AI_NO_REASON;
+        }
+
+        $stmt = $db->prepare("INSERT INTO messages (name, content, ip, status, review_reason, created_at) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$name, $content, $ip, $status, $reason, time()]);
 
         json_response([
             'success' => true,
@@ -214,7 +272,7 @@ try {
         $totalStmt->execute($params);
         $total = (int) $totalStmt->fetchColumn();
 
-        $stmt = $db->prepare("SELECT id, name, content, status, created_at FROM messages $where ORDER BY created_at DESC LIMIT :limit OFFSET :offset");
+        $stmt = $db->prepare("SELECT id, name, content, status, review_reason, created_at FROM messages $where ORDER BY created_at DESC LIMIT :limit OFFSET :offset");
         foreach ($params as $k => $v) {
             $stmt->bindValue($k, $v);
         }

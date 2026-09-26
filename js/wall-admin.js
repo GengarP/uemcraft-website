@@ -134,6 +134,15 @@
     card.appendChild(header);
     card.appendChild(body);
 
+    // AI 审核理由：让复核的人知道这条为什么被判违规 / 为什么进了待审队列
+    if (item.review_reason) {
+      var reason = document.createElement('p');
+      reason.className = 'admin-card-reason';
+      reason.innerHTML = '<span class="admin-card-reason-label">审核理由</span>'
+        + escapeHtml(item.review_reason);
+      card.appendChild(reason);
+    }
+
     buildActions(header.querySelector('.admin-card-actions'), item, card);
     return card;
   }

@@ -575,6 +575,7 @@ function createWallTables($db, $driver) {
             content VARCHAR(500) NOT NULL,
             ip VARCHAR(45) NOT NULL,
             status VARCHAR(16) NOT NULL DEFAULT 'approved',
+            review_reason VARCHAR(255) NULL,
             created_at INT NOT NULL,
             PRIMARY KEY (id),
             KEY idx_created_at (created_at)
@@ -588,6 +589,7 @@ function createWallTables($db, $driver) {
         content TEXT NOT NULL,
         ip TEXT NOT NULL,
         status TEXT NOT NULL DEFAULT 'approved',
+        review_reason TEXT NULL,
         created_at INTEGER NOT NULL
     )");
     $db->exec("CREATE INDEX idx_created_at ON messages(created_at DESC)");
@@ -595,23 +597,34 @@ function createWallTables($db, $driver) {
 
 function migrateWallTables($db, $driver) {
     if ($driver === 'mysql') {
-        $stmt = $db->prepare(
-            "SELECT COUNT(*) FROM information_schema.COLUMNS
-             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'messages' AND COLUMN_NAME = 'status'"
-        );
-        $stmt->execute();
-        if ((int)$stmt->fetchColumn() === 0) {
+        $hasColumn = function ($column) use ($db) {
+            $stmt = $db->prepare(
+                "SELECT COUNT(*) FROM information_schema.COLUMNS
+                 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'messages' AND COLUMN_NAME = ?"
+            );
+            $stmt->execute([$column]);
+            return (int)$stmt->fetchColumn() > 0;
+        };
+        if (!$hasColumn('status')) {
             $db->exec("ALTER TABLE messages ADD COLUMN status VARCHAR(16) NOT NULL DEFAULT 'approved'");
+        }
+        if (!$hasColumn('review_reason')) {
+            $db->exec("ALTER TABLE messages ADD COLUMN review_reason VARCHAR(255) NULL");
         }
         return;
     }
 
-    // SQLite
-    $cols = $db->query('PRAGMA table_info(messages)')->fetchAll(PDO::FETCH_ASSOC);
-    foreach ($cols as $col) {
-        if ($col['name'] === 'status') return;
+    // SQLite：逐列判断，新增列时不能提前 return，否则后加的列永远补不上
+    $existing = [];
+    foreach ($db->query('PRAGMA table_info(messages)')->fetchAll(PDO::FETCH_ASSOC) as $col) {
+        $existing[$col['name']] = true;
     }
-    $db->exec("ALTER TABLE messages ADD COLUMN status TEXT NOT NULL DEFAULT 'approved'");
+    if (!isset($existing['status'])) {
+        $db->exec("ALTER TABLE messages ADD COLUMN status TEXT NOT NULL DEFAULT 'approved'");
+    }
+    if (!isset($existing['review_reason'])) {
+        $db->exec("ALTER TABLE messages ADD COLUMN review_reason TEXT NULL");
+    }
 }
 
 // ---- 分页辅助 ----

@@ -75,6 +75,7 @@ window.UEMLightbox = (function () {
     function apply() {
       img.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scale + ')';
       root.classList.toggle('is-zoomed', scale > 1.001);
+      root.classList.toggle('is-pannable', isPannable());
     }
 
     /* 未变换时的图片中心（视口坐标）。
@@ -84,13 +85,27 @@ window.UEMLightbox = (function () {
       return { x: (r.left + r.right) / 2 - tx, y: (r.top + r.bottom) / 2 - ty };
     }
 
-    /* 约束平移范围：图片小于视口时不允许移动，大于时不允许拖出边缘 */
+    /* 平移上限 = 放大后超出视口的部分的一半。
+       图片小于视口时上限为 0（此时整张都看得见，没有可平移的内容），
+       大于视口时允许移动到「刚好露出视口边缘」为止，不许拖出视野。
+       这个界限是连续的：随着放大逐步放开，不会在某个倍数上突然跳动。 */
+    function panLimit(viewSize, natural) {
+      return Math.max(0, (natural * scale - viewSize) / 2);
+    }
+
     function clampPan() {
       var sr = stage.getBoundingClientRect();
-      var maxX = Math.max(0, (img.offsetWidth * scale - sr.width) / 2);
-      var maxY = Math.max(0, (img.offsetHeight * scale - sr.height) / 2);
+      var maxX = panLimit(sr.width, img.offsetWidth);
+      var maxY = panLimit(sr.height, img.offsetHeight);
       tx = clamp(tx, -maxX, maxX);
       ty = clamp(ty, -maxY, maxY);
+    }
+
+    /* 是否已有可平移的余量（供光标样式判断） */
+    function isPannable() {
+      var sr = stage.getBoundingClientRect();
+      return panLimit(sr.width, img.offsetWidth) > 0.5
+        || panLimit(sr.height, img.offsetHeight) > 0.5;
     }
 
     function reset() {
@@ -153,6 +168,10 @@ window.UEMLightbox = (function () {
 
     stage.addEventListener('pointerdown', function (e) {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
+      // 必须阻止默认行为：否则浏览器会开始原生图片拖拽 / 文本选择，
+      // 进而触发 pointercancel，拖拽刚开始就被中断——这正是「图片拖不动」的原因之一
+      e.preventDefault();
+
       dragging = true;
       startX = e.clientX;
       startY = e.clientY;
@@ -163,13 +182,13 @@ window.UEMLightbox = (function () {
       try { stage.setPointerCapture(e.pointerId); } catch (err) { /* 忽略 */ }
     });
 
-    stage.addEventListener('pointermove', function (e) {
+    function onMove(e) {
       if (!dragging) return;
       tx = startTx + (e.clientX - startX);
       ty = startTy + (e.clientY - startY);
       clampPan();
       apply();
-    });
+    }
 
     function endDrag(e) {
       if (!dragging) return;
@@ -177,8 +196,12 @@ window.UEMLightbox = (function () {
       stage.classList.remove('is-dragging');
       try { stage.releasePointerCapture(e.pointerId); } catch (err) { /* 忽略 */ }
     }
-    stage.addEventListener('pointerup', endDrag);
-    stage.addEventListener('pointercancel', endDrag);
+
+    // 监听挂在 document 上：指针捕获若失败（部分浏览器/指针类型不支持），
+    // 拖拽仍能继续，不会因为指针移出 stage 就断掉
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', endDrag);
+    document.addEventListener('pointercancel', endDrag);
 
     /* ---- 键盘：+ / - / 0（Esc 与左右方向键仍由各页自己处理） ---- */
     document.addEventListener('keydown', function (e) {

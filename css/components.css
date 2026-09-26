@@ -1236,7 +1236,7 @@ img.member-avatar { object-fit:cover; }
   border:2px solid rgba(255,255,255,.3);
   border-radius:var(--radius);
   background-color:rgba(0,0,0,.5);
-  background-image:url("%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='white'%3E%3Crect x='0' y='0' width='10' height='10'/%3E%3Crect x='60' y='0' width='10' height='10'/%3E%3Crect x='10' y='10' width='10' height='10'/%3E%3Crect x='50' y='10' width='10' height='10'/%3E%3Crect x='20' y='20' width='10' height='10'/%3E%3Crect x='40' y='20' width='10' height='10'/%3E%3Crect x='30' y='30' width='10' height='10'/%3E%3Crect x='20' y='40' width='10' height='10'/%3E%3Crect x='40' y='40' width='10' height='10'/%3E%3Crect x='10' y='50' width='10' height='10'/%3E%3Crect x='50' y='50' width='10' height='10'/%3E%3Crect x='0' y='60' width='10' height='10'/%3E%3Crect x='60' y='60' width='10' height='10'/%3E%3C/g%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='white'%3E%3Crect x='0' y='0' width='10' height='10'/%3E%3Crect x='60' y='0' width='10' height='10'/%3E%3Crect x='10' y='10' width='10' height='10'/%3E%3Crect x='50' y='10' width='10' height='10'/%3E%3Crect x='20' y='20' width='10' height='10'/%3E%3Crect x='40' y='20' width='10' height='10'/%3E%3Crect x='30' y='30' width='10' height='10'/%3E%3Crect x='20' y='40' width='10' height='10'/%3E%3Crect x='40' y='40' width='10' height='10'/%3E%3Crect x='10' y='50' width='10' height='10'/%3E%3Crect x='50' y='50' width='10' height='10'/%3E%3Crect x='0' y='60' width='10' height='10'/%3E%3Crect x='60' y='60' width='10' height='10'/%3E%3C/g%3E%3C/svg%3E");
   background-repeat:no-repeat;
   background-position:center;
   background-size:26px 26px;
@@ -1276,10 +1276,15 @@ img.member-avatar { object-fit:cover; }
   box-shadow:0 0 60px rgba(0,0,0,.5);
   transform-origin:center center;
   will-change:transform;
-  cursor:grab;
   user-select:none;
+  -webkit-user-select:none;
   -webkit-user-drag:none;
 }
+/* 光标随可操作状态变化：未放大可点开，放大且仍有平移余量时可拖。
+   is-zoomed / is-pannable 挂在 .lightbox 上，is-dragging 挂在 .lightbox-stage 上。 */
+.lightbox-img { cursor:zoom-in; }
+.lightbox.is-zoomed .lightbox-img { cursor:grab; }
+.lightbox.is-zoomed:not(.is-pannable) .lightbox-img { cursor:default; }
 .lightbox-stage.is-dragging .lightbox-img { cursor:grabbing; }
 .lightbox-caption { color:#fff; text-align:center; margin-top:var(--space-md); font-size:var(--fs-sm); flex-shrink:0; }
 
@@ -1466,6 +1471,10 @@ a.works-card { text-decoration:none; color:inherit; }
   overflow:hidden;
   /* 触摸拖拽必须关掉浏览器手势，否则 pointermove 会被滚动/双指缩放吞掉 */
   touch-action:none;
+  /* 整块视口都禁止选中：否则在图片外的空白处按下拖动会变成框选文字，
+     浏览器随即触发 pointercancel 把拖拽打断 */
+  user-select:none;
+  -webkit-user-select:none;
 }
 
 /* 缩放控件：底部居中 */

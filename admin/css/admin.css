@@ -158,6 +158,29 @@
   line-height: 1.8;
   word-break: break-word;
 }
+
+/* AI 审核理由：与正文用左侧竖线区分开，避免被当成留言内容 */
+.admin-card-reason {
+  margin-top: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  border-left: 3px solid var(--c-border);
+  background: var(--c-surface-2);
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+  line-height: 1.6;
+  word-break: break-word;
+}
+.admin-card-reason-label {
+  display: inline-block;
+  margin-right: .5em;
+  padding: 0 .35em;
+  background: var(--c-border);
+  color: var(--c-text);
+  font-family: var(--font-mono);
+  font-size: .85em;
+  letter-spacing: .04em;
+  vertical-align: 1px;
+}
 .admin-edit-label {
   display: flex;
   flex-direction: column;
