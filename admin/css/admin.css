@@ -922,6 +922,7 @@
 }
 
 .dynamic-list-item .btn-remove {
+  position: relative;
   flex-shrink: 0;
   width: 32px;
   height: 32px;
@@ -933,10 +934,24 @@
   background: var(--c-surface);
   color: var(--c-red);
   cursor: pointer;
-  font-size: var(--fs-base);
-  line-height: 1;
   transition: background var(--duration), border-color var(--duration);
 }
+
+/* 叉用 CSS 画：Minecraft AE 像素字体缺 U+00D7 字形，直接用「×」会显示成豆腐块。
+   用 currentColor 画，才能跟着上面的 color 一起变（hover 时由红转白）。 */
+.dynamic-list-item .btn-remove::before,
+.dynamic-list-item .btn-remove::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 2px;
+  margin: -1px 0 0 -7px;
+  background: currentColor;
+}
+.dynamic-list-item .btn-remove::before { transform: rotate(45deg); }
+.dynamic-list-item .btn-remove::after { transform: rotate(-45deg); }
 
 .dynamic-list-item .btn-remove:hover {
   background: var(--c-red);

@@ -286,7 +286,7 @@
       item.className = 'dynamic-list-item';
       item.innerHTML =
         '<input type="text" class="form-input gallery-image-url" placeholder="图片 URL" value="' + escapeHtmlAttr(url) + '">' +
-        '<button type="button" class="btn-remove" title="删除" aria-label="删除">&times;</button>';
+        '<button type="button" class="btn-remove" title="删除" aria-label="删除"></button>';
       item.querySelector('.btn-remove').addEventListener('click', function () { item.remove(); });
       galleryList.appendChild(item);
     }
@@ -298,7 +298,7 @@
       item.innerHTML =
         '<input type="text" class="form-input download-link-name" placeholder="名称" value="' + escapeHtmlAttr(name) + '" style="max-width:160px;">' +
         '<input type="text" class="form-input download-link-url" placeholder="下载 URL" value="' + escapeHtmlAttr(url) + '">' +
-        '<button type="button" class="btn-remove" title="删除" aria-label="删除">&times;</button>';
+        '<button type="button" class="btn-remove" title="删除" aria-label="删除"></button>';
       item.querySelector('.btn-remove').addEventListener('click', function () { item.remove(); });
       downloadList.appendChild(item);
     }
