@@ -23,10 +23,7 @@
     else if (document.getElementById('imagesGrid')) initImagesPage();
   }).catch(function () {});
 
-  // 退出按钮
-  document.querySelectorAll('#logoutBtn, #logoutBtn2').forEach(function (btn) {
-    btn.addEventListener('click', function () { Auth.logout(); });
-  });
+  // 退出按钮由 components-admin.js（外壳）统一绑定
 
   // ============================================================
   //  视图切换（网格/列表）

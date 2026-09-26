@@ -68,8 +68,5 @@
     }).catch(function () {});
   });
 
-  // 退出按钮
-  document.querySelectorAll('#logoutBtn, #logoutBtn2').forEach(function (btn) {
-    btn.addEventListener('click', function () { Auth.logout(); });
-  });
+  // 退出按钮由 components-admin.js（外壳）统一绑定
 })();

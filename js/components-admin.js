@@ -93,10 +93,23 @@
       }
     }
 
-    /* ---- 移动端抽屉开关 ---- */
+    /* ---- 外壳自身的控件绑定 ---- */
     document.addEventListener('DOMContentLoaded', function () {
       var title = document.getElementById('adminTopbarTitle');
       if (title && window.__adminPageLabel) title.textContent = window.__adminPageLabel;
+
+      /* 退出登录：按钮由本组件注入，故绑定也放在这里，
+         各页模块（admin-list.js / admin-edit.js / admin-dashboard.js）不再重复实现。 */
+      var logout = document.getElementById('logoutBtn');
+      if (logout) {
+        logout.addEventListener('click', function () {
+          var Auth = window.UEMAdminAuth;
+          if (Auth) { Auth.logout(); return; }
+          // 兜底：admin-auth.js 未加载时也要能退出，不能变成死按钮
+          try { localStorage.removeItem('uemcraft-admin-token'); } catch (e) { /* 隐私模式下可能不可用 */ }
+          location.href = 'login.html';
+        });
+      }
 
       var toggle = document.getElementById('adminSidenavToggle');
       var sidenav = document.getElementById('adminSidenav');
