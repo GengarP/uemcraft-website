@@ -157,6 +157,16 @@ main > .section:last-child,
 main > .section-sm:last-child {
   padding-bottom:0;
 }
+/* 正文与页脚之间的固定 80px。上一条已把末段区块自带的底部内距归零，
+   所以这段间距完全由 main 提供，各页一致（此前是 160/128/80 三种）。
+   两类页面除外：
+   - docs 阅读页（.docs-detail）：整屏两栏布局，不参与这套节奏；
+   - admin 登录页（.admin-login-body）：min-height:100vh 的居中面板，
+     因全局 box-sizing 为 border-box，加底部内距会把面板向上推偏 40px，
+     而它的页脚本来就在首屏之外，加了也看不见。 */
+body:not(.docs-detail):not(.admin-login-body) #main {
+  padding-bottom:var(--space-3xl);
+}
 .section-alt {
   background:var(--c-bg-section-alt);
 }
