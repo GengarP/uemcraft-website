@@ -39,10 +39,11 @@
 
 /* docs 阅读页：导航栏与限宽居中的两栏正文对齐，视觉上成为一个整体
    （.docs-detail 由 docs/index.php 写在 <body> 上）。
-   内边距沿用 .header-inner 的 --space-lg，与 .docs-sidebar 的左右内边距一致，
-   于是 logo 与侧栏标题、右侧按钮与正文右缘都能对齐。 */
+   左内边距加上和侧栏同一份 --docs-edge，logo 就与侧栏标题严格在同一竖线上；
+   导航链接则去视口右缘，与一直铺到左缘的侧栏呼应。 */
 .docs-detail .header-inner {
-  max-width:var(--docs-max-width);
+  max-width:none;
+  padding-left:calc(var(--docs-edge) + var(--space-lg));
 }
 
 /* Logo */

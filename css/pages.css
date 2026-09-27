@@ -997,16 +997,19 @@
 /* ========== 指南与文档（阅读页） ========== */
 
 /* 两栏布局：左侧边栏（文档列表 + 本页目录） + 正文
-   整块限宽居中——正文不再随窗口无限变宽，侧栏也不会再贴着屏幕左缘。
-   只靠侧栏自己的 border-right 划边界：整块再加左右边框会在宽屏上
-   把正文围进一个和文字对不上的框里。 */
+   宽屏下版心（--docs-max-width）两侧本来会空出来，这里让侧栏把这段留白
+   吃进自己的左内边距（--docs-edge），于是：
+     · 侧栏的背景与底边一直铺到视口左缘，看起来是贴在页面边距上的；
+     · 里面的文字仍停在版心装订线上，与导航栏 logo 同一竖线；
+     · 正文列位置与限宽居中时完全一致。
+   侧栏列宽也要加上这段偏移，分隔线才不会跟着往左跑。 */
 .docs-layout {
   display:grid;
-  grid-template-columns:var(--docs-sidebar-w) minmax(0,1fr);
+  grid-template-columns:calc(var(--docs-sidebar-w) + var(--docs-edge)) minmax(0,1fr);
+  width:calc(100% - var(--docs-edge));
   min-height:calc(100vh - var(--header-h));
-  width:100%;
-  max-width:var(--docs-max-width);
-  margin-inline:auto;
+  max-width:none;
+  margin:0;
 }
 
 /* 左侧边栏 */
@@ -1017,6 +1020,7 @@
   display:flex;
   flex-direction:column;
   padding:var(--space-xl) var(--space-lg);
+  padding-left:calc(var(--docs-edge) + var(--space-lg));
   border-right:1px solid var(--c-border);
   border-bottom:2px solid var(--c-border);
   background:var(--c-surface);

@@ -154,12 +154,15 @@
   --header-h:  80px;
 
   /* 文档阅读页（参考 VitePress 的排版尺度）
-     --docs-max-width  整体两栏的最大宽度，超出后居中留白
+     --docs-max-width  整块两栏的最大宽度，超出后居中留白
      --docs-sidebar-w  左侧目录栏宽度
-     --docs-prose-w    正文阅读列宽度（约 44 个汉字/行） */
+     --docs-prose-w    正文阅读列宽度（约 44 个汉字/行）
+     --docs-edge       宽屏下版心两侧的留白宽度。侧栏把它吃进左内边距，
+                       于是背景能铺到视口左缘、文字仍停在版心装订线上 */
   --docs-max-width: 1440px;
   --docs-sidebar-w: 280px;
   --docs-prose-w:   736px;
+  --docs-edge:      max(0px, calc((100vw - var(--docs-max-width)) / 2));
 
   /* 过渡 */
   --ease:     cubic-bezier(.4,0,.2,1);
