@@ -37,13 +37,13 @@
   gap:var(--space-lg);
 }
 
-/* docs 阅读页：导航栏与限宽居中的两栏正文对齐，视觉上成为一个整体
-   （.docs-detail 由 docs/index.php 写在 <body> 上）。
-   左内边距加上和侧栏同一份 --docs-edge，logo 就与侧栏标题严格在同一竖线上；
-   导航链接则去视口右缘，与一直铺到左缘的侧栏呼应。 */
+/* docs 阅读页：左侧文档列表贴着页面左缘，所以导航栏也去掉限宽，
+   左内边距用同一份 --docs-gutter，logo 与侧栏标题严格同一竖线；
+   导航链接去视口右缘，与右侧的「本页目录」一栏呼应。
+   （.docs-detail 由 docs/index.php 写在 <body> 上） */
 .docs-detail .header-inner {
   max-width:none;
-  padding-left:calc(var(--docs-edge) + var(--space-lg));
+  padding-left:var(--docs-gutter);
 }
 
 /* Logo */

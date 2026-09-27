@@ -124,6 +124,9 @@
   /* 字体 */
   --font-body:  "Minecraft AE","Fusion Pixel","Noto Sans SC","Source Han Sans SC","PingFang SC","Microsoft YaHei","思源黑体",system-ui,-apple-system,sans-serif;
   --font-mono:  "Minecraft AE","Fusion Pixel","Tiny5","Cascadia Code","Cascadia Mono",Consolas,"Courier New",monospace;
+  /* 长文阅读字体：不用像素字体，改用常规黑体。
+     文档正文与「本页目录」共用，保证目录与文章字体一致 */
+  --font-docs:  "Noto Sans SC","Source Han Sans SC","PingFang SC","Microsoft YaHei","思源黑体",system-ui,-apple-system,sans-serif;
   --cjk-letter-spacing: .1em;
   --cjk-vertical-offset: 0;     /* CJK 垂直偏移：正值下移，负值上移 */
   --latin-vertical-offset: 0em; /* 英文下移：1em = 字号100% */
@@ -153,16 +156,15 @@
   --max-width: 1200px;
   --header-h:  80px;
 
-  /* 文档阅读页（参考 VitePress 的排版尺度）
-     --docs-max-width  整块两栏的最大宽度，超出后居中留白
-     --docs-sidebar-w  左侧目录栏宽度
+  /* 文档阅读页（参考 VitePress 的三栏：左文档列表 / 中正文 / 右本页目录）
+     --docs-sidebar-w  左侧文档列表宽度
      --docs-prose-w    正文阅读列宽度（约 44 个汉字/行）
-     --docs-edge       宽屏下版心两侧的留白宽度。侧栏把它吃进左内边距，
-                       于是背景能铺到视口左缘、文字仍停在版心装订线上 */
-  --docs-max-width: 1440px;
-  --docs-sidebar-w: 280px;
+     --docs-outline-w  右侧「本页目录」宽度
+     --docs-gutter     侧栏贴页面左缘时的装订线；导航栏 logo 用同一值对齐 */
+  --docs-sidebar-w: 260px;
   --docs-prose-w:   736px;
-  --docs-edge:      max(0px, calc((100vw - var(--docs-max-width)) / 2));
+  --docs-outline-w: 232px;
+  --docs-gutter:    var(--space-xl);
 
   /* 过渡 */
   --ease:     cubic-bezier(.4,0,.2,1);

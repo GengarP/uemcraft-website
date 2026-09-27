@@ -66,29 +66,29 @@ if ($isDetail) {
       }
     })();
   </script>
-  <link rel="stylesheet" href="/css/tokens.css?v=825ae8a">
-  <link rel="stylesheet" href="/css/base.css?v=825ae8a">
-  <link rel="stylesheet" href="/css/layout.css?v=825ae8a">
-  <link rel="stylesheet" href="/css/components.css?v=825ae8a">
-  <link rel="stylesheet" href="/css/pages.css?v=825ae8a">
+  <link rel="stylesheet" href="/css/tokens.css?v=078e6f1">
+  <link rel="stylesheet" href="/css/base.css?v=078e6f1">
+  <link rel="stylesheet" href="/css/layout.css?v=078e6f1">
+  <link rel="stylesheet" href="/css/components.css?v=078e6f1">
+  <link rel="stylesheet" href="/css/pages.css?v=078e6f1">
 </head>
 <body class="docs-detail">
 
-<script src="/js/components-header.js?v=825ae8a"></script>
+<script src="/js/components-header.js?v=078e6f1"></script>
 <a href="#main" class="skip-link">跳转到主内容</a>
 
 <!-- ====== Main ====== -->
 <main id="main">
 
-<!-- 阅读页：左侧边栏（文档列表 + 本页目录） + 正文 -->
+<!-- 阅读页：左侧文档列表 + 正文 + 右侧本页目录（三栏，参考 VitePress） -->
 <div class="docs-layout" data-current-slug="<?php echo htmlspecialchars($slug, ENT_QUOTES, 'UTF-8'); ?>">
 
-  <!-- 左侧边栏 -->
+  <!-- 左侧边栏：只放文档列表 -->
   <aside class="docs-sidebar" id="docsSidebar">
     <div class="docs-sidebar-header">
       <a href="/docs/" class="docs-sidebar-title">指南与文档</a>
     </div>
-    <button class="docs-sidebar-toggle" id="docsSidebarToggle" aria-label="展开目录" aria-expanded="false">
+    <button class="docs-sidebar-toggle" id="docsSidebarToggle" aria-label="展开文档列表" aria-expanded="false">
       <span>文档目录</span>
       <span class="docs-sidebar-toggle-icon">▼</span>
     </button>
@@ -109,35 +109,45 @@ if ($isDetail) {
       <div class="docs-empty">
         <div class="docs-empty-mark" aria-hidden="true">文</div>
         <p class="docs-empty-title">请在左侧选择要阅读的文章</p>
-        <p class="docs-empty-hint">左侧按分类列出了全部指南与文档。选定后这里显示正文，左侧下方会自动生成本页目录。</p>
+        <p class="docs-empty-hint">左侧按分类列出了全部指南与文档。选定后这里显示正文，右侧会自动生成本页目录。</p>
       </div>
     <?php endif; ?></div>
     <div class="docs-footer-nav" id="docsFooterNav"></div>
   </article>
 
+  <!-- 右侧：本页目录（由 js/docs.js 依据正文的 h2/h3 生成） -->
+  <aside class="docs-outline is-empty" id="docsOutline" aria-label="本页目录">
+    <div class="docs-outline-title">本页目录</div>
+    <button class="docs-outline-toggle" id="docsOutlineToggle" aria-expanded="false" aria-controls="docsToc">
+      <span>本页目录</span>
+      <span class="docs-outline-toggle-icon">▼</span>
+    </button>
+    <nav class="docs-toc" id="docsToc"></nav>
+  </aside>
+
 </div>
 
 </main>
 
-<script src="/js/components-footer.js?v=825ae8a"></script>
+<script src="/js/components-footer.js?v=078e6f1"></script>
 
 <!-- Markdown 引擎 -->
-<script defer src="/js/marked.umd.js?v=825ae8a"></script>
-<script defer src="/js/utils.js?v=825ae8a"></script>
-<script defer src="/js/cjk-spacing.js?v=825ae8a"></script>
-<script defer src="/js/code-highlight.js?v=825ae8a"></script>
+<script defer src="/js/marked.umd.js?v=078e6f1"></script>
+<script defer src="/js/utils.js?v=078e6f1"></script>
+<script defer src="/js/cjk-spacing.js?v=078e6f1"></script>
+<script defer src="/js/code-highlight.js?v=078e6f1"></script>
 
 <!-- 全局交互脚本 -->
-<script defer src="/js/nav.js?v=825ae8a"></script>
-<script defer src="/js/page-transition.js?v=825ae8a"></script>
-<script defer src="/js/theme.js?v=825ae8a"></script>
-<script defer src="/js/reveal.js?v=825ae8a"></script>
+<script defer src="/js/nav.js?v=078e6f1"></script>
+<script defer src="/js/page-transition.js?v=078e6f1"></script>
+<script defer src="/js/theme.js?v=078e6f1"></script>
+<script defer src="/js/reveal.js?v=078e6f1"></script>
 
 <!-- 图片查看器（与作品页共用） -->
-<script defer src="/js/lightbox.js?v=825ae8a"></script>
+<script defer src="/js/lightbox.js?v=078e6f1"></script>
 
 <!-- 文档页面逻辑 -->
-<script defer src="/js/docs.js?v=825ae8a"></script>
+<script defer src="/js/docs.js?v=078e6f1"></script>
 
 <?php if ($isDetail): ?>
 <script>

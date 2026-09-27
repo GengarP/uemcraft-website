@@ -996,18 +996,14 @@
 
 /* ========== 指南与文档（阅读页） ========== */
 
-/* 两栏布局：左侧边栏（文档列表 + 本页目录） + 正文
-   宽屏下版心（--docs-max-width）两侧本来会空出来，这里让侧栏把这段留白
-   吃进自己的左内边距（--docs-edge），于是：
-     · 侧栏的背景与底边一直铺到视口左缘，看起来是贴在页面边距上的；
-     · 里面的文字仍停在版心装订线上，与导航栏 logo 同一竖线；
-     · 正文列位置与限宽居中时完全一致。
-   侧栏列宽也要加上这段偏移，分隔线才不会跟着往左跑。 */
+/* 三栏布局（参考 VitePress）：左侧文档列表 / 中间正文 / 右侧本页目录
+   侧栏贴着页面左缘，因此整块不再限宽居中；中间列吸收窗口宽度变化，
+   正文列在其中居中——两侧留白对称，页面重心才稳。 */
 .docs-layout {
   display:grid;
-  grid-template-columns:calc(var(--docs-sidebar-w) + var(--docs-edge)) minmax(0,1fr);
-  width:calc(100% - var(--docs-edge));
+  grid-template-columns:var(--docs-sidebar-w) minmax(0,1fr) var(--docs-outline-w);
   min-height:calc(100vh - var(--header-h));
+  width:100%;
   max-width:none;
   margin:0;
 }
@@ -1019,8 +1015,8 @@
   height:calc(100vh - var(--header-h));
   display:flex;
   flex-direction:column;
-  padding:var(--space-xl) var(--space-lg);
-  padding-left:calc(var(--docs-edge) + var(--space-lg));
+  /* 左侧只留与导航栏 logo 一致的装订线 */
+  padding:var(--space-xl) var(--space-lg) var(--space-xl) var(--docs-gutter);
   border-right:1px solid var(--c-border);
   border-bottom:2px solid var(--c-border);
   background:var(--c-surface);
@@ -1118,55 +1114,11 @@
   padding:var(--space-sm);
 }
 
-/* 侧栏条目：链接 + 折叠三角 + 内嵌本页目录（激活项才有后两者） */
+/* 侧栏条目：只有一条文档链接（本页目录已挪到右侧独立一栏） */
 .docs-sidebar-item {
   display:flex;
-  flex-wrap:wrap;
   align-items:center;
 }
-.docs-sidebar-item > .docs-sidebar-link {
-  flex:1;
-  min-width:0;
-}
-/* 折叠三角 */
-.docs-sidebar-caret {
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  width:24px;
-  height:24px;
-  padding:0;
-  background:transparent;
-  border:none;
-  color:var(--c-text-muted);
-  cursor:pointer;
-  flex-shrink:0;
-  transition:color var(--duration);
-}
-.docs-sidebar-caret:hover { color:var(--c-primary); }
-.docs-sidebar-caret-icon {
-  font-size:.6rem;
-  line-height:1;
-  /* 收起时指右（▸），展开时指下（▾） */
-  transform:rotate(-90deg);
-  transition:transform .2s ease;
-}
-.docs-sidebar-item.is-expanded .docs-sidebar-caret-icon { transform:rotate(0deg); }
-
-/* 本页目录：内嵌在激活文档条目下方，占满整行（flex-wrap 换行） */
-.docs-sidebar-subtoc {
-  flex-basis:100%;
-  display:none;
-  flex-direction:column;
-  gap:2px;
-  /* 左缩进 + 一条竖向引导线，让目录看起来挂在文档条目下面 */
-  margin:2px 0 var(--space-sm) calc(var(--space-sm) + .2rem);
-  padding-left:var(--space-sm);
-  border-left:2px solid var(--c-border);
-}
-.docs-sidebar-item.is-expanded .docs-sidebar-subtoc { display:flex; }
-/* 目录由 JS 异步填充，填充前是空的——不要让空盒子先撑出一段间距 */
-.docs-sidebar-item.is-expanded .docs-sidebar-subtoc:empty { display:none; }
 
 /* 主内容区
    正文列按 --docs-prose-w 居中：窗口变宽时增加的是两侧留白，
@@ -1174,7 +1126,7 @@
 .docs-content {
   display:flex;
   flex-direction:column;
-  padding:var(--space-2xl) var(--space-lg);
+  padding:var(--space-2xl) var(--space-xl);
   min-width:0;
   overflow-x:hidden;
 }
@@ -1201,7 +1153,7 @@
    思源黑体这类常规字体加上它会让中文正文显得松散、难扫读 */
 .docs-body {
   --cjk-letter-spacing:0;
-  font-family:"Noto Sans SC","Source Han Sans SC","PingFang SC","Microsoft YaHei","思源黑体",system-ui,-apple-system,sans-serif;
+  font-family:var(--font-docs);
   font-size:1rem;
   line-height:1.78;
   color:var(--c-text);
@@ -1493,18 +1445,67 @@
   color:var(--c-heading);
 }
 
-/* 本页目录链接（渲染在 .docs-sidebar-subtoc 内，层级缩进由 -h3 变体区分） */
+/* ========== 右侧「本页目录」一栏（参考 VitePress 的 outline） ========== */
+.docs-outline {
+  position:sticky;
+  top:var(--header-h);
+  display:flex;
+  flex-direction:column;
+  height:calc(100vh - var(--header-h));
+  padding:var(--space-2xl) var(--docs-gutter) var(--space-lg) 0;
+  overflow-y:auto;
+  align-self:start;
+}
+/* 文档没有 h2/h3 时整栏不出现，不留一条空白 */
+.docs-outline.is-empty { visibility:hidden; }
+
+/* 字体与正文一致（--font-docs），并同样把像素字体的 .1em 字距归零 */
+.docs-outline-title,
+.docs-toc {
+  --cjk-letter-spacing:0;
+  font-family:var(--font-docs);
+}
+.docs-outline-title {
+  margin-bottom:var(--space-sm);
+  font-size:var(--fs-sm);
+  font-weight:700;
+  color:var(--c-heading);
+}
+/* 移动端折叠按钮（宽屏下隐藏，标题即入口） */
+.docs-outline-toggle {
+  display:none;
+  width:100%;
+  padding:var(--space-sm) var(--space-md);
+  background:var(--c-surface-2);
+  border:2px solid var(--c-border);
+  border-radius:var(--radius);
+  font-family:var(--font-docs);
+  font-size:var(--fs-sm);
+  font-weight:600;
+  color:var(--c-text);
+  cursor:pointer;
+  text-align:left;
+}
+.docs-outline-toggle-icon {
+  float:right;
+  font-size:.7em;
+  transition:transform .2s ease;
+}
+.docs-outline-toggle[aria-expanded="true"] .docs-outline-toggle-icon { transform:rotate(180deg); }
+
+/* 目录链接：层级缩进由 -h3 变体区分 */
+.docs-toc { display:flex; flex-direction:column; gap:1px; }
 .docs-toc-link {
   display:block;
-  padding:.3rem var(--space-sm);
-  font-size:var(--fs-xs);
+  padding:.3rem 0 .3rem var(--space-sm);
+  font-size:var(--fs-sm);
   color:var(--c-text-muted);
   text-decoration:none;
   border-left:2px solid transparent;
   transition:color var(--duration),border-color var(--duration);
   line-height:1.5;
 }
-.docs-toc-link-h3 { padding-left:calc(var(--space-sm) + .8rem); }
+.docs-toc-link-h3 { padding-left:calc(var(--space-sm) + .9rem); }
 .docs-toc-link:hover { color:var(--c-primary); }
 .docs-toc-link.is-active {
   color:var(--c-primary);
@@ -1512,16 +1513,39 @@
   font-weight:600;
 }
 
-/* 响应式 */
+/* 响应式
+   ≤1280：右栏放不下，改为「侧栏占满左列 + 目录折叠块在正文上方」的两栏
+   ≤768 ：单列，侧栏与目录都变成可折叠的块 */
+@media (max-width:1280px) {
+  .docs-layout { grid-template-columns:var(--docs-sidebar-w) minmax(0,1fr); }
+  .docs-sidebar { grid-row:1 / span 2; }
+  .docs-outline {
+    position:static;
+    grid-column:2;
+    grid-row:1;
+    height:auto;
+    padding:var(--space-xl) var(--space-xl) 0;
+    overflow:visible;
+  }
+  .docs-content { grid-column:2; grid-row:2; }
+  .docs-outline-title { display:none; }
+  .docs-outline-toggle { display:block; }
+  .docs-toc { display:none; margin-top:var(--space-sm); }
+  .docs-outline.is-open .docs-toc { display:flex; }
+}
 @media (max-width:1100px) {
   .docs-layout { grid-template-columns:240px minmax(0,1fr); }
   .docs-content { padding:var(--space-xl) var(--space-lg); }
 }
 @media (max-width:768px) {
-  /* 单列：侧栏变成可折叠的文档目录块，不再有限宽居中的两栏框架 */
+  /* 单列：侧栏与目录都变成可折叠的块 */
   .docs-layout { grid-template-columns:1fr; overflow-x:hidden; }
+  /* 单列时侧栏退回到 --space-lg 内边距，导航栏跟着一起改，logo 仍与侧栏标题对齐 */
+  .docs-detail .header-inner { padding-left:var(--space-lg); }
   .docs-sidebar {
     position:static;
+    grid-row:1;
+    grid-column:1;
     height:auto;
     border-right:none;
     border-bottom:1px solid var(--c-border);
@@ -1529,7 +1553,7 @@
     overflow-x:hidden;
   }
   .docs-sidebar-toggle { display:flex; align-items:center; justify-content:space-between; }
-  /* 收起时整块滚动区（文档列表 + 本页目录）一起隐藏 */
+  /* 收起时整块滚动区（文档列表）一起隐藏 */
   .docs-sidebar-scroll {
     display:none;
     margin-top:var(--space-sm);
@@ -1538,7 +1562,18 @@
     padding-inline:0;
   }
   .docs-sidebar.is-open .docs-sidebar-scroll { display:block; }
-  .docs-content { padding:var(--space-lg); max-width:100%; overflow-x:auto; }
+  .docs-outline {
+    grid-row:2;
+    grid-column:1;
+    padding:var(--space-md) var(--space-lg) 0;
+  }
+  .docs-content {
+    grid-row:3;
+    grid-column:1;
+    padding:var(--space-lg);
+    max-width:100%;
+    overflow-x:auto;
+  }
   .docs-pager { grid-template-columns:1fr; }
   .docs-empty { padding:var(--space-2xl) var(--space-md); }
 }
