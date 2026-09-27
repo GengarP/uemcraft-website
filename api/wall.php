@@ -9,6 +9,7 @@
  * 管理接口（需环境变量 ADMIN_TOKEN，请求头 X-Admin-Token）：
  *   GET  ?action=admin_list&page=1&limit=20&status=all|approved|hidden
  *   POST ?action=audit                     （JSON {id, status: approved|hidden}）
+ *   POST ?action=recheck                   （JSON {id}，重新跑一次 AI 审核）
  *   POST ?action=edit                      （JSON {id, name?, content?}）
  *   POST ?action=delete                    （JSON {id}）
  *
@@ -20,7 +21,8 @@
  * 一起返回给后台展示，便于人工复核时知道被判违规的原因。该字段不对外公开：
  * 公开接口只 SELECT id/name/content/created_at，POST 的响应里也不含它。
  * AI 未给出理由时按情况写入 REASON_AI_UNAVAILABLE / REASON_AI_NO_REASON。
- * 管理员手动审核不会覆盖它——它记录的是 AI 当时的判断。
+ * 管理员手动审核不会覆盖它——它记录的是 AI 当时的判断；需要刷新这份判断时
+ * 用 recheck（会按 AI 的新结论同时更新 status 与 review_reason）。
  *
  * 数据库：默认 SQLite（零配置，库文件 api/wall.db，自动建表）；
  * 切换 MySQL 只需设置环境变量 WALL_DB_DRIVER=mysql，
@@ -293,6 +295,44 @@ try {
             'limit' => $limit,
             'total' => $total,
             'pages' => (int) ceil($total / $limit)
+        ]);
+    }
+
+    // ---- 管理：重新调用 AI 审核（给早于该功能上线、没有理由的历史留言补上） ----
+    if ($action === 'recheck') {
+        requireAdmin('WALL_ADMIN_TOKEN');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
+        }
+        $input = readInput();
+        $id = requireId($input);
+
+        $stmt = $db->prepare('SELECT name, content FROM messages WHERE id = ?');
+        $stmt->execute([$id]);
+        $row = $stmt->fetch();
+        if (!$row) {
+            json_response(['success' => false, 'error' => '留言不存在'], 404);
+        }
+
+        $review = moderateContent($row['name'], $row['content']);
+        $status = $review['status'] === 'approved' ? 'approved' : 'hidden';
+
+        $reason = $review['reason'];
+        if ($reason === '') {
+            $reason = $review['status'] === null ? REASON_AI_UNAVAILABLE : REASON_AI_NO_REASON;
+        }
+
+        $stmt = $db->prepare('UPDATE messages SET status = ?, review_reason = ? WHERE id = ?');
+        $stmt->execute([$status, $reason, $id]);
+
+        json_response([
+            'success' => true,
+            'data' => [
+                'id' => $id,
+                'status' => $status,
+                'review_reason' => $reason,
+                'ai_available' => $review['status'] !== null,
+            ]
         ]);
     }
 

@@ -996,14 +996,17 @@
 
 /* ========== 指南与文档（阅读页） ========== */
 
-/* 两栏布局：左侧边栏（文档列表 + 本页目录） + 正文 */
+/* 两栏布局：左侧边栏（文档列表 + 本页目录） + 正文
+   整块限宽居中——正文不再随窗口无限变宽，侧栏也不会再贴着屏幕左缘。
+   只靠侧栏自己的 border-right 划边界：整块再加左右边框会在宽屏上
+   把正文围进一个和文字对不上的框里。 */
 .docs-layout {
   display:grid;
-  grid-template-columns:290px minmax(0,1fr);
+  grid-template-columns:var(--docs-sidebar-w) minmax(0,1fr);
   min-height:calc(100vh - var(--header-h));
   width:100%;
-  max-width:none;
-  margin:0;
+  max-width:var(--docs-max-width);
+  margin-inline:auto;
 }
 
 /* 左侧边栏 */
@@ -1013,7 +1016,7 @@
   height:calc(100vh - var(--header-h));
   display:flex;
   flex-direction:column;
-  padding:var(--space-lg) var(--space-md);
+  padding:var(--space-xl) var(--space-lg);
   border-right:1px solid var(--c-border);
   border-bottom:2px solid var(--c-border);
   background:var(--c-surface);
@@ -1026,8 +1029,8 @@
   min-height:0;
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
-  margin-inline:calc(var(--space-md) * -1);
-  padding-inline:var(--space-md);
+  margin-inline:calc(var(--space-lg) * -1);
+  padding-inline:var(--space-lg);
 }
 .docs-sidebar-header {
   margin-bottom:var(--space-lg);
@@ -1161,11 +1164,20 @@
 /* 目录由 JS 异步填充，填充前是空的——不要让空盒子先撑出一段间距 */
 .docs-sidebar-item.is-expanded .docs-sidebar-subtoc:empty { display:none; }
 
-/* 主内容区 */
+/* 主内容区
+   正文列按 --docs-prose-w 居中：窗口变宽时增加的是两侧留白，
+   而不是行长——一行 40 多个汉字读起来最舒服（VitePress 同款做法） */
 .docs-content {
-  padding:var(--space-xl) var(--space-2xl);
+  display:flex;
+  flex-direction:column;
+  padding:var(--space-2xl) var(--space-lg);
   min-width:0;
   overflow-x:hidden;
+}
+.docs-content > * {
+  width:100%;
+  max-width:var(--docs-prose-w);
+  margin-inline:auto;
 }
 
 /* 面包屑 */
@@ -1180,11 +1192,14 @@
 .docs-breadcrumb a { color:var(--c-primary); text-decoration:none; }
 .docs-breadcrumb a:hover { text-decoration:underline; }
 
-/* 文档正文（长文阅读：脱离像素字体，改用常规黑体，行距放宽） */
+/* 文档正文（长文阅读：脱离像素字体，改用常规黑体，行距放宽）
+   --cjk-letter-spacing 归零：那是给像素字体加的 .1em 字距，
+   思源黑体这类常规字体加上它会让中文正文显得松散、难扫读 */
 .docs-body {
+  --cjk-letter-spacing:0;
   font-family:"Noto Sans SC","Source Han Sans SC","PingFang SC","Microsoft YaHei","思源黑体",system-ui,-apple-system,sans-serif;
-  font-size:1.02rem;
-  line-height:1.85;
+  font-size:1rem;
+  line-height:1.78;
   color:var(--c-text);
 }
 .docs-body h1,.docs-body h2,.docs-body h3,
@@ -1438,6 +1453,10 @@
   padding-top:var(--space-xl);
   border-top:2px solid var(--c-border);
 }
+/* 未选择文档 / 没有相邻文档时不渲染这条空的分隔线 */
+.docs-footer-nav:empty {
+  display:none;
+}
 .docs-pager {
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -1495,13 +1514,14 @@
   .docs-content { padding:var(--space-xl) var(--space-lg); }
 }
 @media (max-width:768px) {
+  /* 单列：侧栏变成可折叠的文档目录块，不再有限宽居中的两栏框架 */
   .docs-layout { grid-template-columns:1fr; overflow-x:hidden; }
   .docs-sidebar {
     position:static;
     height:auto;
     border-right:none;
     border-bottom:1px solid var(--c-border);
-    padding:var(--space-md);
+    padding:var(--space-md) var(--space-lg);
     overflow-x:hidden;
   }
   .docs-sidebar-toggle { display:flex; align-items:center; justify-content:space-between; }
@@ -1514,7 +1534,7 @@
     padding-inline:0;
   }
   .docs-sidebar.is-open .docs-sidebar-scroll { display:block; }
-  .docs-content { padding:var(--space-lg) var(--space-md); max-width:100%; overflow-x:auto; }
+  .docs-content { padding:var(--space-lg); max-width:100%; overflow-x:auto; }
   .docs-pager { grid-template-columns:1fr; }
   .docs-empty { padding:var(--space-2xl) var(--space-md); }
 }

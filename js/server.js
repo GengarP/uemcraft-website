@@ -7,6 +7,8 @@
 document.addEventListener('DOMContentLoaded', () => {
 
   const serverSection = document.getElementById('serverSection');
+  const refreshBtn    = document.getElementById('serverRefreshBtn');
+  const refreshTimeEl = document.getElementById('serverRefreshTime');
   const heroIndicator = document.getElementById('heroIndicator');
   const heroStatus    = document.getElementById('heroStatus');
   const heroServerName = document.getElementById('heroServerName');
@@ -149,6 +151,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // ---- 刷新按钮状态 / 上次更新时间 ----
+  function setRefreshBusy(busy) {
+    if (!refreshBtn) return;
+    refreshBtn.classList.toggle('is-busy', busy);
+    refreshBtn.disabled = busy;
+    refreshBtn.textContent = busy ? '刷新中…' : '刷新状态';
+  }
+
+  function stampRefreshTime() {
+    if (!refreshTimeEl) return;
+    var d = new Date();
+    var p = function (n) { return n < 10 ? '0' + n : '' + n; };
+    refreshTimeEl.textContent = '上次更新 ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+  }
+
   // ---- 更新卡片进度条 ----
   function updateCardProgress(address, pct, label) {
     var container = serverSection ? serverSection.querySelector('.container') : null;
@@ -228,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
     card.innerHTML =
       '<div class="server-card-header">' +
       (favicon
-        ? '<img class="server-card-favicon" src="' + favicon + '" alt="" width="48" height="48">'
+        ? '<img class="server-card-favicon" src="' + favicon + '" alt="" width="64" height="64">'
         : '<div class="server-card-favicon server-card-favicon-empty" aria-hidden="true"></div>') +
       '  <div class="server-card-title-area">' +
       '    <div class="server-card-name-row">' +
@@ -346,6 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function refreshAll() {
     if (isRefreshing) return;
     isRefreshing = true;
+    setRefreshBusy(true);
 
     // 取消上一轮查询
     cancelActiveQuery();
@@ -368,57 +386,61 @@ document.addEventListener('DOMContentLoaded', () => {
     // 构建 index -> server 映射
     var serverByIndex = {};
 
-    await fetchBatchStreaming(
-      servers,
-      // onServerEvent — 更新进度
-      function(data) {
-        var idx = data.index;
-        var srv = serverByIndex[idx] || servers[idx];
-        if (!srv) return;
-        var phase = data.event || (data.data && data.data.phase);
-        var info = PHASE_MAP[phase];
-        if (info) {
-          updateCardProgress(srv.address, info.pct, info.label);
-        }
-      },
-      // onServerResult — 查询成功
-      function(data) {
-        var idx = data.index;
-        var srv = serverByIndex[idx] || servers[idx];
-        if (!srv) return;
-        statusCache[srv.address] = data;
+    try {
+      await fetchBatchStreaming(
+        servers,
+        // onServerEvent — 更新进度
+        function(data) {
+          var idx = data.index;
+          var srv = serverByIndex[idx] || servers[idx];
+          if (!srv) return;
+          var phase = data.event || (data.data && data.data.phase);
+          var info = PHASE_MAP[phase];
+          if (info) {
+            updateCardProgress(srv.address, info.pct, info.label);
+          }
+        },
+        // onServerResult — 查询成功
+        function(data) {
+          var idx = data.index;
+          var srv = serverByIndex[idx] || servers[idx];
+          if (!srv) return;
+          statusCache[srv.address] = data;
 
-        // 替换骨架卡片
-        if (container) {
-          replaceSkeletonWithCard(container, srv, data);
-        }
+          // 替换骨架卡片
+          if (container) {
+            replaceSkeletonWithCard(container, srv, data);
+          }
 
-        // 置顶服务器查询完成后立即更新 Hero
-        if (srv.address === featuredAddr) {
-          updateHeroBadge(srv, data);
-        }
-      },
-      // onServerError — 查询失败
-      function(data) {
-        var idx = data.index;
-        var srv = serverByIndex[idx] || servers[idx];
-        if (!srv) return;
-        var failStatus = { online: false };
-        statusCache[srv.address] = failStatus;
+          // 置顶服务器查询完成后立即更新 Hero
+          if (srv.address === featuredAddr) {
+            updateHeroBadge(srv, data);
+          }
+        },
+        // onServerError — 查询失败
+        function(data) {
+          var idx = data.index;
+          var srv = serverByIndex[idx] || servers[idx];
+          if (!srv) return;
+          var failStatus = { online: false };
+          statusCache[srv.address] = failStatus;
 
-        // 替换骨架卡片（离线态）
-        if (container) {
-          replaceSkeletonWithCard(container, srv, failStatus);
-        }
+          // 替换骨架卡片（离线态）
+          if (container) {
+            replaceSkeletonWithCard(container, srv, failStatus);
+          }
 
-        // 置顶服务器也更新 Hero
-        if (srv.address === featuredAddr) {
-          updateHeroBadge(srv, failStatus);
+          // 置顶服务器也更新 Hero
+          if (srv.address === featuredAddr) {
+            updateHeroBadge(srv, failStatus);
+          }
         }
-      }
-    );
-
-    isRefreshing = false;
+      );
+    } finally {
+      isRefreshing = false;
+      setRefreshBusy(false);
+      stampRefreshTime();
+    }
   }
 
   // ---- 主流程 ----
@@ -443,13 +465,17 @@ document.addEventListener('DOMContentLoaded', () => {
       if (heroPlayers) heroPlayers.textContent = '--';
       if (heroVersion) heroVersion.textContent = '--';
       if (heroLatency) heroLatency.textContent = '--';
+      if (refreshBtn) refreshBtn.disabled = true;
       return;
     }
 
+    // 只在页面加载时查询一次；之后由「刷新状态」按钮手动触发，
+    // 不再定时轮询后端（省掉持续的 SSE 长连接与服务器压力）
     await refreshAll();
 
-    // 自动刷新 60s
-    setInterval(refreshAll, 60000);
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', function () { refreshAll(); });
+    }
   }
 
   // ---- 工具 ----

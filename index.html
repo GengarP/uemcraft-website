@@ -24,14 +24,14 @@
       }
     })();
   </script>
-  <link rel="stylesheet" href="/css/tokens.css">
-  <link rel="stylesheet" href="/css/base.css">
-  <link rel="stylesheet" href="/css/layout.css">
-  <link rel="stylesheet" href="/css/components.css">
-  <link rel="stylesheet" href="/css/pages.css">
+  <link rel="stylesheet" href="/css/tokens.css?v=135713a">
+  <link rel="stylesheet" href="/css/base.css?v=135713a">
+  <link rel="stylesheet" href="/css/layout.css?v=135713a">
+  <link rel="stylesheet" href="/css/components.css?v=135713a">
+  <link rel="stylesheet" href="/css/pages.css?v=135713a">
 </head>
 <body>
-<script src="/js/components-header.js"></script>
+<script src="/js/components-header.js?v=135713a"></script>
 
 <!-- Page Loader -->
 <div class="page-loader" id="pageLoader" aria-hidden="true">
@@ -152,6 +152,11 @@
     <div class="section-head reveal">
       <span class="section-label">SERVER</span>
       <h2>服务器状态</h2>
+      <!-- 状态只在页面加载时查询一次，需要更新时点这里 -->
+      <div class="server-refresh">
+        <button type="button" class="btn btn-outline btn-sm server-refresh-btn" id="serverRefreshBtn">刷新状态</button>
+        <span class="server-refresh-time" id="serverRefreshTime" aria-live="polite"></span>
+      </div>
     </div>
     <!-- 服务器面板由 server.js 动态渲染 -->
   </div>
@@ -269,18 +274,18 @@
 
 </main>
 
-<script src="/js/components-footer.js"></script>
-<script defer src="/js/utils.js"></script>
-<script defer src="/js/cjk-spacing.js"></script>
-<script defer src="/js/code-highlight.js"></script>
-<script defer src="/js/content.js"></script>
-<script defer src="/js/loader.js"></script>
-<script defer src="/js/nav.js"></script>
-<script defer src="/js/page-transition.js"></script>
-<script defer src="/js/theme.js"></script>
-<script defer src="/js/reveal.js"></script>
-<script defer src="/js/server.js"></script>
-<script defer src="/js/hero-gallery.js"></script>
+<script src="/js/components-footer.js?v=135713a"></script>
+<script defer src="/js/utils.js?v=135713a"></script>
+<script defer src="/js/cjk-spacing.js?v=135713a"></script>
+<script defer src="/js/code-highlight.js?v=135713a"></script>
+<script defer src="/js/content.js?v=135713a"></script>
+<script defer src="/js/loader.js?v=135713a"></script>
+<script defer src="/js/nav.js?v=135713a"></script>
+<script defer src="/js/page-transition.js?v=135713a"></script>
+<script defer src="/js/theme.js?v=135713a"></script>
+<script defer src="/js/reveal.js?v=135713a"></script>
+<script defer src="/js/server.js?v=135713a"></script>
+<script defer src="/js/hero-gallery.js?v=135713a"></script>
 <script>
   // 点击 Hero 服务器信息平滑滚动到 SERVER section
   var heroServerInfo = document.getElementById('heroServerInfo');

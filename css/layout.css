@@ -37,9 +37,12 @@
   gap:var(--space-lg);
 }
 
-/* docs 阅读页：导航栏内容左右贴边，与全幅两栏布局对齐（.docs-detail 由 docs/index.php 写在 <body> 上） */
+/* docs 阅读页：导航栏与限宽居中的两栏正文对齐，视觉上成为一个整体
+   （.docs-detail 由 docs/index.php 写在 <body> 上）。
+   内边距沿用 .header-inner 的 --space-lg，与 .docs-sidebar 的左右内边距一致，
+   于是 logo 与侧栏标题、右侧按钮与正文右缘都能对齐。 */
 .docs-detail .header-inner {
-  max-width:none;
+  max-width:var(--docs-max-width);
 }
 
 /* Logo */

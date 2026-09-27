@@ -134,14 +134,18 @@
     card.appendChild(header);
     card.appendChild(body);
 
-    // AI 审核理由：让复核的人知道这条为什么被判违规 / 为什么进了待审队列
-    if (item.review_reason) {
-      var reason = document.createElement('p');
-      reason.className = 'admin-card-reason';
-      reason.innerHTML = '<span class="admin-card-reason-label">审核理由</span>'
-        + escapeHtml(item.review_reason);
-      card.appendChild(reason);
-    }
+    // AI 审核理由（models.review_reason）：复核的人需要一眼看出这条为什么被判违规。
+    // 已屏蔽用红色竖线强调；早于该功能上线的历史留言没有理由，也要显式说明，
+    // 否则看起来就像「后台根本不显示审核理由」。
+    var hasReason = !!(item.review_reason && String(item.review_reason).trim());
+    var reason = document.createElement('p');
+    reason.className = 'admin-card-reason' + (hidden ? ' is-rejected' : '') + (hasReason ? '' : ' is-empty');
+    reason.innerHTML =
+      '<span class="admin-card-reason-label">' + (hidden ? 'AI 未通过理由' : 'AI 通过理由') + '</span>'
+      + (hasReason
+          ? escapeHtml(item.review_reason)
+          : '未记录（这条留言提交时尚未启用理由存档，可点「AI 复审」补上）');
+    card.appendChild(reason);
 
     buildActions(header.querySelector('.admin-card-actions'), item, card);
     return card;
@@ -169,6 +173,26 @@
       enterEditMode(card, item);
     });
 
+    // 历史留言没有 AI 理由时，用它重新跑一次审核并刷新理由
+    var recheckBtn = document.createElement('button');
+    recheckBtn.type = 'button';
+    recheckBtn.className = 'btn btn-ghost btn-sm';
+    recheckBtn.textContent = 'AI 复审';
+    recheckBtn.title = '重新调用 AI 审核这条留言，并刷新审核理由';
+    recheckBtn.addEventListener('click', function() {
+      if (!window.confirm('重新调用 AI 审核「' + item.name + '」的留言？\n'
+          + 'AI 的新结论会同时更新这条留言的公开状态与审核理由。')) return;
+      recheckBtn.disabled = true;
+      recheckBtn.textContent = '复审中…';
+      apiRequest('recheck', { method: 'POST', body: { id: item.id } })
+        .then(function() { loadMessages(currentPage); })
+        .catch(function(err) {
+          recheckBtn.disabled = false;
+          recheckBtn.textContent = 'AI 复审';
+          handleApiError(err, adminList);
+        });
+    });
+
     var delBtn = document.createElement('button');
     delBtn.type = 'button';
     delBtn.className = 'btn btn-ghost btn-sm admin-btn-danger';
@@ -182,6 +206,7 @@
 
     container.appendChild(auditBtn);
     container.appendChild(editBtn);
+    container.appendChild(recheckBtn);
     container.appendChild(delBtn);
   }
 

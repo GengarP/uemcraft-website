@@ -153,6 +153,14 @@
   --max-width: 1200px;
   --header-h:  80px;
 
+  /* 文档阅读页（参考 VitePress 的排版尺度）
+     --docs-max-width  整体两栏的最大宽度，超出后居中留白
+     --docs-sidebar-w  左侧目录栏宽度
+     --docs-prose-w    正文阅读列宽度（约 44 个汉字/行） */
+  --docs-max-width: 1440px;
+  --docs-sidebar-w: 280px;
+  --docs-prose-w:   736px;
+
   /* 过渡 */
   --ease:     cubic-bezier(.4,0,.2,1);
   --duration: .25s;

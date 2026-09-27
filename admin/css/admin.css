@@ -114,7 +114,11 @@
   transition: box-shadow var(--duration), border-color var(--duration);
 }
 .admin-card:hover { border-color: var(--c-primary); box-shadow: var(--shadow-hover); }
-.admin-card.is-hidden { border-left-color: var(--c-red); opacity: .65; }
+/* 屏蔽项：只弱化昵称与正文——整卡 opacity 会把下面那条 AI 审核理由一起压暗，
+   而理由恰恰是复核时最该看清的内容 */
+.admin-card.is-hidden { border-left-color: var(--c-red); }
+.admin-card.is-hidden .admin-card-name,
+.admin-card.is-hidden .admin-card-body { color: var(--c-text-muted); }
 .admin-card-header {
   display: flex;
   align-items: center;
@@ -169,6 +173,20 @@
   color: var(--c-text-muted);
   line-height: 1.6;
   word-break: break-word;
+}
+/* 未通过：整条用红色竖线 + 红底标签，一眼看出是 AI 判违规及其理由 */
+.admin-card-reason.is-rejected {
+  border-left-color: var(--c-red);
+  color: var(--c-text);
+}
+.admin-card-reason.is-rejected .admin-card-reason-label {
+  background: var(--c-red);
+  color: #fff;
+}
+/* 没有存档理由（早于 AI 理由上线）时弱化，并提示可用「AI 复审」补上 */
+.admin-card-reason.is-empty {
+  border-left-style: dashed;
+  font-style: italic;
 }
 .admin-card-reason-label {
   display: inline-block;

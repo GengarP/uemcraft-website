@@ -1,5 +1,5 @@
 /* ============================================================
-   lightbox.js — 共享图片查看器：缩放 / 拖拽平移
+   lightbox.js — 共享图片查看器：缩放 / 拖拽平移 / 双指捏合
    ------------------------------------------------------------
    全站三处图片查看器共用：docs 阅读页、作品详情页、作品列表页。
    各页自己负责「打开 / 关闭 / 切换图片 / 上下张」的逻辑，
@@ -17,13 +17,16 @@
          .lightbox-caption       可选，列表页的标题/描述/下载面板
 
    enhance() 会创建 .lightbox-stage 包住图片作为裁剪视口，
-   并把缩放控件插入 .lightbox。
+   并把缩放控件（含当前倍数读数）插入 .lightbox。
+
+   交互：滚轮/双指捏合以指针位置为定点缩放，双击在 2x 与适应之间切换，
+   放大后按住拖动即可平移查看局部，+ / − / 0 键同样可用。
    ============================================================ */
 window.UEMLightbox = (function () {
   'use strict';
 
   var MIN_SCALE = 0.5;
-  var MAX_SCALE = 6;
+  var MAX_SCALE = 12;     // 需要看清局部细节，放大上限给得宽一些
   var ZOOM_STEP = 1.5;   // 按钮每次缩放的倍率
   var DBLCLICK_SCALE = 2; // 双击放大到的倍率
   var DRAG_SLOP = 3;      // 超过这个位移才算拖拽，用于区分点击
@@ -61,11 +64,13 @@ window.UEMLightbox = (function () {
     controls.innerHTML =
       '<button type="button" class="lightbox-ctl" data-lb="out" aria-label="缩小">'
       + '<span class="lb-ico lb-ico-minus" aria-hidden="true"></span></button>'
-      + '<button type="button" class="lightbox-ctl lightbox-ctl-fit" data-lb="reset" aria-label="恢复原始大小">'
+      + '<button type="button" class="lightbox-ctl lightbox-ctl-fit" data-lb="reset" aria-label="适应窗口（恢复原始大小）">'
       + '<span class="lb-fit" aria-hidden="true">1:1</span></button>'
       + '<button type="button" class="lightbox-ctl" data-lb="in" aria-label="放大">'
-      + '<span class="lb-ico lb-ico-plus" aria-hidden="true"></span></button>';
+      + '<span class="lb-ico lb-ico-plus" aria-hidden="true"></span></button>'
+      + '<span class="lightbox-zoom" role="status" aria-live="off">100%</span>';
     root.appendChild(controls);
+    var zoomLabel = controls.querySelector('.lightbox-zoom');
 
     /* ---- 状态 ---- */
     var scale = 1;
@@ -76,6 +81,7 @@ window.UEMLightbox = (function () {
       img.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scale + ')';
       root.classList.toggle('is-zoomed', scale > 1.001);
       root.classList.toggle('is-pannable', isPannable());
+      if (zoomLabel) zoomLabel.textContent = Math.round(scale * 100) + '%';
     }
 
     /* 未变换时的图片中心（视口坐标）。
@@ -162,9 +168,28 @@ window.UEMLightbox = (function () {
       else zoomTo(DBLCLICK_SCALE, e.clientX, e.clientY);
     });
 
-    /* ---- 拖拽平移（Pointer Events，鼠标 / 触摸 / 触控笔通用） ---- */
+    /* ---- 拖拽平移 + 双指捏合缩放（Pointer Events，鼠标 / 触摸 / 触控笔通用） ---- */
     var dragging = false;
     var startX = 0, startY = 0, startTx = 0, startTy = 0;
+    var pointers = {};        // pointerId -> {x, y}，用于识别双指
+    var pinchDist = 0;        // 上一帧的双指间距，逐帧取比值即可连续缩放
+
+    function pointerCount() { return Object.keys(pointers).length; }
+
+    function pointerPair() {
+      var ids = Object.keys(pointers);
+      return [pointers[ids[0]], pointers[ids[1]]];
+    }
+
+    function pinchCenter() {
+      var p = pointerPair();
+      return { x: (p[0].x + p[1].x) / 2, y: (p[0].y + p[1].y) / 2 };
+    }
+
+    function pinchGap() {
+      var p = pointerPair();
+      return Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
+    }
 
     stage.addEventListener('pointerdown', function (e) {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
@@ -172,17 +197,40 @@ window.UEMLightbox = (function () {
       // 进而触发 pointercancel，拖拽刚开始就被中断——这正是「图片拖不动」的原因之一
       e.preventDefault();
 
+      pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+      // 捕获指针，拖到 stage 外也能继续跟手
+      try { stage.setPointerCapture(e.pointerId); } catch (err) { /* 忽略 */ }
+
+      if (pointerCount() === 2) {
+        // 第二根手指落下：改走捏合缩放，停掉单指平移
+        dragging = false;
+        stage.classList.remove('is-dragging');
+        pinchDist = pinchGap();
+        return;
+      }
+
       dragging = true;
       startX = e.clientX;
       startY = e.clientY;
       startTx = tx;
       startTy = ty;
       stage.classList.add('is-dragging');
-      // 捕获指针，拖到 stage 外也能继续跟手
-      try { stage.setPointerCapture(e.pointerId); } catch (err) { /* 忽略 */ }
     });
 
     function onMove(e) {
+      if (!pointers[e.pointerId]) return;
+      pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+
+      if (pointerCount() === 2) {
+        var gap = pinchGap();
+        if (pinchDist > 0 && gap > 0) {
+          var c = pinchCenter();
+          zoomBy(gap / pinchDist, c.x, c.y);
+          pinchDist = gap;
+        }
+        return;
+      }
+
       if (!dragging) return;
       tx = startTx + (e.clientX - startX);
       ty = startTy + (e.clientY - startY);
@@ -191,10 +239,25 @@ window.UEMLightbox = (function () {
     }
 
     function endDrag(e) {
-      if (!dragging) return;
-      dragging = false;
-      stage.classList.remove('is-dragging');
+      if (pointers[e.pointerId]) delete pointers[e.pointerId];
       try { stage.releasePointerCapture(e.pointerId); } catch (err) { /* 忽略 */ }
+
+      if (pointerCount() === 1) {
+        // 捏合抬起一根手指后，剩下那根继续平移，不必重新按一次
+        var rest = pointers[Object.keys(pointers)[0]];
+        dragging = true;
+        startX = rest.x;
+        startY = rest.y;
+        startTx = tx;
+        startTy = ty;
+        pinchDist = 0;
+        stage.classList.add('is-dragging');
+        return;
+      }
+
+      dragging = false;
+      pinchDist = 0;
+      stage.classList.remove('is-dragging');
     }
 
     // 监听挂在 document 上：指针捕获若失败（部分浏览器/指针类型不支持），
