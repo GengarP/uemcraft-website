@@ -3,7 +3,7 @@ require_once __DIR__ . '/../api/common.php';
 
 header('Content-Type: text/xml; charset=utf-8');
 $queryApi = 'https://api.uemcraft.cn/mc-query/api/batch/stream';
-$queryTimeout = 5;
+$queryTimeout = 15;
 
 try {
     $db = getSiteDb();
@@ -54,7 +54,16 @@ function queryServerStatus($serverIds, $db, $apiUrl, $timeout) {
     ]);
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
     curl_close($ch);
+    if ($response === false) {
+        error_log('cURL 请求失败: ' . $curlError);
+        return $statuses;
+    }
+    if ($httpCode !== 200) {
+        error_log('API 返回非 200: ' . $httpCode);
+        return $statuses;
+    }
     if ($httpCode === 200 && $response) {
         $lines = explode("\n", $response);
         foreach ($lines as $line) {
