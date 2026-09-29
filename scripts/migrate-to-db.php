@@ -193,5 +193,11 @@ if (!file_exists($eventsDataPath)) {
     echo "\n活动导入完成：新增 {$eventCount} 个，跳过 {$eventSkipped} 个\n\n";
 }
 
+// ---- 修正 servers 端口数据 ----
+// 幂等：只在端口仍为 0/NULL 时补上 Java 版默认端口，不覆盖后台后续的正常修改
+echo "--- 修正服务器端口 ---\n";
+$portFixed = $db->exec("UPDATE servers SET port = 25565 WHERE id IN (1, 4) AND (port IS NULL OR port <= 0)");
+echo "已修正 {$portFixed} 台服务器的端口为 25565（Java 版默认端口）\n\n";
+
 echo "=== 迁移完成 ===\n";
 echo "数据库文件：{$dbPath}\n";

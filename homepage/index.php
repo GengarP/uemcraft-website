@@ -36,7 +36,11 @@ function queryServerStatus($serverIds, $db, $apiUrl, $timeout) {
     $serverInfo = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $queryData = [];
     foreach ($serverInfo as $info) {
-        $queryData[] = ['host' => $info['address'], 'port' => (int)$info['port'], 'id' => $info['id']];
+        $port = (int)$info['port'];
+        if ($port <= 0) {
+            $port = 25565; // Java 版默认端口
+        }
+        $queryData[] = ['host' => $info['address'], 'port' => $port, 'id' => $info['id']];
     }
     $ch = curl_init();
     curl_setopt_array($ch, [
