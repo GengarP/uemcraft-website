@@ -42,29 +42,25 @@ function queryServerStatus($serverIds, $db, $apiUrl, $timeout) {
         }
         $queryData[] = ['host' => $info['address'], 'port' => $port, 'id' => $info['id']];
     }
-    $ch = curl_init();
-    curl_setopt_array($ch, [
-        CURLOPT_URL => $apiUrl,
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => json_encode(['servers' => $queryData]),
-        CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT => $timeout,
-        CURLOPT_FOLLOWLOCATION => true,
+    $context = stream_context_create([
+        'http' => [
+            'method' => 'POST',
+            'header' => 'Content-Type: application/json',
+            'content' => json_encode(['servers' => $queryData]),
+            'timeout' => $timeout,
+        ],
+        'ssl' => [
+            'verify_peer' => true,
+            'verify_peer_name' => true,
+        ],
     ]);
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $curlError = curl_error($ch);
-    curl_close($ch);
+    $response = @file_get_contents($apiUrl, false, $context);
     if ($response === false) {
-        error_log('cURL 请求失败: ' . $curlError);
+        $err = error_get_last();
+        error_log('API 请求失败: ' . ($err['message'] ?? '未知错误'));
         return $statuses;
     }
-    if ($httpCode !== 200) {
-        error_log('API 返回非 200: ' . $httpCode);
-        return $statuses;
-    }
-    if ($httpCode === 200 && $response) {
+    if ($response) {
         $lines = explode("\n", $response);
         foreach ($lines as $line) {
             $line = trim($line);
@@ -88,6 +84,10 @@ function generateXaml($servers, $statuses) {
         $name = htmlspecialchars($server['name'], ENT_XML1, 'UTF-8');
         $edition = htmlspecialchars($server['edition'] ?? '', ENT_XML1, 'UTF-8');
         $note = htmlspecialchars($server['note'] ?? '', ENT_XML1, 'UTF-8');
+        $displayPort = (int)$server['port'];
+        if ($displayPort <= 0) {
+            $displayPort = 25565; // Java 版默认端口
+        }
         $status = $statuses[$id] ?? null;
         $isOnline = $status && ($status['online'] ?? false);
         if ($isOnline) {
@@ -111,7 +111,7 @@ function generateXaml($servers, $statuses) {
         $xaml .= '                <TextBlock Text="● " Foreground="' . $statusColor . '" FontSize="14" VerticalAlignment="Center" />' . "\n";
         $xaml .= '                <TextBlock Text="' . $statusText . '" Foreground="' . $statusColor . '" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" />' . "\n";
         $xaml .= '            </StackPanel>' . "\n";
-        $xaml .= '            <local:MyListItem Margin="-5,2,-5,2" Logo="pack://application:,,,/images/Blocks/CommandBlock.png" Title="地址" Info="' . htmlspecialchars($server['address'] . ':' . $server['port'], ENT_XML1, 'UTF-8') . '" />' . "\n";
+        $xaml .= '            <local:MyListItem Margin="-5,2,-5,2" Logo="pack://application:,,,/images/Blocks/CommandBlock.png" Title="地址" Info="' . htmlspecialchars($server['address'] . ':' . $displayPort, ENT_XML1, 'UTF-8') . '" />' . "\n";
         $xaml .= '            <local:MyListItem Margin="-5,2,-5,2" Logo="pack://application:,,,/images/Blocks/CraftingTable.png" Title="版本" Info="' . $versionText . '" />' . "\n";
         $xaml .= '            <local:MyListItem Margin="-5,2,-5,2" Logo="pack://application:,,,/images/Blocks/Grass.png" Title="玩家" Info="' . $playersText . '" />' . "\n";
         $xaml .= '            <local:MyListItem Margin="-5,2,-5,2" Logo="pack://application:,,,/images/Blocks/Redstone.png" Title="延迟" Info="' . $latencyText . '" />' . "\n";
