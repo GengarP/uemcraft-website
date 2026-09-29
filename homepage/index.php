@@ -1,12 +1,12 @@
 ﻿<?php
+require_once __DIR__ . '/../api/common.php';
+
 header('Content-Type: text/xml; charset=utf-8');
-$dbPath = __DIR__ . '/../api/site.db';
 $queryApi = 'https://api.uemcraft.cn/mc-query/api/batch/stream';
 $queryTimeout = 5;
 
 try {
-    $db = new PDO('sqlite:' . $dbPath);
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $db = getSiteDb();
     $stmt = $db->query('SELECT * FROM servers ORDER BY sort_order');
     $servers = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $serverStatuses = [];
@@ -15,7 +15,8 @@ try {
         $serverStatuses = queryServerStatus($serverIds, $db, $queryApi, $queryTimeout);
     }
     echo generateXaml($servers, $serverStatuses);
-} catch (Exception $e) {
+} catch (Throwable $e) {
+    error_log('homepage 生成失败: ' . $e->getMessage());
     echo '<?xml version="1.0" encoding="utf-8"?>' . "\n";
     echo '<StackPanel>' . "\n";
     echo '    <local:MyCard Title="服务器状态" Margin="0,0,0,15">' . "\n";
