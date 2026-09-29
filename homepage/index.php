@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once __DIR__ . '/../api/common.php';
 
 header('Content-Type: text/xml; charset=utf-8');
