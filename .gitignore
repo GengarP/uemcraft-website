@@ -14,3 +14,6 @@ gitpush.bat
 assets/img/news/
 assets/img/gallery/
 #   图片管理
+
+homepage/example.xaml
+#   PCL2示例主页
