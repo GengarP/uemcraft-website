@@ -18,18 +18,7 @@ require_once __DIR__ . '/common.php';
 
 $action = $_GET['action'] ?? '';
 
-/**
- * 对外展示时掩码地址（隐藏真实 IP / 域名）
- * play.uemcraft.cn → play.***.cn
- * 192.168.1.100   → 192.***.***.100
- */
-function mask_address($addr) {
-    if (strpos($addr, '.') === false) return '***';
-    $parts = explode('.', $addr);
-    if (count($parts) <= 2) return $parts[0] . '.***';
-    // 保留首尾段，中间用 *** 替代
-    return $parts[0] . '.***.' . end($parts);
-}
+// mask_address() 已上移至 common.php（homepage/index.php 复用同一掩码规则）
 
 try {
     $db = getSiteDb();

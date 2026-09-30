@@ -5,13 +5,13 @@
 // 可能漏出的杂音（警告、空白）全部关在里面，最后统一丢弃后才发 header + XML。
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
-while (ob_get_level() > 0) { ob_end_clean(); }
+while (ob_get_level() > 0) { if (!@ob_end_clean()) break; }
 ob_start();
 
 require_once __DIR__ . '/../api/common.php';
 
 $queryApi = 'https://api.uemcraft.cn/mc-query/api/batch/stream';
-$queryTimeout = 15;
+$queryTimeout = 30; // 与 api/servers.php、js/server.js 的 30 秒对齐，避免慢查询被截断成「离线」
 
 $xml = '';
 try {
@@ -37,15 +37,23 @@ try {
 }
 
 // 丢弃缓冲区中的一切杂音，然后才发 header 和 XML —— 声明永远在最前
-while (ob_get_level() > 0) { ob_end_clean(); }
+while (ob_get_level() > 0) { if (!@ob_end_clean()) break; }
 header('Content-Type: text/xml; charset=utf-8');
 echo $xml;
+
+/**
+ * 默认端口：port 为 0/空时按 edition 回退（java → 25565，bedrock → 19132）。
+ * 请求、匹配键、显示端口三处共用这一个回退，保证两侧一致。
+ */
+function defaultPort($edition) {
+    return strtolower(trim((string)$edition)) === 'bedrock' ? 19132 : 25565;
+}
 
 /**
  * 批量查询服务器状态。
  * 外部接口（SSE 流）只在 server_result 结果事件里带 online/ip/port，
  * 全程没有任何事件包含 id 字段，所以按 ip:port 建映射，再匹配回本地记录；
- * 另存一份按请求下标回映的兜底（index → 本地 id）。
+ * 另存一份按请求下标回映的精确映射（index → 本地 id）。
  * 返回值以本地服务器 id 为键（generateXaml 按 $statuses[$id] 取用）。
  */
 function queryServerStatus($serverIds, $db, $apiUrl, $timeout) {
@@ -58,7 +66,7 @@ function queryServerStatus($serverIds, $db, $apiUrl, $timeout) {
     foreach ($serverInfo as $info) {
         $port = (int)$info['port'];
         if ($port <= 0) {
-            $port = 25565; // Java 版默认端口（请求、匹配键、显示端口三处用同一个回退值）
+            $port = defaultPort($info['edition'] ?? ''); // 与匹配键、显示端口同一回退
         }
         $indexToId[count($queryData)] = $info['id'];
         $queryData[] = [
@@ -108,15 +116,16 @@ function queryServerStatus($serverIds, $db, $apiUrl, $timeout) {
             $byIndex[$indexToId[$data['index']]] = $data;
         }
     }
-    // 匹配回本地服务器记录：按 $info['address'] . ':' . $port 作为键查询（port 用回退后的值）
+    // 匹配回本地服务器记录：优先用 index→id 精确映射（同地址同端口的双协议记录也不会串），
+    // 兜底按 $info['address'] . ':' . $port 作为键查询（port 用与请求侧相同的回退值）
     $result = [];
     foreach ($serverInfo as $info) {
         $port = (int)$info['port'];
         if ($port <= 0) {
-            $port = 25565;
+            $port = defaultPort($info['edition'] ?? '');
         }
         $key = $info['address'] . ':' . $port;
-        $result[$info['id']] = $statuses[$key] ?? $byIndex[$info['id']] ?? null;
+        $result[$info['id']] = $byIndex[$info['id']] ?? $statuses[$key] ?? null;
     }
     return $result;
 }
@@ -126,12 +135,18 @@ function generateXaml($servers, $statuses) {
     $xaml .= '<StackPanel>' . "\n";
     foreach ($servers as $server) {
         $id = $server['id'];
-        $name = htmlspecialchars($server['name'], ENT_XML1, 'UTF-8');
-        $edition = htmlspecialchars($server['edition'] ?? '', ENT_XML1, 'UTF-8');
-        $note = htmlspecialchars($server['note'] ?? '', ENT_XML1, 'UTF-8');
+        // ENT_XML1 只转义 <>& 不转义 ASCII 双引号（等价 ENT_NOQUOTES），
+        // 属性值用双引号包裹必须加 ENT_QUOTES，否则引号会截断属性、整份 XML 非良构；
+        // ENT_SUBSTITUTE 让非法 UTF-8 以 U+FFFD 替换，而不是整串变空。
+        $esc = ENT_XML1 | ENT_QUOTES | ENT_SUBSTITUTE;
+        $name = htmlspecialchars($server['name'], $esc, 'UTF-8');
+        $edition = htmlspecialchars($server['edition'] ?? '', $esc, 'UTF-8');
+        $note = htmlspecialchars($server['note'] ?? '', $esc, 'UTF-8');
+        // hide_address=1 的服务器对外掩码地址，与 api/servers.php 公开接口一致（查询仍用真实地址）
+        $address = !empty($server['hide_address']) ? mask_address($server['address']) : $server['address'];
         $displayPort = (int)$server['port'];
         if ($displayPort <= 0) {
-            $displayPort = 25565; // Java 版默认端口
+            $displayPort = defaultPort($server['edition'] ?? ''); // 与匹配键同一回退
         }
         $status = $statuses[$id] ?? null;
         $isOnline = $status && ($status['online'] ?? false);
@@ -139,7 +154,7 @@ function generateXaml($servers, $statuses) {
             $statusText = '在线';
             $statusColor = '#4CAF50';
             $playersText = (int)($status['players']['online'] ?? 0) . ' / ' . (int)($status['players']['max'] ?? 0);
-            $versionText = htmlspecialchars($status['version'] ?? '未知', ENT_XML1, 'UTF-8');
+            $versionText = htmlspecialchars($status['version'] ?? '未知', $esc, 'UTF-8');
             $latencyText = (int)($status['latency'] ?? 0) . 'ms';
             $motdText = isset($status['motd']) ? strip_tags($status['motd']) : '';
         } else {
@@ -156,12 +171,12 @@ function generateXaml($servers, $statuses) {
         $xaml .= '                <TextBlock Text="● " Foreground="' . $statusColor . '" FontSize="14" VerticalAlignment="Center" />' . "\n";
         $xaml .= '                <TextBlock Text="' . $statusText . '" Foreground="' . $statusColor . '" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" />' . "\n";
         $xaml .= '            </StackPanel>' . "\n";
-        $xaml .= '            <local:MyListItem Margin="-5,2,-5,2" Logo="pack://application:,,,/images/Blocks/CommandBlock.png" Title="地址" Info="' . htmlspecialchars($server['address'] . ':' . $displayPort, ENT_XML1, 'UTF-8') . '" />' . "\n";
+        $xaml .= '            <local:MyListItem Margin="-5,2,-5,2" Logo="pack://application:,,,/images/Blocks/CommandBlock.png" Title="地址" Info="' . htmlspecialchars($address . ':' . $displayPort, $esc, 'UTF-8') . '" />' . "\n";
         $xaml .= '            <local:MyListItem Margin="-5,2,-5,2" Logo="pack://application:,,,/images/Blocks/CraftingTable.png" Title="版本" Info="' . $versionText . '" />' . "\n";
         $xaml .= '            <local:MyListItem Margin="-5,2,-5,2" Logo="pack://application:,,,/images/Blocks/Grass.png" Title="玩家" Info="' . $playersText . '" />' . "\n";
         $xaml .= '            <local:MyListItem Margin="-5,2,-5,2" Logo="pack://application:,,,/images/Blocks/Redstone.png" Title="延迟" Info="' . $latencyText . '" />' . "\n";
         if (!empty($motdText)) {
-            $motdSafe = htmlspecialchars($motdText, ENT_XML1, 'UTF-8');
+            $motdSafe = htmlspecialchars($motdText, $esc, 'UTF-8');
             $xaml .= '            <TextBlock TextWrapping="Wrap" Margin="0,6,0,0" FontSize="12" Foreground="{DynamicResource ColorBrush4}" Text="' . $motdSafe . '" />' . "\n";
         }
         if (!empty($note)) {

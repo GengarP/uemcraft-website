@@ -60,6 +60,20 @@ function now() {
     return time();
 }
 
+/**
+ * 对外展示时掩码地址（隐藏真实 IP / 域名）
+ * play.uemcraft.cn → play.***.cn
+ * 192.168.1.100   → 192.***.***.100
+ * servers.php 公开接口与 homepage/index.php（PCL2）共用，掩码规则保持一致。
+ */
+function mask_address($addr) {
+    if (strpos($addr, '.') === false) return '***';
+    $parts = explode('.', $addr);
+    if (count($parts) <= 2) return $parts[0] . '.***';
+    // 保留首尾段，中间用 *** 替代
+    return $parts[0] . '.***.' . end($parts);
+}
+
 // ---- 管理员鉴权 ----
 
 /**
