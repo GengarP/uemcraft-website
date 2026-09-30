@@ -1,10 +1,19 @@
 <?php
+// PCL2 首页 XML（XAML）生成器
+// 输出纪律：XML 声明必须永远是响应的第一字节，否则 PCL2 报「意外的 XML 声明」。
+// 先关显示错误、清掉继承的输出缓冲，再起一个新缓冲把 require / 业务逻辑期间
+// 可能漏出的杂音（警告、空白）全部关在里面，最后统一丢弃后才发 header + XML。
+ini_set('display_errors', '0');
+error_reporting(E_ALL);
+while (ob_get_level() > 0) { ob_end_clean(); }
+ob_start();
+
 require_once __DIR__ . '/../api/common.php';
 
-header('Content-Type: text/xml; charset=utf-8');
 $queryApi = 'https://api.uemcraft.cn/mc-query/api/batch/stream';
 $queryTimeout = 15;
 
+$xml = '';
 try {
     $db = getSiteDb();
     $stmt = $db->query('SELECT * FROM servers ORDER BY sort_order');
@@ -14,33 +23,49 @@ try {
         $serverIds = array_column($servers, 'id');
         $serverStatuses = queryServerStatus($serverIds, $db, $queryApi, $queryTimeout);
     }
-    echo generateXaml($servers, $serverStatuses);
+    $xml = generateXaml($servers, $serverStatuses);
 } catch (Throwable $e) {
     error_log('homepage 生成失败: ' . $e->getMessage());
-    echo '<?xml version="1.0" encoding="utf-8"?>' . "\n";
-    echo '<StackPanel>' . "\n";
-    echo '    <local:MyCard Title="服务器状态" Margin="0,0,0,15">' . "\n";
-    echo '        <StackPanel Margin="25,40,23,15">' . "\n";
-    echo '            <local:MyHint Theme="Red" Text="无法获取服�
-�器信息，请稍后重试。" />' . "\n";
-    echo '        </StackPanel>' . "\n";
-    echo '    </local:MyCard>' . "\n";
-    echo '</StackPanel>' . "\n";
+    $xml  = '<?xml version="1.0" encoding="utf-8"?>' . "\n";
+    $xml .= '<StackPanel>' . "\n";
+    $xml .= '    <local:MyCard Title="服务器状态" Margin="0,0,0,15">' . "\n";
+    $xml .= '        <StackPanel Margin="25,40,23,15">' . "\n";
+    $xml .= '            <local:MyHint Theme="Red" Text="无法获取服务器信息，请稍后重试。" />' . "\n";
+    $xml .= '        </StackPanel>' . "\n";
+    $xml .= '    </local:MyCard>' . "\n";
+    $xml .= '</StackPanel>' . "\n";
 }
 
+// 丢弃缓冲区中的一切杂音，然后才发 header 和 XML —— 声明永远在最前
+while (ob_get_level() > 0) { ob_end_clean(); }
+header('Content-Type: text/xml; charset=utf-8');
+echo $xml;
+
+/**
+ * 批量查询服务器状态。
+ * 外部接口（SSE 流）只在 server_result 结果事件里带 online/ip/port，
+ * 全程没有任何事件包含 id 字段，所以按 ip:port 建映射，再匹配回本地记录；
+ * 另存一份按请求下标回映的兜底（index → 本地 id）。
+ * 返回值以本地服务器 id 为键（generateXaml 按 $statuses[$id] 取用）。
+ */
 function queryServerStatus($serverIds, $db, $apiUrl, $timeout) {
-    $statuses = [];
     $placeholders = implode(',', array_fill(0, count($serverIds), '?'));
-    $stmt = $db->prepare("SELECT id, address, port FROM servers WHERE id IN ($placeholders)");
+    $stmt = $db->prepare("SELECT id, address, port, edition FROM servers WHERE id IN ($placeholders)");
     $stmt->execute($serverIds);
     $serverInfo = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $queryData = [];
+    $indexToId = [];
     foreach ($serverInfo as $info) {
         $port = (int)$info['port'];
         if ($port <= 0) {
-            $port = 25565; // Java 版默认端口
+            $port = 25565; // Java 版默认端口（请求、匹配键、显示端口三处用同一个回退值）
         }
-        $queryData[] = ['host' => $info['address'], 'port' => $port, 'id' => $info['id']];
+        $indexToId[count($queryData)] = $info['id'];
+        $queryData[] = [
+            'ip'      => $info['address'],
+            'port'    => $port,
+            'edition' => ($info['edition'] ?? '') ?: 'java',
+        ];
     }
     $context = stream_context_create([
         'http' => [
@@ -58,22 +83,42 @@ function queryServerStatus($serverIds, $db, $apiUrl, $timeout) {
     if ($response === false) {
         $err = error_get_last();
         error_log('API 请求失败: ' . ($err['message'] ?? '未知错误'));
-        return $statuses;
+        return [];
     }
-    if ($response) {
-        $lines = explode("\n", $response);
-        foreach ($lines as $line) {
-            $line = trim($line);
-            if (strpos($line, 'data: ') === 0) {
-                $jsonStr = substr($line, 6);
-                $data = json_decode($jsonStr, true);
-                if ($data && isset($data['id'])) {
-                    $statuses[$data['id']] = $data;
-                }
-            }
+    // 解析 SSE：只记录最终结果事件（同时带 online + ip + port 的逐服结果），
+    // 忽略 meta / progress / server_event(phase) / done 等过程事件。
+    // 注意 done 事件的 data 里也有 online（是统计计数而非布尔值），
+    // 所以必须同时要求 ip/port 存在才能认定为结果事件。
+    $statuses = []; // key: "ip:port"
+    $byIndex = [];  // key: 本地记录 id（按请求下标回映，兜底 ip 回显不一致的情况）
+    foreach (explode("\n", $response) as $line) {
+        $line = trim($line);
+        if (strpos($line, 'data:') !== 0) {
+            continue;
+        }
+        $data = json_decode(trim(substr($line, 5)), true);
+        if (!is_array($data)) {
+            continue;
+        }
+        if (!isset($data['online']) || !isset($data['ip']) || !isset($data['port'])) {
+            continue;
+        }
+        $statuses[$data['ip'] . ':' . $data['port']] = $data;
+        if (isset($data['index'], $indexToId[$data['index']])) {
+            $byIndex[$indexToId[$data['index']]] = $data;
         }
     }
-    return $statuses;
+    // 匹配回本地服务器记录：按 $info['address'] . ':' . $port 作为键查询（port 用回退后的值）
+    $result = [];
+    foreach ($serverInfo as $info) {
+        $port = (int)$info['port'];
+        if ($port <= 0) {
+            $port = 25565;
+        }
+        $key = $info['address'] . ':' . $port;
+        $result[$info['id']] = $statuses[$key] ?? $byIndex[$info['id']] ?? null;
+    }
+    return $result;
 }
 
 function generateXaml($servers, $statuses) {
@@ -93,9 +138,9 @@ function generateXaml($servers, $statuses) {
         if ($isOnline) {
             $statusText = '在线';
             $statusColor = '#4CAF50';
-            $playersText = ($status['players']['online'] ?? 0) . ' / ' . ($status['players']['max'] ?? 0);
-            $versionText = $status['version'] ?? '未知';
-            $latencyText = ($status['latency'] ?? 0) . 'ms';
+            $playersText = (int)($status['players']['online'] ?? 0) . ' / ' . (int)($status['players']['max'] ?? 0);
+            $versionText = htmlspecialchars($status['version'] ?? '未知', ENT_XML1, 'UTF-8');
+            $latencyText = (int)($status['latency'] ?? 0) . 'ms';
             $motdText = isset($status['motd']) ? strip_tags($status['motd']) : '';
         } else {
             $statusText = '离线';
