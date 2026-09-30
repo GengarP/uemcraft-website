@@ -10,7 +10,7 @@ ob_start();
 
 require_once __DIR__ . '/../api/common.php';
 
-$queryApi = 'https://api.uemcraft.cn/mc-query/api/batch/stream';
+$queryApi = 'https://api.uemcraft.cn/mc-query/api/batch'; // 非流式接口，返回 JSON
 $queryTimeout = 30; // 与 api/servers.php、js/server.js 的 30 秒对齐，避免慢查询被截断成「离线」
 
 $xml = '';
@@ -46,14 +46,23 @@ echo $xml;
  * 请求、匹配键、显示端口三处共用这一个回退，保证两侧一致。
  */
 function defaultPort($edition) {
-    return strtolower(trim((string)$edition)) === 'bedrock' ? 19132 : 25565;
+    return editionKey($edition) === 'bedrock' ? 19132 : 25565;
 }
 
 /**
- * 批量查询服务器状态。
- * 外部接口（SSE 流）只在 server_result 结果事件里带 online/ip/port，
- * 全程没有任何事件包含 id 字段，所以按 ip:port 建映射，再匹配回本地记录；
- * 另存一份按请求下标回映的精确映射（index → 本地 id）。
+ * 归一化 edition 为映射键（bedrock → 'bedrock'，其余 → 'java'）。
+ * 请求侧、响应侧都过这一层，大小写/空白差异不会让键错位。
+ */
+function editionKey($edition) {
+    return strtolower(trim((string)$edition)) === 'bedrock' ? 'bedrock' : 'java';
+}
+
+/**
+ * 批量查询服务器状态（非流式）。
+ * 外部接口一次性返回 JSON：{"results": [{online, ip, port, edition, ...}, ...]}。
+ * 结果里没有任何 id/index 字段，ip/port 精确回显请求原值，所以按 ip:port:edition
+ * 建映射再匹配回本地记录——edition 必须参与键：同地址同端口的双协议（java/bedrock）
+ * 记录没有别的办法区分，只按 ip:port 会让两条记录串到同一个结果上。
  * 返回值以本地服务器 id 为键（generateXaml 按 $statuses[$id] 取用）。
  */
 function queryServerStatus($serverIds, $db, $apiUrl, $timeout) {
@@ -62,13 +71,11 @@ function queryServerStatus($serverIds, $db, $apiUrl, $timeout) {
     $stmt->execute($serverIds);
     $serverInfo = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $queryData = [];
-    $indexToId = [];
     foreach ($serverInfo as $info) {
         $port = (int)$info['port'];
         if ($port <= 0) {
             $port = defaultPort($info['edition'] ?? ''); // 与匹配键、显示端口同一回退
         }
-        $indexToId[count($queryData)] = $info['id'];
         $queryData[] = [
             'ip'      => $info['address'],
             'port'    => $port,
@@ -93,39 +100,25 @@ function queryServerStatus($serverIds, $db, $apiUrl, $timeout) {
         error_log('API 请求失败: ' . ($err['message'] ?? '未知错误'));
         return [];
     }
-    // 解析 SSE：只记录最终结果事件（同时带 online + ip + port 的逐服结果），
-    // 忽略 meta / progress / server_event(phase) / done 等过程事件。
-    // 注意 done 事件的 data 里也有 online（是统计计数而非布尔值），
-    // 所以必须同时要求 ip/port 存在才能认定为结果事件。
-    $statuses = []; // key: "ip:port"
-    $byIndex = [];  // key: 本地记录 id（按请求下标回映，兜底 ip 回显不一致的情况）
-    foreach (explode("\n", $response) as $line) {
-        $line = trim($line);
-        if (strpos($line, 'data:') !== 0) {
+    // 只取 results 数组；顶层的 online/offline 是统计计数，不是逐服布尔值
+    $data = json_decode($response, true);
+    $results = (is_array($data) && isset($data['results']) && is_array($data['results'])) ? $data['results'] : [];
+    $statuses = []; // key: "ip:port:edition"
+    foreach ($results as $r) {
+        if (!is_array($r) || !isset($r['ip'], $r['port'])) {
             continue;
         }
-        $data = json_decode(trim(substr($line, 5)), true);
-        if (!is_array($data)) {
-            continue;
-        }
-        if (!isset($data['online']) || !isset($data['ip']) || !isset($data['port'])) {
-            continue;
-        }
-        $statuses[$data['ip'] . ':' . $data['port']] = $data;
-        if (isset($data['index'], $indexToId[$data['index']])) {
-            $byIndex[$indexToId[$data['index']]] = $data;
-        }
+        $statuses[$r['ip'] . ':' . (int)$r['port'] . ':' . editionKey($r['edition'] ?? '')] = $r;
     }
-    // 匹配回本地服务器记录：优先用 index→id 精确映射（同地址同端口的双协议记录也不会串），
-    // 兜底按 $info['address'] . ':' . $port 作为键查询（port 用与请求侧相同的回退值）
+    // 匹配回本地服务器记录（port 回退与请求侧一致）
     $result = [];
     foreach ($serverInfo as $info) {
         $port = (int)$info['port'];
         if ($port <= 0) {
             $port = defaultPort($info['edition'] ?? '');
         }
-        $key = $info['address'] . ':' . $port;
-        $result[$info['id']] = $byIndex[$info['id']] ?? $statuses[$key] ?? null;
+        $key = $info['address'] . ':' . $port . ':' . editionKey($info['edition'] ?? '');
+        $result[$info['id']] = $statuses[$key] ?? null;
     }
     return $result;
 }
