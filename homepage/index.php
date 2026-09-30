@@ -1,8 +1,9 @@
 <?php
 // PCL2 首页 XML（XAML）生成器
-// 输出纪律：XML 声明必须永远是响应的第一字节，否则 PCL2 报「意外的 XML 声明」。
-// 先关显示错误、清掉继承的输出缓冲，再起一个新缓冲把 require / 业务逻辑期间
-// 可能漏出的杂音（警告、空白）全部关在里面，最后统一丢弃后才发 header + XML。
+// 输出纪律：直接从 <StackPanel> 开始，不输出 <?xml> 声明（PCL2 自己处理声明与命名空间）。
+// <StackPanel> 前有任何杂音（声明、警告、空白）都会让文档非良构、PCL2 全部卡片消失，
+// 所以先关显示错误、清掉继承的输出缓冲，再起一个新缓冲把 require / 业务逻辑期间
+// 可能漏出的杂音全部关在里面，最后统一丢弃后才发 header + 内容。
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
 while (ob_get_level() > 0) { if (!@ob_end_clean()) break; }
@@ -26,8 +27,7 @@ try {
     $xml = generateXaml($servers, $serverStatuses);
 } catch (Throwable $e) {
     error_log('homepage 生成失败: ' . $e->getMessage());
-    $xml  = '<?xml version="1.0" encoding="utf-8"?>' . "\n";
-    $xml .= '<StackPanel>' . "\n";
+    $xml  = '<StackPanel>' . "\n";
     $xml .= '    <local:MyCard Title="服务器状态" Margin="0,0,0,15">' . "\n";
     $xml .= '        <StackPanel Margin="25,40,23,15">' . "\n";
     $xml .= '            <local:MyHint Theme="Red" Text="无法获取服务器信息，请稍后重试。" />' . "\n";
@@ -36,7 +36,7 @@ try {
     $xml .= '</StackPanel>' . "\n";
 }
 
-// 丢弃缓冲区中的一切杂音，然后才发 header 和 XML —— 声明永远在最前
+// 丢弃缓冲区中的一切杂音，然后才发 header 和内容 —— <StackPanel> 永远在最前
 while (ob_get_level() > 0) { if (!@ob_end_clean()) break; }
 header('Content-Type: text/xml; charset=utf-8');
 echo $xml;
@@ -124,8 +124,7 @@ function queryServerStatus($serverIds, $db, $apiUrl, $timeout) {
 }
 
 function generateXaml($servers, $statuses) {
-    $xaml = '<?xml version="1.0" encoding="utf-8"?>' . "\n";
-    $xaml .= '<StackPanel>' . "\n";
+    $xaml = '<StackPanel>' . "\n";
     foreach ($servers as $server) {
         $id = $server['id'];
         // ENT_XML1 只转义 <>& 不转义 ASCII 双引号（等价 ENT_NOQUOTES），
