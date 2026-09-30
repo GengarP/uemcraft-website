@@ -163,10 +163,12 @@ function generateXaml($servers, $statuses) {
         $xaml .= '                <TextBlock Text="● " Foreground="' . $statusColor . '" FontSize="14" VerticalAlignment="Center" />' . "\n";
         $xaml .= '                <TextBlock Text="' . $statusText . '" Foreground="' . $statusColor . '" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" />' . "\n";
         $xaml .= '            </StackPanel>' . "\n";
-        $xaml .= '            <local:MyListItem Margin="-5,2,-5,2" Logo="pack://application:,,,/images/Blocks/CommandBlock.png" Title="地址" Info="' . htmlspecialchars($address . ':' . $displayPort, $esc, 'UTF-8') . '" />' . "\n";
-        $xaml .= '            <local:MyListItem Margin="-5,2,-5,2" Logo="pack://application:,,,/images/Blocks/CraftingTable.png" Title="版本" Info="' . $versionText . '" />' . "\n";
+        $addrText = htmlspecialchars($address . ':' . $displayPort, $esc, 'UTF-8');
+        // Type="Clickable" + EventType="复制文本"：点击地址行直接复制，EventData 为要复制的文本
+        $xaml .= '            <local:MyListItem Margin="-5,2,-5,2" Logo="pack://application:,,,/images/Blocks/CommandBlock.png" Title="地址" Info="' . $addrText . '" Type="Clickable" EventType="复制文本" EventData="' . $addrText . '" />' . "\n";
+        $xaml .= '            <local:MyListItem Margin="-5,2,-5,2" Logo="pack://application:,,,/images/Blocks/GoldBlock.png" Title="版本" Info="' . $versionText . '" />' . "\n";
         $xaml .= '            <local:MyListItem Margin="-5,2,-5,2" Logo="pack://application:,,,/images/Blocks/Grass.png" Title="玩家" Info="' . $playersText . '" />' . "\n";
-        $xaml .= '            <local:MyListItem Margin="-5,2,-5,2" Logo="pack://application:,,,/images/Blocks/Redstone.png" Title="延迟" Info="' . $latencyText . '" />' . "\n";
+        $xaml .= '            <local:MyListItem Margin="-5,2,-5,2" Logo="pack://application:,,,/images/Blocks/RedstoneBlock.png" Title="延迟" Info="' . $latencyText . '" />' . "\n";
         if (!empty($motdText)) {
             $motdSafe = htmlspecialchars($motdText, $esc, 'UTF-8');
             $xaml .= '            <TextBlock TextWrapping="Wrap" Margin="0,6,0,0" FontSize="12" Foreground="{DynamicResource ColorBrush4}" Text="' . $motdSafe . '" />' . "\n";
