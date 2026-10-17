@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#213d87">
+  <title>设计卡片 — PCL 主页 — UEMCraft</title>
+  <link rel="icon" href="../favicon.ico" type="images/x-icon">
+  <script>
+    (function(){
+      var t = localStorage.getItem('uemcraft-theme');
+      if(!t) t = window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+      document.documentElement.style.colorScheme = t;
+      var tex = localStorage.getItem('uemcraft-texture');
+      if(tex && tex !== 'none'){
+        document.documentElement.setAttribute('data-texture', tex);
+        var s = document.createElement('style');
+        s.id = 'texture-style';
+        s.textContent = 'body::after{background-image:url(/assets/img/background_textures/'+tex+'.png);}';
+        document.head.appendChild(s);
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="/css/tokens.css?v=7081c72">
+  <link rel="stylesheet" href="/css/base.css?v=7081c72">
+  <link rel="stylesheet" href="/css/layout.css?v=7081c72">
+  <link rel="stylesheet" href="/css/components.css?v=7081c72">
+  <link rel="stylesheet" href="/css/pages.css?v=7081c72">
+  <link rel="stylesheet" href="css/admin.css?v=7081c72">
+</head>
+<body>
+<script src="/js/components-admin.js?v=7081c72"></script>
+
+<a href="#main" class="skip-link">跳转到主内容</a>
+
+<main id="main">
+
+<div class="admin-page-header">
+  <h1 id="pageTitle">设计卡片</h1>
+  <p class="hero-sub">模板卡按每台服务器展开，独立卡只渲染一次；任意文本字段支持 {%key%} 替换</p>
+  <nav class="breadcrumb" aria-label="面包屑">
+    <a href="/index.html">首页</a> <span>/</span> <a href="index.html">管理后台</a> <span>/</span> <a href="pcl-cards.html">PCL 主页</a> <span>/</span> <span id="crumbLeaf">设计卡片</span>
+  </nav>
+</div>
+
+<section class="section">
+  <div class="container">
+    <form id="cardForm" class="admin-edit-form" autocomplete="off">
+
+      <!-- ====== 基本信息 ====== -->
+      <fieldset class="form-fieldset">
+        <legend>基本信息</legend>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="fName">内部名称 <span class="req">*</span></label>
+            <input type="text" id="fName" class="form-input" maxlength="100" placeholder="仅后台识别用，如：默认服务器卡" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="fKind">卡片类型</label>
+            <select id="fKind" class="form-input">
+              <option value="server">服务器模板卡（按每台服务器展开）</option>
+              <option value="standalone">独立卡（只渲染一次）</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group form-group-grow">
+            <label class="form-label" for="fTitle">卡片标题模板</label>
+            <div class="insert-bar">
+              <input type="text" id="fTitle" class="form-input" maxlength="255" placeholder="如：{%name%}">
+              <select class="form-input insert-select" data-target="fTitle" title="插入 {%key%}"></select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="fSort">排序（小的在前）</label>
+            <input type="number" id="fSort" class="form-input" value="0" step="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="fEnabled">启用</label>
+            <select id="fEnabled" class="form-input">
+              <option value="1">启用</option>
+              <option value="0">停用</option>
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- ====== 内容行 ====== -->
+      <fieldset class="form-fieldset">
+        <legend>内容行</legend>
+        <div id="rowsWrap"></div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost btn-sm" id="addRowBtn">+ 添加内容行</button>
+        </div>
+      </fieldset>
+
+      <!-- ====== 按钮 ====== -->
+      <fieldset class="form-fieldset">
+        <legend>按钮</legend>
+        <div id="buttonsWrap"></div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost btn-sm" id="addBtnBtn">+ 添加按钮</button>
+        </div>
+      </fieldset>
+
+      <div id="formMessage" class="wall-form-message" style="display:none;"></div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">保存卡片</button>
+        <a href="pcl-cards.html" class="btn btn-ghost">返回列表</a>
+      </div>
+    </form>
+
+    <!-- ====== XAML 预览 ====== -->
+    <fieldset class="form-fieldset">
+      <legend>XAML 预览（示例值模拟替换结果）</legend>
+      <pre id="xamlPreview" class="xaml-preview"></pre>
+    </fieldset>
+
+  </div>
+</section>
+
+</main>
+
+<script src="/js/components-footer.js?v=7081c72"></script>
+<script defer src="/js/utils.js?v=7081c72"></script>
+<script defer src="/js/cjk-spacing.js?v=7081c72"></script>
+<script defer src="/js/nav.js?v=7081c72"></script>
+<script defer src="/js/page-transition.js?v=7081c72"></script>
+<script defer src="/js/theme.js?v=7081c72"></script>
+<script defer src="/js/admin-auth.js?v=7081c72"></script>
+<script defer src="/js/admin-pcl.js?v=7081c72"></script>
+</body>
+</html>

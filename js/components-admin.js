@@ -20,6 +20,7 @@
     { label: '作品管理',   path: 'gallery.html', match: ['gallery', 'gallery-edit'], icon: '作' },
     { label: '文档管理',   path: 'docs.html',    match: ['docs', 'docs-edit'],      icon: '文' },
     { label: '服务器管理', path: 'servers.html', match: ['servers', 'servers-edit'], icon: '服' },
+    { label: 'PCL 主页',   path: 'pcl-cards.html', match: ['pcl-cards', 'pcl-cards-edit'], icon: 'P' },
     { label: '图片管理',   path: 'images.html',  match: ['images'],                 icon: '图' },
     { label: '留言墙管理', path: 'wall.html',    match: ['wall'],                   icon: '墙' }
   ];

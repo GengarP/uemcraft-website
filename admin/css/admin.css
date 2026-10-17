@@ -1006,3 +1006,58 @@
   text-align: center;
   padding: var(--space-sm);
 }
+
+/* ---- PCL 主页卡片设计器 ---- */
+.form-fieldset {
+  border: 2px solid var(--c-border);
+  border-radius: var(--radius);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  max-width: 900px;
+}
+.form-fieldset legend {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--c-heading);
+  padding: 0 var(--space-sm);
+}
+.form-label { display: block; font-weight: 500; margin-bottom: 4px; font-size: var(--fs-sm); color: var(--c-heading); }
+.form-label .req { color: var(--c-red); }
+.form-group-grow { grid-column: span 2; }
+@media (max-width: 768px) {
+  .form-group-grow { grid-column: 1 / -1; }
+  .admin-edit-form .form-row { grid-template-columns: 1fr; }
+}
+.insert-bar { display: flex; gap: var(--space-xs); }
+.insert-bar .form-input { flex: 1; min-width: 0; }
+.insert-select { max-width: 150px; flex-shrink: 0; }
+.row-editor {
+  border: 2px solid var(--c-border);
+  border-radius: var(--radius);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+.row-editor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+.row-editor-head .form-input { max-width: 160px; }
+.row-editor-ops { display: flex; gap: var(--space-xs); }
+.admin-tab-panel { display: none; }
+.admin-tab-panel.is-active { display: block; }
+.xaml-preview {
+  background: var(--c-bg-section-alt);
+  border: 2px solid var(--c-border);
+  border-radius: var(--radius);
+  padding: var(--space-md);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  line-height: 1.7;
+  overflow-x: auto;
+  white-space: pre;
+  max-width: 900px;
+}

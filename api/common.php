@@ -534,6 +534,72 @@ function migrateSiteTables($db, $driver) {
         }
     }
 
+    // 迁移：新增 pcl_cards / pcl_vars 表（PCL2 主页卡片设计器）
+    if ($driver === 'mysql') {
+        $db->exec("CREATE TABLE IF NOT EXISTS pcl_cards (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            name VARCHAR(100) NOT NULL,
+            kind VARCHAR(16) NOT NULL DEFAULT 'server',
+            title VARCHAR(255) NOT NULL DEFAULT '',
+            rows_json TEXT NOT NULL,
+            buttons_json TEXT NOT NULL,
+            enabled TINYINT NOT NULL DEFAULT 1,
+            sort_order INT NOT NULL DEFAULT 0,
+            created_at INT NOT NULL,
+            updated_at INT NOT NULL,
+            PRIMARY KEY (id),
+            KEY idx_pcl_cards_sort (sort_order)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        $db->exec("CREATE TABLE IF NOT EXISTS pcl_vars (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            var_key VARCHAR(64) NOT NULL,
+            var_label VARCHAR(100) NOT NULL DEFAULT '',
+            var_value VARCHAR(500) NOT NULL DEFAULT '',
+            sort_order INT NOT NULL DEFAULT 0,
+            created_at INT NOT NULL,
+            updated_at INT NOT NULL,
+            PRIMARY KEY (id),
+            UNIQUE KEY idx_pcl_vars_key (var_key),
+            KEY idx_pcl_vars_sort (sort_order)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    } else {
+        try {
+            $db->exec("CREATE TABLE pcl_cards (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                name         TEXT NOT NULL,
+                kind         TEXT NOT NULL DEFAULT 'server',
+                title        TEXT NOT NULL DEFAULT '',
+                rows_json    TEXT NOT NULL DEFAULT '[]',
+                buttons_json TEXT NOT NULL DEFAULT '[]',
+                enabled      INTEGER NOT NULL DEFAULT 1,
+                sort_order   INTEGER NOT NULL DEFAULT 0,
+                created_at   INTEGER NOT NULL,
+                updated_at   INTEGER NOT NULL
+            )");
+            $db->exec("CREATE INDEX IF NOT EXISTS idx_pcl_cards_sort ON pcl_cards(sort_order)");
+        } catch (PDOException $e) {
+            if (strpos($e->getMessage(), 'already exists') === false) {
+                throw $e;
+            }
+        }
+        try {
+            $db->exec("CREATE TABLE pcl_vars (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                var_key    TEXT NOT NULL UNIQUE,
+                var_label  TEXT NOT NULL DEFAULT '',
+                var_value  TEXT NOT NULL DEFAULT '',
+                sort_order INTEGER NOT NULL DEFAULT 0,
+                created_at INTEGER NOT NULL,
+                updated_at INTEGER NOT NULL
+            )");
+            $db->exec("CREATE INDEX IF NOT EXISTS idx_pcl_vars_sort ON pcl_vars(sort_order)");
+        } catch (PDOException $e) {
+            if (strpos($e->getMessage(), 'already exists') === false) {
+                throw $e;
+            }
+        }
+    }
+
     // 迁移：新增 docs 表
     if ($driver === 'mysql') {
         $db->exec("CREATE TABLE IF NOT EXISTS docs (

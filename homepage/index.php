@@ -24,7 +24,10 @@ try {
         $serverIds = array_column($servers, 'id');
         $serverStatuses = queryServerStatus($serverIds, $db, $queryApi, $queryTimeout);
     }
-    $xml = generateXaml($servers, $serverStatuses);
+    // 卡片设计器：卡片与自定义变量均来自后台（api/pcl.php 管理）
+    $cards = $db->query('SELECT * FROM pcl_cards ORDER BY sort_order ASC, id ASC')->fetchAll(PDO::FETCH_ASSOC);
+    $varRows = $db->query('SELECT * FROM pcl_vars ORDER BY sort_order ASC, id ASC')->fetchAll(PDO::FETCH_ASSOC);
+    $xml = generateXaml($servers, $serverStatuses, $cards, $varRows);
 } catch (Throwable $e) {
     error_log('homepage 生成失败: ' . $e->getMessage());
     $xml  = '<StackPanel>' . "\n";
@@ -123,61 +126,223 @@ function queryServerStatus($serverIds, $db, $apiUrl, $timeout) {
     return $result;
 }
 
-function generateXaml($servers, $statuses) {
-    $xaml = '<StackPanel>' . "\n";
-    foreach ($servers as $server) {
-        $id = $server['id'];
-        // ENT_XML1 只转义 <>& 不转义 ASCII 双引号（等价 ENT_NOQUOTES），
-        // 属性值用双引号包裹必须加 ENT_QUOTES，否则引号会截断属性、整份 XML 非良构；
-        // ENT_SUBSTITUTE 让非法 UTF-8 以 U+FFFD 替换，而不是整串变空。
-        $esc = ENT_XML1 | ENT_QUOTES | ENT_SUBSTITUTE;
-        $name = htmlspecialchars($server['name'], $esc, 'UTF-8');
-        $edition = htmlspecialchars($server['edition'] ?? '', $esc, 'UTF-8');
-        $note = htmlspecialchars($server['note'] ?? '', $esc, 'UTF-8');
-        // hide_address=1 的服务器对外掩码地址，与 api/servers.php 公开接口一致（查询仍用真实地址）
-        $address = !empty($server['hide_address']) ? mask_address($server['address']) : $server['address'];
-        $displayPort = (int)$server['port'];
-        if ($displayPort <= 0) {
-            $displayPort = defaultPort($server['edition'] ?? ''); // 与匹配键同一回退
+/* ============================================================
+   卡片设计器渲染
+   - pcl_cards.kind='server'：模板卡，按 servers 表每台展开一张
+   - pcl_cards.kind='standalone'：独立卡，渲染一次
+   - 模板中 {%key%} 从键值映射替换；值是数据不是 XAML，
+     替换完成后统一过 $esc（ENT_XML1|ENT_QUOTES|ENT_SUBSTITUTE）
+   ============================================================ */
+
+/** XAML 属性转义（ENT_XML1 不转义 ASCII 双引号，必须带 ENT_QUOTES） */
+function xesc($s) {
+    return htmlspecialchars((string)$s, ENT_XML1 | ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+/**
+ * {%key%} 替换：未定义键替换为空串。
+ * 返回的仍是原始文本（未转义），渲染拼接时统一过 xesc()。
+ */
+function substitute($tpl, $map) {
+    return preg_replace_callback('/\{%([a-zA-Z0-9_]+)%\}/', function ($m) use ($map) {
+        return array_key_exists($m[1], $map) ? (string)$map[$m[1]] : '';
+    }, (string)$tpl);
+}
+
+/** 全局键值映射：自定义变量 + 内置 {%year%} */
+function globalMap($varRows) {
+    $map = ['year' => date('Y')];
+    foreach ($varRows as $v) {
+        $map[(string)$v['var_key']] = (string)$v['var_value'];
+    }
+    return $map;
+}
+
+/** 服务器键值映射（叠加全局映射），address 已按 hide_address 掩码 */
+function serverMap($server, $statuses, $varRows) {
+    $map = globalMap($varRows);
+    $address = !empty($server['hide_address']) ? mask_address($server['address']) : $server['address'];
+    $displayPort = (int)$server['port'];
+    if ($displayPort <= 0) {
+        $displayPort = defaultPort($server['edition'] ?? ''); // 与匹配键同一回退
+    }
+    $status = $statuses[$server['id']] ?? null;
+    $isOnline = $status && ($status['online'] ?? false);
+    if ($isOnline) {
+        $map['status'] = '在线';
+        $map['status_color'] = '#4CAF50';
+        $map['players_online'] = (string)(int)($status['players']['online'] ?? 0);
+        $map['players_max'] = (string)(int)($status['players']['max'] ?? 0);
+        $map['players'] = $map['players_online'] . ' / ' . $map['players_max'];
+        $map['version'] = (string)($status['version'] ?? '未知');
+        $map['latency'] = (int)($status['latency'] ?? 0) . 'ms';
+        $map['motd'] = isset($status['motd']) ? strip_tags($status['motd']) : '';
+    } else {
+        $map['status'] = '离线';
+        $map['status_color'] = '#F44336';
+        $map['players_online'] = '';
+        $map['players_max'] = '';
+        $map['players'] = '- / -';
+        $map['version'] = ($server['edition'] ?? '') ?: '未知';
+        $map['latency'] = '超时';
+        $map['motd'] = '';
+    }
+    $map['name'] = (string)$server['name'];
+    $map['address'] = (string)$address;
+    $map['port'] = (string)$displayPort;
+    $map['address_port'] = $address . ':' . $displayPort;
+    $map['edition'] = (string)($server['edition'] ?? '');
+    $map['note'] = (string)($server['note'] ?? '');
+    return $map;
+}
+
+/** 行里引用的 {%key%} 值全为空时整行不输出（hide_if_empty） */
+function rowHidden($row, $map) {
+    if (empty($row['hide_if_empty'])) {
+        return false;
+    }
+    preg_match_all('/\{%([a-zA-Z0-9_]+)%\}/', json_encode($row, JSON_UNESCAPED_UNICODE), $m);
+    if (empty($m[1])) {
+        return false;
+    }
+    foreach (array_unique($m[1]) as $key) {
+        if (($map[$key] ?? '') !== '') {
+            return false;
         }
-        $status = $statuses[$id] ?? null;
-        $isOnline = $status && ($status['online'] ?? false);
-        if ($isOnline) {
-            $statusText = '在线';
-            $statusColor = '#4CAF50';
-            $playersText = (int)($status['players']['online'] ?? 0) . ' / ' . (int)($status['players']['max'] ?? 0);
-            $versionText = htmlspecialchars($status['version'] ?? '未知', $esc, 'UTF-8');
-            $latencyText = (int)($status['latency'] ?? 0) . 'ms';
-            $motdText = isset($status['motd']) ? strip_tags($status['motd']) : '';
+    }
+    return true;
+}
+
+/** 渲染单行内容 */
+function renderRow($row, $map) {
+    $type = $row['type'] ?? '';
+    if ($type === 'status_dot') {
+        // 仅 server 卡的映射有 status/status_color；空值说明是 standalone 卡，跳过
+        $status = $map['status'] ?? '';
+        $color = $map['status_color'] ?? '#F44336';
+        if ($status === '') {
+            return '';
+        }
+        $out  = '            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">' . "\n";
+        $out .= '                <TextBlock Text="● " Foreground="' . xesc($color) . '" FontSize="14" VerticalAlignment="Center" />' . "\n";
+        $out .= '                <TextBlock Text="' . xesc($status) . '" Foreground="' . xesc($color) . '" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" />' . "\n";
+        $out .= '            </StackPanel>' . "\n";
+        return $out;
+    }
+
+    if ($type === 'list_item') {
+        // logo 可以是 12 内置图标名（CommandBlock.png 等），也可以是完整 URL
+        $logo = substitute($row['logo'] ?? '', $map);
+        if ($logo === '') {
+            $logoAttr = '';
+        } elseif (preg_match('#^[a-z]+://#i', $logo)) {
+            $logoAttr = ' Logo="' . xesc($logo) . '"';
         } else {
-            $statusText = '离线';
-            $statusColor = '#F44336';
-            $playersText = '- / -';
-            $versionText = $edition ?: '未知';
-            $latencyText = '超时';
-            $motdText = '';
+            $logoAttr = ' Logo="pack://application:,,,/images/Blocks/' . xesc($logo) . '"';
         }
-        $xaml .= '    <local:MyCard Title="' . $name . '" Margin="0,0,0,15" CanSwap="True">' . "\n";
-        $xaml .= '        <StackPanel Margin="25,40,23,15">' . "\n";
-        $xaml .= '            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">' . "\n";
-        $xaml .= '                <TextBlock Text="● " Foreground="' . $statusColor . '" FontSize="14" VerticalAlignment="Center" />' . "\n";
-        $xaml .= '                <TextBlock Text="' . $statusText . '" Foreground="' . $statusColor . '" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" />' . "\n";
-        $xaml .= '            </StackPanel>' . "\n";
-        $addrText = htmlspecialchars($address . ':' . $displayPort, $esc, 'UTF-8');
-        // Type="Clickable" + EventType="复制文本"：点击地址行直接复制，EventData 为要复制的文本
-        $xaml .= '            <local:MyListItem Margin="-5,2,-5,2" Logo="pack://application:,,,/images/Blocks/CommandBlock.png" Title="地址" Info="' . $addrText . '" Type="Clickable" EventType="复制文本" EventData="' . $addrText . '" />' . "\n";
-        $xaml .= '            <local:MyListItem Margin="-5,2,-5,2" Logo="pack://application:,,,/images/Blocks/GoldBlock.png" Title="版本" Info="' . $versionText . '" />' . "\n";
-        $xaml .= '            <local:MyListItem Margin="-5,2,-5,2" Logo="pack://application:,,,/images/Blocks/Grass.png" Title="玩家" Info="' . $playersText . '" />' . "\n";
-        $xaml .= '            <local:MyListItem Margin="-5,2,-5,2" Logo="pack://application:,,,/images/Blocks/RedstoneBlock.png" Title="延迟" Info="' . $latencyText . '" />' . "\n";
-        if (!empty($motdText)) {
-            $motdSafe = htmlspecialchars($motdText, $esc, 'UTF-8');
-            $xaml .= '            <TextBlock TextWrapping="Wrap" Margin="0,6,0,0" FontSize="12" Foreground="{DynamicResource ColorBrush4}" Text="' . $motdSafe . '" />' . "\n";
+        $title = xesc(substitute($row['title'] ?? '', $map));
+        $info = xesc(substitute($row['info'] ?? '', $map));
+        $click = '';
+        if (!empty($row['clickable']['event_type'])) {
+            // Type="Clickable" + EventType/EventData：点击行触发自定义事件（如复制文本）
+            $et = xesc($row['clickable']['event_type']);
+            $ed = xesc(substitute($row['clickable']['event_data'] ?? '', $map));
+            $click = ' Type="Clickable" EventType="' . $et . '" EventData="' . $ed . '"';
         }
-        if (!empty($note)) {
-            $xaml .= '            <local:MyHint Margin="0,8,0,0" Theme="Blue" Text="' . $note . '" />' . "\n";
+        return '            <local:MyListItem Margin="-5,2,-5,2"' . $logoAttr . ' Title="' . $title . '" Info="' . $info . '"' . $click . ' />' . "\n";
+    }
+
+    if ($type === 'text') {
+        $text = xesc(substitute($row['text'] ?? '', $map));
+        $size = intval($row['font_size'] ?? 12);
+        if ($size <= 0) $size = 12;
+        $color = substitute($row['color'] ?? '', $map);
+        $colorAttr = $color !== '' ? ' Foreground="' . xesc($color) . '"' : '';
+        return '            <TextBlock TextWrapping="Wrap" Margin="0,6,0,0" FontSize="' . $size . '"' . $colorAttr . ' Text="' . $text . '" />' . "\n";
+    }
+
+    if ($type === 'hint') {
+        $theme = $row['theme'] ?? 'Blue';
+        if (!in_array($theme, ['Blue', 'Red', 'Yellow', 'Green'], true)) {
+            $theme = 'Blue';
         }
-        $xaml .= '        </StackPanel>' . "\n";
-        $xaml .= '    </local:MyCard>' . "\n";
+        $text = xesc(substitute($row['text'] ?? '', $map));
+        return '            <local:MyHint Margin="0,8,0,0" Theme="' . $theme . '" Text="' . $text . '" />' . "\n";
+    }
+
+    return '';
+}
+
+/** 渲染按钮行（水平面板，事件属性为直接属性写法） */
+function renderButtons($buttons, $map) {
+    $items = '';
+    foreach ($buttons as $btn) {
+        if (!is_array($btn)) {
+            continue;
+        }
+        $text = xesc(substitute($btn['text'] ?? '', $map));
+        $et = xesc($btn['event_type'] ?? 'None');
+        $ed = xesc(substitute($btn['event_data'] ?? '', $map));
+        $ct = $btn['color_type'] ?? 'Normal';
+        if (!in_array($ct, ['Normal', 'Highlight', 'Red'], true)) {
+            $ct = 'Normal';
+        }
+        $items .= '                <local:MyButton Text="' . $text . '" EventType="' . $et . '" EventData="' . $ed . '" ColorType="' . $ct . '" Margin="0,0,8,0" />' . "\n";
+    }
+    if ($items === '') {
+        return '';
+    }
+    return '            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">' . "\n" . $items . '            </StackPanel>' . "\n";
+}
+
+/** 渲染一张卡片（server 模板卡传入单台的映射，standalone 卡传入全局映射） */
+function renderCard($card, $map) {
+    $rows = json_decode((string)($card['rows_json'] ?? '[]'), true);
+    if (!is_array($rows)) {
+        $rows = [];
+    }
+    $buttons = json_decode((string)($card['buttons_json'] ?? '[]'), true);
+    if (!is_array($buttons)) {
+        $buttons = [];
+    }
+
+    $body = '';
+    foreach ($rows as $row) {
+        if (!is_array($row) || rowHidden($row, $map)) {
+            continue;
+        }
+        $body .= renderRow($row, $map);
+    }
+    $body .= renderButtons($buttons, $map);
+    if ($body === '') {
+        return ''; // 空 rows/空按钮不输出空面板
+    }
+
+    $title = xesc(substitute($card['title'] ?? '', $map));
+    $out  = '    <local:MyCard Title="' . $title . '" Margin="0,0,0,15" CanSwap="True">' . "\n";
+    $out .= '        <StackPanel Margin="25,40,23,15">' . "\n";
+    $out .= $body;
+    $out .= '        </StackPanel>' . "\n";
+    $out .= '    </local:MyCard>' . "\n";
+    return $out;
+}
+
+/**
+ * 按 sort_order 遍历卡片：server 模板卡展开为每台服务器一张，standalone 卡渲染一次。
+ */
+function generateXaml($servers, $statuses, $cards, $varRows) {
+    $xaml = '<StackPanel>' . "\n";
+    foreach ($cards as $card) {
+        if ((int)($card['enabled'] ?? 1) !== 1) {
+            continue;
+        }
+        if (($card['kind'] ?? '') === 'server') {
+            foreach ($servers as $server) {
+                $xaml .= renderCard($card, serverMap($server, $statuses, $varRows));
+            }
+        } else {
+            $xaml .= renderCard($card, globalMap($varRows));
+        }
     }
     if (empty($servers)) {
         $xaml .= '    <local:MyCard Title="服务器状态" Margin="0,0,0,15">' . "\n";

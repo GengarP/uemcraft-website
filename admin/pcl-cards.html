@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#213d87">
+  <title>PCL 主页 — UEMCraft</title>
+  <link rel="icon" href="../favicon.ico" type="images/x-icon">
+  <script>
+    (function(){
+      var t = localStorage.getItem('uemcraft-theme');
+      if(!t) t = window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+      document.documentElement.style.colorScheme = t;
+      var tex = localStorage.getItem('uemcraft-texture');
+      if(tex && tex !== 'none'){
+        document.documentElement.setAttribute('data-texture', tex);
+        var s = document.createElement('style');
+        s.id = 'texture-style';
+        s.textContent = 'body::after{background-image:url(/assets/img/background_textures/'+tex+'.png);}';
+        document.head.appendChild(s);
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="/css/tokens.css?v=7081c72">
+  <link rel="stylesheet" href="/css/base.css?v=7081c72">
+  <link rel="stylesheet" href="/css/layout.css?v=7081c72">
+  <link rel="stylesheet" href="/css/components.css?v=7081c72">
+  <link rel="stylesheet" href="/css/pages.css?v=7081c72">
+  <link rel="stylesheet" href="css/admin.css?v=7081c72">
+</head>
+<body>
+<script src="/js/components-admin.js?v=7081c72"></script>
+
+<a href="#main" class="skip-link">跳转到主内容</a>
+
+<main id="main">
+
+<div class="admin-page-header">
+  <h1>PCL 主页</h1>
+  <p class="hero-sub">设计 PCL2 启动器自定义主页的卡片、按钮与 {%key%} 变量</p>
+  <nav class="breadcrumb" aria-label="面包屑">
+    <a href="/index.html">首页</a> <span>/</span> <a href="index.html">管理后台</a> <span>/</span> <span>PCL 主页</span>
+  </nav>
+</div>
+
+<section class="section">
+  <div class="container">
+
+    <div class="admin-tabs" role="tablist">
+      <button class="admin-tab is-active" data-tab="cards" role="tab" aria-selected="true">卡片管理</button>
+      <button class="admin-tab" data-tab="vars" role="tab" aria-selected="false">变量管理</button>
+    </div>
+
+    <!-- ====== 卡片 tab ====== -->
+    <div id="tab-cards" class="admin-tab-panel is-active">
+      <div class="admin-toolbar">
+        <div class="admin-toolbar-right">
+          <span class="text-muted">共 <strong id="cardCount">0</strong> 张</span>
+          <a href="pcl-cards-edit.html" class="btn btn-primary btn-sm">+ 新建卡片</a>
+        </div>
+      </div>
+      <div id="cardsList" class="admin-list">
+        <div class="wall-loading">正在加载卡片…</div>
+      </div>
+    </div>
+
+    <!-- ====== 变量 tab ====== -->
+    <div id="tab-vars" class="admin-tab-panel">
+      <div class="admin-toolbar">
+        <div class="admin-toolbar-right">
+          <span class="text-muted">共 <strong id="varCount">0</strong> 个变量，可在卡片中以 {%键名%} 引用</span>
+          <button type="button" class="btn btn-primary btn-sm" id="varAddBtn">+ 新建变量</button>
+        </div>
+      </div>
+      <div id="varsList" class="admin-list">
+        <div class="wall-loading">正在加载变量…</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</main>
+
+<script src="/js/components-footer.js?v=7081c72"></script>
+<script defer src="/js/utils.js?v=7081c72"></script>
+<script defer src="/js/cjk-spacing.js?v=7081c72"></script>
+<script defer src="/js/nav.js?v=7081c72"></script>
+<script defer src="/js/page-transition.js?v=7081c72"></script>
+<script defer src="/js/theme.js?v=7081c72"></script>
+<script defer src="/js/admin-auth.js?v=7081c72"></script>
+<script defer src="/js/admin-pcl.js?v=7081c72"></script>
+</body>
+</html>

@@ -193,6 +193,35 @@ if (!file_exists($eventsDataPath)) {
     echo "\n活动导入完成：新增 {$eventCount} 个，跳过 {$eventSkipped} 个\n\n";
 }
 
+// ---- 种子：PCL 主页默认服务器模板卡 ----
+// 幂等：仅当 pcl_cards 为空时插入一张复刻原硬编码输出的 server 模板卡
+echo "--- 种子 PCL 主页卡片 ---\n";
+$cardCount = (int) $db->query("SELECT COUNT(*) FROM pcl_cards")->fetchColumn();
+if ($cardCount > 0) {
+    echo "pcl_cards 已有 {$cardCount} 张卡片，跳过种子\n\n";
+} else {
+    $defaultRows = [
+        ['type' => 'status_dot'],
+        ['type' => 'list_item', 'logo' => 'CommandBlock.png', 'title' => '地址', 'info' => '{%address_port%}',
+         'clickable' => ['event_type' => '复制文本', 'event_data' => '{%address_port%}']],
+        ['type' => 'list_item', 'logo' => 'GoldBlock.png', 'title' => '版本', 'info' => '{%version%}'],
+        ['type' => 'list_item', 'logo' => 'Grass.png', 'title' => '玩家', 'info' => '{%players%}'],
+        ['type' => 'list_item', 'logo' => 'RedstoneBlock.png', 'title' => '延迟', 'info' => '{%latency%}'],
+        ['type' => 'text', 'text' => '{%motd%}', 'font_size' => 12, 'color' => '{DynamicResource ColorBrush4}', 'hide_if_empty' => true],
+        ['type' => 'hint', 'theme' => 'Blue', 'text' => '{%note%}', 'hide_if_empty' => true],
+    ];
+    $ts = time();
+    $stmt = $db->prepare("INSERT INTO pcl_cards (name, kind, title, rows_json, buttons_json, enabled, sort_order, created_at, updated_at) VALUES (?, 'server', ?, ?, '[]', 1, 0, ?, ?)");
+    $stmt->execute([
+        '默认服务器卡',
+        '{%name%}',
+        json_encode($defaultRows, JSON_UNESCAPED_UNICODE),
+        $ts,
+        $ts,
+    ]);
+    echo "已插入默认服务器模板卡（复刻原硬编码输出）\n\n";
+}
+
 // ---- 修正 servers 端口数据 ----
 // 幂等：只在端口仍为 0/NULL 时补上 Java 版默认端口，不覆盖后台后续的正常修改
 echo "--- 修正服务器端口 ---\n";
