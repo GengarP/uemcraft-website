@@ -21,7 +21,7 @@ require_once __DIR__ . '/common.php';
 $action = $_GET['action'] ?? '';
 
 /** 行类型白名单 */
-const PCL_ROW_TYPES = ['list_item', 'text', 'hint', 'status_dot'];
+const PCL_ROW_TYPES = ['list_item', 'text', 'hint', 'status_dot', 'image', 'divider'];
 
 /** 按钮 EventType 白名单（PCL2 CustomEvent.EventType 全集） */
 const PCL_EVENT_TYPES = [
@@ -50,6 +50,10 @@ function validateRowsJson($raw) {
         if ($row['type'] === 'hint' && isset($row['theme']) && !in_array($row['theme'], ['Blue', 'Red', 'Yellow', 'Green'], true)) {
             json_response(['success' => false, 'error' => '提示行主题必须是 Blue/Red/Yellow/Green'], 400);
         }
+        if ($row['type'] === 'image' && isset($row['stretch']) && $row['stretch'] !== ''
+            && !in_array($row['stretch'], ['Uniform', 'UniformToFill', 'Fill', 'None'], true)) {
+            json_response(['success' => false, 'error' => '图片缩放模式必须是 Uniform/UniformToFill/Fill/None'], 400);
+        }
     }
     return json_encode(array_values($rows), JSON_UNESCAPED_UNICODE);
 }
@@ -74,6 +78,11 @@ function validateButtonsJson($raw) {
         if (!in_array($ct, PCL_COLOR_TYPES, true)) {
             json_response(['success' => false, 'error' => '存在非法的按钮颜色：' . $ct], 400);
         }
+        foreach (['width', 'height'] as $dim) {
+            if (isset($btn[$dim]) && $btn[$dim] !== '' && (intval($btn[$dim]) < 0 || intval($btn[$dim]) > 2000)) {
+                json_response(['success' => false, 'error' => '按钮尺寸必须在 0-2000 之间（0=自动）'], 400);
+            }
+        }
     }
     return json_encode(array_values($buttons), JSON_UNESCAPED_UNICODE);
 }
@@ -83,9 +92,19 @@ function normalizeCardRow($row) {
     $row['id'] = (int)$row['id'];
     $row['enabled'] = (int)$row['enabled'];
     $row['sort_order'] = (int)$row['sort_order'];
+    $row['title_font_size'] = (int)($row['title_font_size'] ?? 0);
     $row['created_at'] = (int)$row['created_at'];
     $row['updated_at'] = (int)$row['updated_at'];
     return $row;
+}
+
+/** 标题字号校验：0=默认（MyCard 原生 13），否则 8-200 */
+function validateTitleFontSize($input) {
+    $tfs = intval($input['title_font_size'] ?? 0);
+    if ($tfs < 0 || $tfs > 200) {
+        json_response(['success' => false, 'error' => '标题字号必须在 8-200 之间（0=默认）'], 400);
+    }
+    return $tfs;
 }
 
 try {
@@ -138,10 +157,11 @@ try {
         $buttonsJson = validateButtonsJson($input['buttons_json'] ?? '[]');
         $enabled = intval($input['enabled'] ?? 1) ? 1 : 0;
         $sortOrder = intval($input['sort_order'] ?? 0);
+        $titleFontSize = validateTitleFontSize($input);
         $ts = now();
 
-        $stmt = $db->prepare("INSERT INTO pcl_cards (name, kind, title, rows_json, buttons_json, enabled, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$name, $kind, $title, $rowsJson, $buttonsJson, $enabled, $sortOrder, $ts, $ts]);
+        $stmt = $db->prepare("INSERT INTO pcl_cards (name, kind, title, title_font_size, rows_json, buttons_json, enabled, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$name, $kind, $title, $titleFontSize, $rowsJson, $buttonsJson, $enabled, $sortOrder, $ts, $ts]);
 
         json_response(['success' => true, 'data' => ['id' => (int)$db->lastInsertId()]]);
     }
@@ -177,9 +197,10 @@ try {
         $buttonsJson = validateButtonsJson($input['buttons_json'] ?? '[]');
         $enabled = intval($input['enabled'] ?? 1) ? 1 : 0;
         $sortOrder = intval($input['sort_order'] ?? 0);
+        $titleFontSize = validateTitleFontSize($input);
 
-        $stmt = $db->prepare("UPDATE pcl_cards SET name = ?, kind = ?, title = ?, rows_json = ?, buttons_json = ?, enabled = ?, sort_order = ?, updated_at = ? WHERE id = ?");
-        $stmt->execute([$name, $kind, $title, $rowsJson, $buttonsJson, $enabled, $sortOrder, now(), $id]);
+        $stmt = $db->prepare("UPDATE pcl_cards SET name = ?, kind = ?, title = ?, title_font_size = ?, rows_json = ?, buttons_json = ?, enabled = ?, sort_order = ?, updated_at = ? WHERE id = ?");
+        $stmt->execute([$name, $kind, $title, $titleFontSize, $rowsJson, $buttonsJson, $enabled, $sortOrder, now(), $id]);
 
         json_response(['success' => true]);
     }

@@ -139,6 +139,111 @@ function xesc($s) {
     return htmlspecialchars((string)$s, ENT_XML1 | ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+/** 文本属性转义：额外把换行变成 &#10;（XML 属性里的裸换行会被归一化成空格） */
+function xesc_nl($s) {
+    return str_replace(["\r\n", "\r", "\n"], '&#10;', xesc($s));
+}
+
+/**
+ * 解析 Minecraft § 颜色码（§0-§f 色、§l§o§m§n 样式、§r 重置、§x§R§R§G§G§B§B 十六进制色）
+ * 为 WPF <Run> 片段串。返回 null 表示文本不含 § 码，走普通 TextBlock。
+ * Run 之间不换行不加空白——XAML 会把 Run 之间的缩进空白变成多余空格。
+ */
+function parseMcRuns($text) {
+    static $MC_COLORS = [
+        '0' => '#000000', '1' => '#0000AA', '2' => '#00AA00', '3' => '#00AAAA',
+        '4' => '#AA0000', '5' => '#AA00AA', '6' => '#FFAA00', '7' => '#AAAAAA',
+        '8' => '#555555', '9' => '#5555FF', 'a' => '#55FF55', 'b' => '#55FFFF',
+        'c' => '#FF5555', 'd' => '#FF55FF', 'e' => '#FFFF55', 'f' => '#FFFFFF',
+    ];
+    $text = (string)$text;
+    if (strpos($text, '§') === false) {
+        return null;
+    }
+    $parts = preg_split('/§(.)/u', $text, -1, PREG_SPLIT_DELIM_CAPTURE);
+    $runs = '';
+    $buf = '';
+    $color = null;
+    $bold = $italic = $strike = $under = false;
+    $hexPending = 0;
+    $hexBuf = '';
+    $flush = function () use (&$runs, &$buf, &$color, &$bold, &$italic, &$strike, &$under) {
+        if ($buf === '') {
+            return;
+        }
+        $attrs = '';
+        if ($color !== null) {
+            $attrs .= ' Foreground="' . xesc($color) . '"';
+        }
+        if ($bold) {
+            $attrs .= ' FontWeight="Bold"';
+        }
+        if ($italic) {
+            $attrs .= ' FontStyle="Italic"';
+        }
+        $decs = [];
+        if ($under) {
+            $decs[] = 'Underline';
+        }
+        if ($strike) {
+            $decs[] = 'Strikethrough';
+        }
+        if ($decs) {
+            $attrs .= ' TextDecorations="' . implode(',', $decs) . '"';
+        }
+        $runs .= '<Run Text="' . xesc_nl($buf) . '"' . $attrs . ' />';
+        $buf = '';
+    };
+    foreach ($parts as $i => $piece) {
+        if ($i % 2 === 0) {
+            $buf .= $piece;
+            continue;
+        }
+        $code = strtolower($piece);
+        if ($hexPending > 0) {
+            $hexBuf .= $code;
+            if (--$hexPending === 0) {
+                $flush();
+                $color = '#' . $hexBuf;
+                $bold = $italic = $strike = $under = false;
+            }
+            continue;
+        }
+        if ($code === 'x') {
+            $flush();
+            $hexPending = 6;
+            $hexBuf = '';
+            continue;
+        }
+        if (isset($MC_COLORS[$code])) {
+            $flush();
+            $color = $MC_COLORS[$code];
+            $bold = $italic = $strike = $under = false; // 颜色码在 MC 里同时重置样式
+            continue;
+        }
+        if ($code === 'l') {
+            $flush();
+            $bold = true;
+        } elseif ($code === 'o') {
+            $flush();
+            $italic = true;
+        } elseif ($code === 'm') {
+            $flush();
+            $strike = true;
+        } elseif ($code === 'n') {
+            $flush();
+            $under = true;
+        } elseif ($code === 'r') {
+            $flush();
+            $color = null;
+            $bold = $italic = $strike = $under = false;
+        }
+        // §k（乱码）与其他未知码直接忽略
+    }
+    $flush();
+    return $runs === '' ? null : $runs;
+}
+
 /**
  * {%key%} 替换：未定义键替换为空串。
  * 返回的仍是原始文本（未转义），渲染拼接时统一过 xesc()。
@@ -253,12 +358,17 @@ function renderRow($row, $map) {
     }
 
     if ($type === 'text') {
-        $text = xesc(substitute($row['text'] ?? '', $map));
+        $raw = substitute($row['text'] ?? '', $map);
         $size = intval($row['font_size'] ?? 12);
         if ($size <= 0) $size = 12;
         $color = substitute($row['color'] ?? '', $map);
         $colorAttr = $color !== '' ? ' Foreground="' . xesc($color) . '"' : '';
-        return '            <TextBlock TextWrapping="Wrap" Margin="0,6,0,0" FontSize="' . $size . '"' . $colorAttr . ' Text="' . $text . '" />' . "\n";
+        // MOTD 等文本支持 Minecraft § 颜色码 → 多色 <Run>
+        $runs = parseMcRuns($raw);
+        if ($runs === null) {
+            return '            <TextBlock TextWrapping="Wrap" Margin="0,6,0,0" FontSize="' . $size . '"' . $colorAttr . ' Text="' . xesc_nl($raw) . '" />' . "\n";
+        }
+        return '            <TextBlock TextWrapping="Wrap" Margin="0,6,0,0" FontSize="' . $size . '"' . $colorAttr . '>' . $runs . '</TextBlock>' . "\n";
     }
 
     if ($type === 'hint') {
@@ -268,6 +378,38 @@ function renderRow($row, $map) {
         }
         $text = xesc(substitute($row['text'] ?? '', $map));
         return '            <local:MyHint Margin="0,8,0,0" Theme="' . $theme . '" Text="' . $text . '" />' . "\n";
+    }
+
+    if ($type === 'image') {
+        // MyImage.Source 是字符串（http URL / pack URI / 本地路径），WebP 也支持，网络图自动缓存
+        $src = substitute($row['src'] ?? '', $map);
+        if ($src === '') {
+            return '';
+        }
+        $attrs = ' Source="' . xesc($src) . '"';
+        $w = intval($row['width'] ?? 0);
+        $h = intval($row['height'] ?? 0);
+        if ($w > 0) $attrs .= ' Width="' . min($w, 2000) . '"';
+        if ($h > 0) $attrs .= ' Height="' . min($h, 2000) . '"';
+        $stretch = $row['stretch'] ?? 'Uniform';
+        if (!in_array($stretch, ['Uniform', 'UniformToFill', 'Fill', 'None'], true)) {
+            $stretch = 'Uniform';
+        }
+        $attrs .= ' Stretch="' . $stretch . '"';
+        return '            <local:MyImage Margin="0,6,0,0"' . $attrs . ' />' . "\n";
+    }
+
+    if ($type === 'divider') {
+        // 分割线：放在卡片开头/结尾即可形成卡片之间的视觉分隔
+        $thickness = (float)($row['thickness'] ?? 1.5);
+        if ($thickness <= 0) $thickness = 1.5;
+        $thickness = min($thickness, 10.0);
+        $stroke = substitute($row['color'] ?? '', $map);
+        $strokeAttr = $stroke !== '' ? xesc($stroke) : '{DynamicResource ColorBrush4}';
+        $opacity = (float)($row['opacity'] ?? 1);
+        if ($opacity <= 0 || $opacity > 1) $opacity = 1;
+        $opacityAttr = $opacity < 1 ? ' Opacity="' . $opacity . '"' : '';
+        return '            <Line X1="0" X2="100" Stroke="' . $strokeAttr . '" StrokeThickness="' . sprintf('%g', $thickness) . '" HorizontalAlignment="Center" Stretch="Fill" Margin="4,4"' . $opacityAttr . ' />' . "\n";
     }
 
     return '';
@@ -287,7 +429,13 @@ function renderButtons($buttons, $map) {
         if (!in_array($ct, ['Normal', 'Highlight', 'Red'], true)) {
             $ct = 'Normal';
         }
-        $items .= '                <local:MyButton Text="' . $text . '" EventType="' . $et . '" EventData="' . $ed . '" ColorType="' . $ct . '" Margin="0,0,8,0" />' . "\n";
+        // 自定义尺寸：Width/Height 是 FrameworkElement 属性，直接生效（字号不可改，LabText 写死 13）
+        $sizeAttr = '';
+        $w = intval($btn['width'] ?? 0);
+        $h = intval($btn['height'] ?? 0);
+        if ($w > 0) $sizeAttr .= ' Width="' . min($w, 2000) . '"';
+        if ($h > 0) $sizeAttr .= ' Height="' . min($h, 2000) . '"';
+        $items .= '                <local:MyButton Text="' . $text . '" EventType="' . $et . '" EventData="' . $ed . '" ColorType="' . $ct . '"' . $sizeAttr . ' Margin="0,0,8,0" />' . "\n";
     }
     if ($items === '') {
         return '';
@@ -318,7 +466,21 @@ function renderCard($card, $map) {
         return ''; // 空 rows/空按钮不输出空面板
     }
 
-    $title = xesc(substitute($card['title'] ?? '', $map));
+    $titleRaw = substitute($card['title'] ?? '', $map);
+    // MyCard 的标题字号在其 Init() 里写死 13，Title 属性改不动；
+    // 自定义字号时改用 Title="" + 正文首行 TextBlock（参考 PCL2-NewsHomepage 的大标题做法）
+    $tfs = (int)($card['title_font_size'] ?? 0);
+    if ($tfs > 0 && $titleRaw !== '') {
+        $tfs = max(8, min($tfs, 200));
+        $out  = '    <local:MyCard Title="" Margin="0,0,0,15" CanSwap="True">' . "\n";
+        $out .= '        <StackPanel Margin="25,15,23,15">' . "\n";
+        $out .= '            <TextBlock Text="' . xesc($titleRaw) . '" FontSize="' . $tfs . '" FontWeight="Bold" Foreground="{DynamicResource ColorBrush1}" TextWrapping="Wrap" Margin="0,0,0,8" />' . "\n";
+        $out .= $body;
+        $out .= '        </StackPanel>' . "\n";
+        $out .= '    </local:MyCard>' . "\n";
+        return $out;
+    }
+    $title = xesc($titleRaw);
     $out  = '    <local:MyCard Title="' . $title . '" Margin="0,0,0,15" CanSwap="True">' . "\n";
     $out .= '        <StackPanel Margin="25,40,23,15">' . "\n";
     $out .= $body;

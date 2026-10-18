@@ -237,12 +237,12 @@
      ============================================================ */
 
   var editId = null;
-  var state = { name: '', kind: 'server', title: '', enabled: 1, sort_order: 0, rows: [], buttons: [] };
+  var state = { name: '', kind: 'server', title: '', title_font_size: 0, enabled: 1, sort_order: 0, rows: [], buttons: [] };
   var SAMPLE_MAP = {
     name: '生存服', address: 'play.***.cn', port: '25565', address_port: 'play.***.cn:25565',
     edition: 'java', note: '欢迎加入', status: '在线', status_color: '#4CAF50',
     players_online: '3', players_max: '20', players: '3 / 20', version: '1.21.1', latency: '42ms',
-    motd: 'UEMCraft 生存服务器', year: new Date().getFullYear().toString()
+    motd: '§bUEMCraft §6生存服务器', year: new Date().getFullYear().toString()
   };
 
   function initEditPage() {
@@ -262,12 +262,14 @@
       apiOk(API + '?action=card_detail&id=' + editId).then(function (res) {
         var c = res.data;
         state.name = c.name; state.kind = c.kind; state.title = c.title;
+        state.title_font_size = +c.title_font_size || 0;
         state.enabled = c.enabled; state.sort_order = c.sort_order;
         state.rows = safeJson(c.rows_json, []);
         state.buttons = safeJson(c.buttons_json, []);
         document.getElementById('fName').value = state.name;
         document.getElementById('fKind').value = state.kind;
         document.getElementById('fTitle').value = state.title;
+        document.getElementById('fTitleSize').value = state.title_font_size || '';
         document.getElementById('fEnabled').value = String(state.enabled);
         document.getElementById('fSort').value = state.sort_order;
         document.getElementById('pageTitle').textContent = '编辑卡片';
@@ -276,11 +278,12 @@
       }).catch(function (e) { showMessage('加载卡片失败：' + e.message, false); });
     }
 
-    ['fName', 'fKind', 'fTitle', 'fEnabled', 'fSort'].forEach(function (id) {
+    ['fName', 'fKind', 'fTitle', 'fTitleSize', 'fEnabled', 'fSort'].forEach(function (id) {
       document.getElementById(id).addEventListener('input', function () {
         state.name = document.getElementById('fName').value;
         state.kind = document.getElementById('fKind').value;
         state.title = document.getElementById('fTitle').value;
+        state.title_font_size = +document.getElementById('fTitleSize').value || 0;
         state.enabled = +document.getElementById('fEnabled').value;
         state.sort_order = +document.getElementById('fSort').value || 0;
         if (id === 'fKind') { fillInserters(); renderRows(); }
@@ -304,6 +307,7 @@
       var payload = {
         id: editId ? +editId : undefined,
         name: state.name.trim(), kind: state.kind, title: state.title,
+        title_font_size: state.title_font_size,
         rows_json: JSON.stringify(state.rows), buttons_json: JSON.stringify(state.buttons),
         enabled: state.enabled, sort_order: state.sort_order
       };
@@ -414,11 +418,11 @@
           + '<div class="form-row"><div class="form-group"><label class="form-label"><input type="checkbox" class="r-hide" data-index="' + i + '"' + (row.hide_if_empty ? ' checked' : '') + '> 所引用的 {%key%} 全为空时隐藏此行</label></div></div>';
       } else if (row.type === 'text') {
         fields = '<div class="form-row">'
-          + '<div class="form-group form-group-grow"><label class="form-label">文本</label>'
-          + '<div class="insert-bar"><input type="text" class="form-input r-text" data-index="' + i + '" value="' + esc(row.text || '') + '">' + ins(i, 'text') + '</div></div>'
+          + '<div class="form-group form-group-grow"><label class="form-label">文本（支持 § 颜色码，如 §b蓝色 §l粗体 §r重置）</label>'
+          + '<div class="insert-bar"><input type="text" class="form-input r-text" data-index="' + i + '" value="' + esc(row.text || '') + '" placeholder="如：{%motd%}">' + ins(i, 'text') + '</div></div>'
           + '<div class="form-group"><label class="form-label">字号</label>'
           + '<input type="number" class="form-input r-size" data-index="' + i + '" value="' + (row.font_size || 12) + '" min="8" max="32"></div>'
-          + '<div class="form-group"><label class="form-label">颜色（#RRGGBB 或留空默认）</label>'
+          + '<div class="form-group"><label class="form-label">默认颜色（#RRGGBB 或留空默认）</label>'
           + '<input type="text" class="form-input r-color" data-index="' + i + '" value="' + esc(row.color || '') + '" placeholder="#FFCC00"></div>'
           + '</div>'
           + '<div class="form-row"><div class="form-group"><label class="form-label"><input type="checkbox" class="r-hide" data-index="' + i + '"' + (row.hide_if_empty ? ' checked' : '') + '> 所引用的 {%key%} 全为空时隐藏此行</label></div></div>';
@@ -436,12 +440,38 @@
           + '<div class="form-row"><div class="form-group"><label class="form-label"><input type="checkbox" class="r-hide" data-index="' + i + '"' + (row.hide_if_empty ? ' checked' : '') + '> 所引用的 {%key%} 全为空时隐藏此行</label></div></div>';
       } else if (row.type === 'status_dot') {
         fields = '<div class="form-row"><div class="form-group text-muted">输出「● 在线/离线」状态点行（仅服务器模板卡有效）。</div></div>';
+      } else if (row.type === 'image') {
+        fields = '<div class="form-row">'
+          + '<div class="form-group form-group-grow"><label class="form-label">图片地址（URL 或 pack:// URI）</label>'
+          + '<div class="insert-bar"><input type="text" class="form-input r-src" data-index="' + i + '" value="' + esc(row.src || '') + '" placeholder="https://…">' + ins(i, 'src') + '</div></div>'
+          + '<div class="form-group"><label class="form-label">宽（px，留空自动）</label>'
+          + '<input type="number" class="form-input r-img-w" data-index="' + i + '" value="' + (row.width || '') + '" min="0" max="2000"></div>'
+          + '<div class="form-group"><label class="form-label">高（px，留空自动）</label>'
+          + '<input type="number" class="form-input r-img-h" data-index="' + i + '" value="' + (row.height || '') + '" min="0" max="2000"></div>'
+          + '<div class="form-group"><label class="form-label">缩放</label>'
+          + '<select class="form-input r-stretch" data-index="' + i + '">'
+          + [['Uniform', '等比（默认）'], ['UniformToFill', '等比填满裁剪'], ['Fill', '拉伸填满'], ['None', '原始尺寸']].map(function (s) {
+              return '<option value="' + s[0] + '"' + ((row.stretch || 'Uniform') === s[0] ? ' selected' : '') + '>' + s[1] + '</option>';
+            }).join('')
+          + '</select></div>'
+          + '</div>'
+          + '<div class="form-row"><div class="form-group"><label class="form-label"><input type="checkbox" class="r-hide" data-index="' + i + '"' + (row.hide_if_empty ? ' checked' : '') + '> 所引用的 {%key%} 全为空时隐藏此行</label></div></div>';
+      } else if (row.type === 'divider') {
+        fields = '<div class="form-row">'
+          + '<div class="form-group"><label class="form-label">线宽</label>'
+          + '<input type="number" class="form-input r-thickness" data-index="' + i + '" value="' + (row.thickness || 1.5) + '" min="0.5" max="10" step="0.5"></div>'
+          + '<div class="form-group"><label class="form-label">不透明度（0-1，留空 1）</label>'
+          + '<input type="number" class="form-input r-opacity" data-index="' + i + '" value="' + (row.opacity != null ? row.opacity : '') + '" min="0" max="1" step="0.1"></div>'
+          + '<div class="form-group form-group-grow"><label class="form-label">颜色（留空用主题色）</label>'
+          + '<input type="text" class="form-input r-div-color" data-index="' + i + '" value="' + esc(row.color || '') + '" placeholder="{DynamicResource ColorBrush4}"></div>'
+          + '</div>'
+          + '<div class="form-row"><div class="form-group text-muted">放在卡片开头/结尾即可形成卡片之间的分割线。</div></div>';
       }
 
       return '<div class="row-editor" data-index="' + i + '">'
         + '<div class="row-editor-head">'
         + '<select class="form-input r-type" data-index="' + i + '">'
-        + [['list_item', '列表项'], ['text', '文本'], ['hint', '提示'], ['status_dot', '状态点']].map(function (t) {
+        + [['list_item', '列表项'], ['text', '文本'], ['hint', '提示'], ['status_dot', '状态点'], ['image', '图片'], ['divider', '分割线']].map(function (t) {
             return '<option value="' + t[0] + '"' + (row.type === t[0] ? ' selected' : '') + '>' + t[1] + '</option>';
           }).join('')
         + '</select>'
@@ -476,6 +506,13 @@
       else if (t.classList.contains('r-size')) row.font_size = +t.value || 12;
       else if (t.classList.contains('r-color')) row.color = t.value;
       else if (t.classList.contains('r-theme')) row.theme = t.value;
+      else if (t.classList.contains('r-src')) row.src = t.value;
+      else if (t.classList.contains('r-img-w')) row.width = +t.value || 0;
+      else if (t.classList.contains('r-img-h')) row.height = +t.value || 0;
+      else if (t.classList.contains('r-stretch')) row.stretch = t.value;
+      else if (t.classList.contains('r-thickness')) row.thickness = +t.value || 1.5;
+      else if (t.classList.contains('r-opacity')) row.opacity = t.value === '' ? undefined : +t.value;
+      else if (t.classList.contains('r-div-color')) row.color = t.value;
       else if (t.classList.contains('r-hide')) row.hide_if_empty = t.checked;
       else if (t.classList.contains('r-click-type')) {
         if (t.value) row.clickable = { event_type: t.value, event_data: (row.clickable && row.clickable.event_data) || '' };
@@ -541,7 +578,12 @@
         + '</select></div>'
         + '</div>'
         + '<div class="form-row"><div class="form-group form-group-grow"><label class="form-label">事件数据</label>'
-        + '<div class="insert-bar"><input type="text" class="form-input b-data" data-index="' + i + '" value="' + esc(btn.event_data || '') + '" placeholder="如 URL / 要复制的文本 / 标题|内容">' + ins('event_data') + '</div></div></div>'
+        + '<div class="insert-bar"><input type="text" class="form-input b-data" data-index="' + i + '" value="' + esc(btn.event_data || '') + '" placeholder="如 URL / 要复制的文本 / 标题|内容">' + ins('event_data') + '</div></div>'
+        + '<div class="form-group"><label class="form-label">宽（px，留空自动）</label>'
+        + '<input type="number" class="form-input b-width" data-index="' + i + '" value="' + (btn.width || '') + '" min="0" max="2000"></div>'
+        + '<div class="form-group"><label class="form-label">高（px，留空自动）</label>'
+        + '<input type="number" class="form-input b-height" data-index="' + i + '" value="' + (btn.height || '') + '" min="0" max="2000"></div>'
+        + '</div>'
         + '</div>';
     }).join('');
     bindBtnEvents();
@@ -559,6 +601,8 @@
       else if (t.classList.contains('b-type')) btn.event_type = t.value;
       else if (t.classList.contains('b-data')) btn.event_data = t.value;
       else if (t.classList.contains('b-color')) btn.color_type = t.value;
+      else if (t.classList.contains('b-width')) btn.width = +t.value || 0;
+      else if (t.classList.contains('b-height')) btn.height = +t.value || 0;
       updatePreview();
     };
     wrap.onclick = function (e) {
@@ -584,6 +628,7 @@
     state.name = document.getElementById('fName').value;
     state.kind = document.getElementById('fKind').value;
     state.title = document.getElementById('fTitle').value;
+    state.title_font_size = +document.getElementById('fTitleSize').value || 0;
     state.enabled = +document.getElementById('fEnabled').value;
     state.sort_order = +document.getElementById('fSort').value || 0;
   }
@@ -596,6 +641,57 @@
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[c];
     });
+  }
+
+  function xescNl(s) {
+    return xesc(s).replace(/\r\n|\r|\n/g, '&#10;');
+  }
+
+  var MC_COLORS = {
+    '0': '#000000', '1': '#0000AA', '2': '#00AA00', '3': '#00AAAA',
+    '4': '#AA0000', '5': '#AA00AA', '6': '#FFAA00', '7': '#AAAAAA',
+    '8': '#555555', '9': '#5555FF', 'a': '#55FF55', 'b': '#55FFFF',
+    'c': '#FF5555', 'd': '#FF55FF', 'e': '#FFFF55', 'f': '#FFFFFF'
+  };
+
+  /** Minecraft § 颜色码 → <Run> 串（与 homepage/index.php 的 parseMcRuns 同构）；无码返回 null */
+  function parseMcRuns(text) {
+    text = String(text == null ? '' : text);
+    if (text.indexOf('§') === -1) return null;
+    var parts = text.split(/§(.)/);
+    var runs = '', buf = '', color = null, bold = false, italic = false, strike = false, under = false;
+    var hexPending = 0, hexBuf = '';
+    function flush() {
+      if (buf === '') return;
+      var attrs = '';
+      if (color) attrs += ' Foreground="' + xesc(color) + '"';
+      if (bold) attrs += ' FontWeight="Bold"';
+      if (italic) attrs += ' FontStyle="Italic"';
+      var decs = [];
+      if (under) decs.push('Underline');
+      if (strike) decs.push('Strikethrough');
+      if (decs.length) attrs += ' TextDecorations="' + decs.join(',') + '"';
+      runs += '<Run Text="' + xescNl(buf) + '"' + attrs + ' />';
+      buf = '';
+    }
+    for (var i = 0; i < parts.length; i++) {
+      if (i % 2 === 0) { buf += parts[i]; continue; }
+      var code = parts[i].toLowerCase();
+      if (hexPending > 0) {
+        hexBuf += code;
+        if (--hexPending === 0) { flush(); color = '#' + hexBuf; bold = italic = strike = under = false; }
+        continue;
+      }
+      if (code === 'x') { flush(); hexPending = 6; hexBuf = ''; continue; }
+      if (MC_COLORS[code]) { flush(); color = MC_COLORS[code]; bold = italic = strike = under = false; continue; }
+      if (code === 'l') { flush(); bold = true; }
+      else if (code === 'o') { flush(); italic = true; }
+      else if (code === 'm') { flush(); strike = true; }
+      else if (code === 'n') { flush(); under = true; }
+      else if (code === 'r') { flush(); color = null; bold = italic = strike = under = false; }
+    }
+    flush();
+    return runs === '' ? null : runs;
   }
 
   function sub(tpl) {
@@ -620,18 +716,16 @@
     var pre = document.getElementById('xamlPreview');
     if (!pre) return;
     var out = [];
-    out.push('<StackPanel>');
-    out.push('  <local:MyCard Title="' + xesc(sub(state.title)) + '" Margin="0,0,0,15" CanSwap="True">');
-    out.push('    <StackPanel Margin="25,40,23,15">');
+    var body = [];
     state.rows.forEach(function (row) {
       if (rowEmpty(row)) return;
       if (row.type === 'status_dot') {
         if (state.kind !== 'server') return;
         var color = SAMPLE_MAP.status_color || '#F44336';
-        out.push('      <StackPanel Orientation="Horizontal" Margin="0,0,0,8">');
-        out.push('        <TextBlock Text="● " Foreground="' + xesc(color) + '" FontSize="14" />');
-        out.push('        <TextBlock Text="' + xesc(SAMPLE_MAP.status) + '" Foreground="' + xesc(color) + '" FontSize="14" FontWeight="Bold" />');
-        out.push('      </StackPanel>');
+        body.push('      <StackPanel Orientation="Horizontal" Margin="0,0,0,8">');
+        body.push('        <TextBlock Text="● " Foreground="' + xesc(color) + '" FontSize="14" />');
+        body.push('        <TextBlock Text="' + xesc(SAMPLE_MAP.status) + '" Foreground="' + xesc(color) + '" FontSize="14" FontWeight="Bold" />');
+        body.push('      </StackPanel>');
       } else if (row.type === 'list_item') {
         var logo = row.logo || '';
         var logoAttr = !logo ? '' : (logo.indexOf('://') !== -1
@@ -641,21 +735,58 @@
         if (row.clickable && row.clickable.event_type) {
           click = ' Type="Clickable" EventType="' + xesc(row.clickable.event_type) + '" EventData="' + xesc(sub(row.clickable.event_data)) + '"';
         }
-        out.push('      <local:MyListItem' + logoAttr + ' Title="' + xesc(sub(row.title)) + '" Info="' + xesc(sub(row.info)) + '"' + click + ' />');
+        body.push('      <local:MyListItem' + logoAttr + ' Title="' + xesc(sub(row.title)) + '" Info="' + xesc(sub(row.info)) + '"' + click + ' />');
       } else if (row.type === 'text') {
         var colorAttr = row.color ? ' Foreground="' + xesc(row.color) + '"' : '';
-        out.push('      <TextBlock TextWrapping="Wrap" FontSize="' + (row.font_size || 12) + '"' + colorAttr + ' Text="' + xesc(sub(row.text)) + '" />');
+        var runs = parseMcRuns(sub(row.text));
+        if (runs == null) {
+          body.push('      <TextBlock TextWrapping="Wrap" FontSize="' + (row.font_size || 12) + '"' + colorAttr + ' Text="' + xescNl(sub(row.text)) + '" />');
+        } else {
+          body.push('      <TextBlock TextWrapping="Wrap" FontSize="' + (row.font_size || 12) + '"' + colorAttr + '>' + runs + '</TextBlock>');
+        }
       } else if (row.type === 'hint') {
-        out.push('      <local:MyHint Theme="' + xesc(row.theme || 'Blue') + '" Text="' + xesc(sub(row.text)) + '" />');
+        body.push('      <local:MyHint Theme="' + xesc(row.theme || 'Blue') + '" Text="' + xesc(sub(row.text)) + '" />');
+      } else if (row.type === 'image') {
+        var src = sub(row.src || '');
+        if (!src) return;
+        var imgAttr = ' Source="' + xesc(src) + '"';
+        if (+row.width > 0) imgAttr += ' Width="' + Math.min(+row.width, 2000) + '"';
+        if (+row.height > 0) imgAttr += ' Height="' + Math.min(+row.height, 2000) + '"';
+        imgAttr += ' Stretch="' + xesc(row.stretch || 'Uniform') + '"';
+        body.push('      <local:MyImage Margin="0,6,0,0"' + imgAttr + ' />');
+      } else if (row.type === 'divider') {
+        var th = +row.thickness || 1.5;
+        if (th > 10) th = 10;
+        var stroke = row.color ? xesc(sub(row.color)) : '{DynamicResource ColorBrush4}';
+        var op = row.opacity == null || row.opacity === '' ? 1 : +row.opacity;
+        if (!(op > 0 && op < 1)) op = 1;
+        body.push('      <Line X1="0" X2="100" Stroke="' + stroke + '" StrokeThickness="' + th + '" HorizontalAlignment="Center" Stretch="Fill" Margin="4,4"' + (op < 1 ? ' Opacity="' + op + '"' : '') + ' />');
       }
     });
     if (state.buttons.length) {
-      out.push('      <StackPanel Orientation="Horizontal" Margin="0,10,0,0">');
+      body.push('      <StackPanel Orientation="Horizontal" Margin="0,10,0,0">');
       state.buttons.forEach(function (btn) {
-        out.push('        <local:MyButton Text="' + xesc(sub(btn.text)) + '" EventType="' + xesc(btn.event_type || 'None') + '" EventData="' + xesc(sub(btn.event_data)) + '" ColorType="' + xesc(btn.color_type || 'Normal') + '" />');
+        var sizeAttr = '';
+        if (+btn.width > 0) sizeAttr += ' Width="' + Math.min(+btn.width, 2000) + '"';
+        if (+btn.height > 0) sizeAttr += ' Height="' + Math.min(+btn.height, 2000) + '"';
+        body.push('        <local:MyButton Text="' + xesc(sub(btn.text)) + '" EventType="' + xesc(btn.event_type || 'None') + '" EventData="' + xesc(sub(btn.event_data)) + '" ColorType="' + xesc(btn.color_type || 'Normal') + '"' + sizeAttr + ' />');
       });
-      out.push('      </StackPanel>');
+      body.push('      </StackPanel>');
     }
+    out.push('<StackPanel>');
+    var titleRaw = sub(state.title);
+    var tfs = +state.title_font_size || 0;
+    if (tfs > 0 && titleRaw !== '') {
+      if (tfs > 200) tfs = 200;
+      if (tfs < 8) tfs = 8;
+      out.push('  <local:MyCard Title="" Margin="0,0,0,15" CanSwap="True">');
+      out.push('    <StackPanel Margin="25,15,23,15">');
+      out.push('      <TextBlock Text="' + xesc(titleRaw) + '" FontSize="' + tfs + '" FontWeight="Bold" Foreground="{DynamicResource ColorBrush1}" TextWrapping="Wrap" Margin="0,0,0,8" />');
+    } else {
+      out.push('  <local:MyCard Title="' + xesc(titleRaw) + '" Margin="0,0,0,15" CanSwap="True">');
+      out.push('    <StackPanel Margin="25,40,23,15">');
+    }
+    body.forEach(function (line) { out.push(line); });
     out.push('    </StackPanel>');
     out.push('  </local:MyCard>');
     out.push('</StackPanel>');

@@ -541,6 +541,7 @@ function migrateSiteTables($db, $driver) {
             name VARCHAR(100) NOT NULL,
             kind VARCHAR(16) NOT NULL DEFAULT 'server',
             title VARCHAR(255) NOT NULL DEFAULT '',
+            title_font_size INT NOT NULL DEFAULT 0,
             rows_json TEXT NOT NULL,
             buttons_json TEXT NOT NULL,
             enabled TINYINT NOT NULL DEFAULT 1,
@@ -565,16 +566,17 @@ function migrateSiteTables($db, $driver) {
     } else {
         try {
             $db->exec("CREATE TABLE pcl_cards (
-                id           INTEGER PRIMARY KEY AUTOINCREMENT,
-                name         TEXT NOT NULL,
-                kind         TEXT NOT NULL DEFAULT 'server',
-                title        TEXT NOT NULL DEFAULT '',
-                rows_json    TEXT NOT NULL DEFAULT '[]',
-                buttons_json TEXT NOT NULL DEFAULT '[]',
-                enabled      INTEGER NOT NULL DEFAULT 1,
-                sort_order   INTEGER NOT NULL DEFAULT 0,
-                created_at   INTEGER NOT NULL,
-                updated_at   INTEGER NOT NULL
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                name            TEXT NOT NULL,
+                kind            TEXT NOT NULL DEFAULT 'server',
+                title           TEXT NOT NULL DEFAULT '',
+                title_font_size INTEGER NOT NULL DEFAULT 0,
+                rows_json       TEXT NOT NULL DEFAULT '[]',
+                buttons_json    TEXT NOT NULL DEFAULT '[]',
+                enabled         INTEGER NOT NULL DEFAULT 1,
+                sort_order      INTEGER NOT NULL DEFAULT 0,
+                created_at      INTEGER NOT NULL,
+                updated_at      INTEGER NOT NULL
             )");
             $db->exec("CREATE INDEX IF NOT EXISTS idx_pcl_cards_sort ON pcl_cards(sort_order)");
         } catch (PDOException $e) {
@@ -597,6 +599,17 @@ function migrateSiteTables($db, $driver) {
             if (strpos($e->getMessage(), 'already exists') === false) {
                 throw $e;
             }
+        }
+    }
+
+    // 迁移：pcl_cards 新增 title_font_size 列（卡片标题字号，0=默认 13）
+    try {
+        $test = $db->query("SELECT title_font_size FROM pcl_cards LIMIT 0");
+    } catch (PDOException $e) {
+        if ($driver === 'mysql') {
+            $db->exec("ALTER TABLE pcl_cards ADD COLUMN title_font_size INT NOT NULL DEFAULT 0");
+        } else {
+            $db->exec("ALTER TABLE pcl_cards ADD COLUMN title_font_size INTEGER NOT NULL DEFAULT 0");
         }
     }
 

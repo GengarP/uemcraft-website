@@ -66,6 +66,13 @@
         Auth.setText('serverCount', json.total || 0);
       }
     }).catch(function () {});
+
+    // PCL 主页统计
+    Auth.api('../api/pcl.php?action=card_list').then(function (json) {
+      if (json.success) {
+        Auth.setText('pclCardCount', (json.data || []).length);
+      }
+    }).catch(function () {});
   });
 
   // 退出按钮由 components-admin.js（外壳）统一绑定
