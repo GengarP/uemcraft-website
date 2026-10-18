@@ -145,6 +145,32 @@ function xesc_nl($s) {
 }
 
 /**
+ * 分隔线/页脚文字逐字插空格（「历史版本」→「历 史 版 本」），
+ * 仿 PCL2-NewsHomepage 的 Separator 字距效果；已有空格处不重复加。
+ */
+function spaceOut($text) {
+    return preg_replace('/(?<=\S)(?=\S)/u', ' ', (string)$text);
+}
+
+/**
+ * 带字分隔线：三列 Grid（线 / 拉开字距的文字 / 线），
+ * 参考 PCL2-NewsHomepage 的 Separator 模板。$strokeAttr 可以是
+ * `{DynamicResource ColorBrush4}` 字面量，也可以是已转义的自定义色。
+ */
+function labeledLine($text, $fontSize, $strokeAttr, $thicknessStr, $opacityAttr) {
+    $lineAt = function ($col) use ($strokeAttr, $thicknessStr, $opacityAttr) {
+        return '<Line X1="0" X2="100" Stroke="' . $strokeAttr . '" StrokeThickness="' . $thicknessStr . '" HorizontalAlignment="Center" Stretch="Fill" Grid.Column="' . $col . '"' . $opacityAttr . ' />';
+    };
+    $out  = '            <Grid Margin="0,10">' . "\n";
+    $out .= '                <Grid.ColumnDefinitions><ColumnDefinition Width="1*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="1*" /></Grid.ColumnDefinitions>' . "\n";
+    $out .= '                ' . $lineAt(0) . "\n";
+    $out .= '                <TextBlock Text="' . xesc($text) . '" FontSize="' . $fontSize . '" Foreground="' . $strokeAttr . '" Grid.Column="1" VerticalAlignment="Center" Margin="12,0" />' . "\n";
+    $out .= '                ' . $lineAt(2) . "\n";
+    $out .= '            </Grid>' . "\n";
+    return $out;
+}
+
+/**
  * 解析 Minecraft § 颜色码（§0-§f 色、§l§o§m§n 样式、§r 重置、§x§R§R§G§G§B§B 十六进制色）
  * 为 WPF <Run> 片段串。返回 null 表示文本不含 § 码，走普通 TextBlock。
  * Run 之间不换行不加空白——XAML 会把 Run 之间的缩进空白变成多余空格。
@@ -328,11 +354,8 @@ function renderRow($row, $map) {
         if ($status === '') {
             return '';
         }
-        $out  = '            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">' . "\n";
-        $out .= '                <TextBlock Text="● " Foreground="' . xesc($color) . '" FontSize="14" VerticalAlignment="Center" />' . "\n";
-        $out .= '                <TextBlock Text="' . xesc($status) . '" Foreground="' . xesc($color) . '" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" />' . "\n";
-        $out .= '            </StackPanel>' . "\n";
-        return $out;
+        // MojangStatus 式状态行：圆角小方块 + 粗体 Run（Inline 之间零空白，缩进会变成空格）
+        return '            <TextBlock Margin="0,0,0,8" FontSize="14" FontWeight="Bold"><InlineUIContainer><Border Background="' . xesc($color) . '" CornerRadius="2" Height="10" Width="10" Margin="0,0,0,1" /></InlineUIContainer><Run Text=" ' . xesc($status) . '" /></TextBlock>' . "\n";
     }
 
     if ($type === 'list_item') {
@@ -377,7 +400,7 @@ function renderRow($row, $map) {
             $theme = 'Blue';
         }
         $text = xesc(substitute($row['text'] ?? '', $map));
-        return '            <local:MyHint Margin="0,8,0,0" Theme="' . $theme . '" Text="' . $text . '" />' . "\n";
+        return '            <local:MyHint Margin="0,4,0,8" Theme="' . $theme . '" Text="' . $text . '" />' . "\n";
     }
 
     if ($type === 'image') {
@@ -400,7 +423,8 @@ function renderRow($row, $map) {
     }
 
     if ($type === 'divider') {
-        // 分割线：放在卡片开头/结尾即可形成卡片之间的视觉分隔
+        // 分割线：放在卡片开头/结尾即可形成卡片之间的视觉分隔；
+        // 填了 text 则升级为带字分隔线（「历 史 版 本」式三列 Grid）
         $thickness = (float)($row['thickness'] ?? 1.5);
         if ($thickness <= 0) $thickness = 1.5;
         $thickness = min($thickness, 10.0);
@@ -409,38 +433,121 @@ function renderRow($row, $map) {
         $opacity = (float)($row['opacity'] ?? 1);
         if ($opacity <= 0 || $opacity > 1) $opacity = 1;
         $opacityAttr = $opacity < 1 ? ' Opacity="' . $opacity . '"' : '';
+        $text = spaceOut(substitute($row['text'] ?? '', $map));
+        if ($text !== '') {
+            return labeledLine($text, 15, $strokeAttr, sprintf('%g', $thickness), $opacityAttr);
+        }
         return '            <Line X1="0" X2="100" Stroke="' . $strokeAttr . '" StrokeThickness="' . sprintf('%g', $thickness) . '" HorizontalAlignment="Center" Stretch="Fill" Margin="4,4"' . $opacityAttr . ' />' . "\n";
+    }
+
+    if ($type === 'header_image') {
+        // 三线夹图头图：上下 3px 粗线夹图 + 可叠圆角徽章 chip（PCL2-NewsHomepage 签名手法）
+        $src = substitute($row['src'] ?? '', $map);
+        if ($src === '') {
+            return '';
+        }
+        $h = intval($row['height'] ?? 0);
+        if ($h <= 0) $h = 170;
+        $h = max(60, min($h, 500));
+        $badge = substitute($row['badge'] ?? '', $map);
+        $out  = '            <Grid Margin="0,6,0,0">' . "\n";
+        $out .= '                <StackPanel>' . "\n";
+        $out .= '                    <Line X1="0" X2="100" Stroke="{DynamicResource ColorBrush4}" StrokeThickness="3" HorizontalAlignment="Center" Stretch="Fill" />' . "\n";
+        $out .= '                    <local:MyImage Source="' . xesc($src) . '" Stretch="UniformToFill" MaxHeight="' . $h . '" />' . "\n";
+        $out .= '                    <Line X1="0" X2="100" Stroke="{DynamicResource ColorBrush4}" StrokeThickness="3" HorizontalAlignment="Center" Stretch="Fill" />' . "\n";
+        $out .= '                </StackPanel>' . "\n";
+        if ($badge !== '') {
+            $out .= '                <Border Background="{DynamicResource ColorBrush3}" BorderBrush="{DynamicResource ColorBrush2}" BorderThickness="0,0,0,2" CornerRadius="5" Padding="12,3" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,0,-2">' . "\n";
+            $out .= '                    <TextBlock Text="' . xesc($badge) . '" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource ColorBrush7}" />' . "\n";
+            $out .= '                </Border>' . "\n";
+        }
+        $out .= '            </Grid>' . "\n";
+        return $out;
+    }
+
+    if ($type === 'notice') {
+        // 公告条横幅：圆角浅底 Border（PCL2-NewsHomepage noticebar 签名外观，Opacity 0.7 固定）
+        $raw = substitute($row['text'] ?? '', $map);
+        $runs = parseMcRuns($raw);
+        if ($runs === null) {
+            $tb = '<TextBlock TextWrapping="Wrap" Margin="10,0" FontSize="12" FontWeight="Bold" Text="' . xesc_nl($raw) . '" />';
+        } else {
+            $tb = '<TextBlock TextWrapping="Wrap" Margin="10,0" FontSize="12" FontWeight="Bold">' . $runs . '</TextBlock>';
+        }
+        $out  = '            <Border Margin="0,6,0,0" Padding="2,8" BorderThickness="1" Background="{DynamicResource ColorBrush5}" BorderBrush="{DynamicResource ColorBrush3}" CornerRadius="5" Opacity="0.7">' . "\n";
+        $out .= '                ' . $tb . "\n";
+        $out .= '            </Border>' . "\n";
+        return $out;
+    }
+
+    if ($type === 'footer') {
+        // 页脚封底：「到 底 啦」式带字分隔 + 可选底部 8px 厚色条
+        $raw = substitute(array_key_exists('text', $row) ? (string)$row['text'] : '到底啦', $map);
+        $thick = (bool)($row['thick_border'] ?? true);
+        $out = '';
+        if ($raw !== '') {
+            $out .= labeledLine(spaceOut($raw), 14, '{DynamicResource ColorBrush4}', '1.5', '');
+        }
+        if ($thick) {
+            $out .= '            <Border BorderThickness="0,0,0,8" BorderBrush="{DynamicResource ColorBrush2}" Margin="0,4,0,0" />' . "\n";
+        }
+        return $out;
     }
 
     return '';
 }
 
-/** 渲染按钮行（水平面板，事件属性为直接属性写法） */
+/** 渲染按钮行（WrapPanel 可换行，事件属性为直接属性写法；style=icon_text 走 MyIconTextButton） */
 function renderButtons($buttons, $map) {
     $items = '';
     foreach ($buttons as $btn) {
         if (!is_array($btn)) {
             continue;
         }
-        $text = xesc(substitute($btn['text'] ?? '', $map));
         $et = xesc($btn['event_type'] ?? 'None');
         $ed = xesc(substitute($btn['event_data'] ?? '', $map));
-        $ct = $btn['color_type'] ?? 'Normal';
-        if (!in_array($ct, ['Normal', 'Highlight', 'Red'], true)) {
-            $ct = 'Normal';
+        $style = $btn['style'] ?? 'text';
+        if (!in_array($style, ['text', 'icon_text'], true)) {
+            $style = 'text';
         }
         // 自定义尺寸：Width/Height 是 FrameworkElement 属性，直接生效（字号不可改，LabText 写死 13）
         $sizeAttr = '';
         $w = intval($btn['width'] ?? 0);
         $h = intval($btn['height'] ?? 0);
         if ($w > 0) $sizeAttr .= ' Width="' . min($w, 2000) . '"';
-        if ($h > 0) $sizeAttr .= ' Height="' . min($h, 2000) . '"';
-        $items .= '                <local:MyButton Text="' . $text . '" EventType="' . $et . '" EventData="' . $ed . '" ColorType="' . $ct . '"' . $sizeAttr . ' Margin="0,0,8,0" />' . "\n";
+
+        if ($style === 'icon_text') {
+            // 图标文字按钮：矢量 Path 数据作 Logo（自由文本，非空即可）
+            $logo = trim((string)($btn['logo_path'] ?? ''));
+            if ($logo === '') {
+                continue;
+            }
+            $text = xesc(substitute($btn['text'] ?? '', $map));
+            $tooltip = substitute($btn['tooltip'] ?? '', $map);
+            $tipAttr = $tooltip !== '' ? ' ToolTip="' . xesc($tooltip) . '"' : '';
+            $scale = (float)($btn['logo_scale'] ?? 1);
+            if ($scale < 0.1 || $scale > 5) $scale = 1;
+            if ($h > 0) $sizeAttr .= ' Height="' . min($h, 2000) . '"';
+            $items .= '                <local:MyIconTextButton Text="' . $text . '"' . $tipAttr . ' EventType="' . $et . '" EventData="' . $ed . '" Logo="' . xesc($logo) . '" LogoScale="' . sprintf('%g', $scale) . '"' . $sizeAttr . ' Margin="0,0,5,5" />' . "\n";
+            continue;
+        }
+
+        $text = xesc(substitute($btn['text'] ?? '', $map));
+        $ct = $btn['color_type'] ?? 'Normal';
+        if (!in_array($ct, ['Normal', 'Highlight', 'Red'], true)) {
+            $ct = 'Normal';
+        }
+        if ($h > 0) {
+            $sizeAttr .= ' Height="' . min($h, 2000) . '"';
+        } else {
+            $sizeAttr .= ' Height="35"'; // 参考仓库按钮规范高度
+        }
+        $items .= '                <local:MyButton Text="' . $text . '" EventType="' . $et . '" EventData="' . $ed . '" ColorType="' . $ct . '" Padding="13,0"' . $sizeAttr . ' Margin="0,0,5,5" />' . "\n";
     }
     if ($items === '') {
         return '';
     }
-    return '            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">' . "\n" . $items . '            </StackPanel>' . "\n";
+    return '            <WrapPanel Orientation="Horizontal" Margin="0,10,0,0">' . "\n" . $items . '            </WrapPanel>' . "\n";
 }
 
 /** 渲染一张卡片（server 模板卡传入单台的映射，standalone 卡传入全局映射） */
@@ -474,7 +581,7 @@ function renderCard($card, $map) {
         $tfs = max(8, min($tfs, 200));
         $out  = '    <local:MyCard Title="" Margin="0,0,0,15" CanSwap="True">' . "\n";
         $out .= '        <StackPanel Margin="25,15,23,15">' . "\n";
-        $out .= '            <TextBlock Text="' . xesc($titleRaw) . '" FontSize="' . $tfs . '" FontWeight="Bold" Foreground="{DynamicResource ColorBrush1}" TextWrapping="Wrap" Margin="0,0,0,8" />' . "\n";
+        $out .= '            <TextBlock Text="' . xesc($titleRaw) . '" FontSize="' . $tfs . '" FontWeight="Bold" Foreground="{DynamicResource ColorBrush3}" TextWrapping="Wrap" Margin="0,0,0,8" />' . "\n";
         $out .= $body;
         $out .= '        </StackPanel>' . "\n";
         $out .= '    </local:MyCard>' . "\n";

@@ -21,7 +21,7 @@ require_once __DIR__ . '/common.php';
 $action = $_GET['action'] ?? '';
 
 /** 行类型白名单 */
-const PCL_ROW_TYPES = ['list_item', 'text', 'hint', 'status_dot', 'image', 'divider'];
+const PCL_ROW_TYPES = ['list_item', 'text', 'hint', 'status_dot', 'image', 'divider', 'header_image', 'notice', 'footer'];
 
 /** 按钮 EventType 白名单（PCL2 CustomEvent.EventType 全集） */
 const PCL_EVENT_TYPES = [
@@ -43,7 +43,7 @@ function validateRowsJson($raw) {
     if (!is_array($rows)) {
         json_response(['success' => false, 'error' => '内容行不是合法的 JSON 数组'], 400);
     }
-    foreach ($rows as $row) {
+    foreach ($rows as &$row) {
         if (!is_array($row) || !isset($row['type']) || !in_array($row['type'], PCL_ROW_TYPES, true)) {
             json_response(['success' => false, 'error' => '存在非法的内容行类型'], 400);
         }
@@ -54,7 +54,26 @@ function validateRowsJson($raw) {
             && !in_array($row['stretch'], ['Uniform', 'UniformToFill', 'Fill', 'None'], true)) {
             json_response(['success' => false, 'error' => '图片缩放模式必须是 Uniform/UniformToFill/Fill/None'], 400);
         }
+        if ($row['type'] === 'header_image') {
+            // 三线夹图：src/badge 为字符串；height 0（默认 170）或 60-500
+            foreach (['src', 'badge'] as $k) {
+                if (isset($row[$k]) && !is_string($row[$k])) {
+                    json_response(['success' => false, 'error' => '头图的 ' . $k . ' 必须是字符串'], 400);
+                }
+            }
+            if (isset($row['height']) && $row['height'] !== '' && (intval($row['height']) < 60 || intval($row['height']) > 500)) {
+                json_response(['success' => false, 'error' => '头图高度必须在 60-500 之间（0=默认）'], 400);
+            }
+        }
+        if (in_array($row['type'], ['divider', 'notice', 'footer'], true) && isset($row['text']) && !is_string($row['text'])) {
+            json_response(['success' => false, 'error' => '分隔线/公告/页脚的 text 必须是字符串'], 400);
+        }
+        if ($row['type'] === 'footer') {
+            // 厚底边开关统一为布尔值（缺省 true）
+            $row['thick_border'] = (bool)($row['thick_border'] ?? true);
+        }
     }
+    unset($row);
     return json_encode(array_values($rows), JSON_UNESCAPED_UNICODE);
 }
 
@@ -66,7 +85,7 @@ function validateButtonsJson($raw) {
     if (!is_array($buttons)) {
         json_response(['success' => false, 'error' => '按钮不是合法的 JSON 数组'], 400);
     }
-    foreach ($buttons as $btn) {
+    foreach ($buttons as &$btn) {
         if (!is_array($btn)) {
             json_response(['success' => false, 'error' => '存在非法的按钮项'], 400);
         }
@@ -78,12 +97,41 @@ function validateButtonsJson($raw) {
         if (!in_array($ct, PCL_COLOR_TYPES, true)) {
             json_response(['success' => false, 'error' => '存在非法的按钮颜色：' . $ct], 400);
         }
+        $style = $btn['style'] ?? 'text';
+        if ($style === '' ) {
+            $style = 'text';
+        }
+        if (!in_array($style, ['text', 'icon_text'], true)) {
+            json_response(['success' => false, 'error' => '按钮样式必须是 text/icon_text'], 400);
+        }
+        $btn['style'] = $style;
+        if ($style === 'icon_text') {
+            // 图标文字按钮：矢量 Path 数据必填（自由文本，只限长度）
+            $logo = trim((string)($btn['logo_path'] ?? ''));
+            if ($logo === '') {
+                json_response(['success' => false, 'error' => '图标按钮必须填写矢量 Path 数据（logo_path）'], 400);
+            }
+            if (mb_strlen($logo) > 4000) {
+                json_response(['success' => false, 'error' => 'logo_path 过长（最多 4000 字符）'], 400);
+            }
+            $btn['logo_path'] = $logo;
+            if (isset($btn['logo_scale']) && $btn['logo_scale'] !== '') {
+                $scale = floatval($btn['logo_scale']);
+                if ($scale < 0.1 || $scale > 5) {
+                    json_response(['success' => false, 'error' => '图标缩放必须在 0.1-5 之间'], 400);
+                }
+            }
+            if (isset($btn['tooltip']) && !is_string($btn['tooltip'])) {
+                json_response(['success' => false, 'error' => '按钮 tooltip 必须是字符串'], 400);
+            }
+        }
         foreach (['width', 'height'] as $dim) {
             if (isset($btn[$dim]) && $btn[$dim] !== '' && (intval($btn[$dim]) < 0 || intval($btn[$dim]) > 2000)) {
                 json_response(['success' => false, 'error' => '按钮尺寸必须在 0-2000 之间（0=自动）'], 400);
             }
         }
     }
+    unset($btn);
     return json_encode(array_values($buttons), JSON_UNESCAPED_UNICODE);
 }
 

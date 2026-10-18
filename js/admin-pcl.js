@@ -420,8 +420,8 @@
         fields = '<div class="form-row">'
           + '<div class="form-group form-group-grow"><label class="form-label">文本（支持 § 颜色码，如 §b蓝色 §l粗体 §r重置）</label>'
           + '<div class="insert-bar"><input type="text" class="form-input r-text" data-index="' + i + '" value="' + esc(row.text || '') + '" placeholder="如：{%motd%}">' + ins(i, 'text') + '</div></div>'
-          + '<div class="form-group"><label class="form-label">字号</label>'
-          + '<input type="number" class="form-input r-size" data-index="' + i + '" value="' + (row.font_size || 12) + '" min="8" max="32"></div>'
+          + '<div class="form-group"><label class="form-label">字号（12 辅助 / 15 正文 / 18 标题 / 28 大标题）</label>'
+          + '<input type="number" class="form-input r-size" data-index="' + i + '" list="pclFontSizes" value="' + (row.font_size || 12) + '" min="8" max="32"></div>'
           + '<div class="form-group"><label class="form-label">默认颜色（#RRGGBB 或留空默认）</label>'
           + '<input type="text" class="form-input r-color" data-index="' + i + '" value="' + esc(row.color || '') + '" placeholder="#FFCC00"></div>'
           + '</div>'
@@ -439,7 +439,32 @@
           + '</div>'
           + '<div class="form-row"><div class="form-group"><label class="form-label"><input type="checkbox" class="r-hide" data-index="' + i + '"' + (row.hide_if_empty ? ' checked' : '') + '> 所引用的 {%key%} 全为空时隐藏此行</label></div></div>';
       } else if (row.type === 'status_dot') {
-        fields = '<div class="form-row"><div class="form-group text-muted">输出「● 在线/离线」状态点行（仅服务器模板卡有效）。</div></div>';
+        fields = '<div class="form-row"><div class="form-group text-muted">输出「圆角方块 + 在线/离线」状态行（仅服务器模板卡有效）。</div></div>';
+      } else if (row.type === 'header_image') {
+        fields = '<div class="form-row">'
+          + '<div class="form-group form-group-grow"><label class="form-label">图片地址（URL 或 pack:// URI）</label>'
+          + '<div class="insert-bar"><input type="text" class="form-input r-src" data-index="' + i + '" value="' + esc(row.src || '') + '" placeholder="https://…">' + ins(i, 'src') + '</div></div>'
+          + '<div class="form-group"><label class="form-label">最大高度（px，默认 170）</label>'
+          + '<input type="number" class="form-input r-img-h" data-index="' + i + '" value="' + (row.height || '') + '" min="60" max="500"></div>'
+          + '<div class="form-group"><label class="form-label">徽章文字（可选，如 {%version%}）</label>'
+          + '<div class="insert-bar"><input type="text" class="form-input r-badge" data-index="' + i + '" value="' + esc(row.badge || '') + '">' + ins(i, 'badge') + '</div></div>'
+          + '</div>'
+          + '<div class="form-row"><div class="form-group text-muted">上下 3px 粗线夹图（等比填满裁剪），徽章以圆角 chip 叠在图片右下角。</div></div>'
+          + '<div class="form-row"><div class="form-group"><label class="form-label"><input type="checkbox" class="r-hide" data-index="' + i + '"' + (row.hide_if_empty ? ' checked' : '') + '> 所引用的 {%key%} 全为空时隐藏此行</label></div></div>';
+      } else if (row.type === 'notice') {
+        fields = '<div class="form-row">'
+          + '<div class="form-group form-group-grow"><label class="form-label">文本（支持 § 颜色码）</label>'
+          + '<div class="insert-bar"><input type="text" class="form-input r-text" data-index="' + i + '" value="' + esc(row.text || '') + '" placeholder="如：服务器维护公告">' + ins(i, 'text') + '</div></div>'
+          + '</div>'
+          + '<div class="form-row"><div class="form-group text-muted">圆角浅底公告横幅（主题色底 + 描边，70% 不透明度）。</div></div>'
+          + '<div class="form-row"><div class="form-group"><label class="form-label"><input type="checkbox" class="r-hide" data-index="' + i + '"' + (row.hide_if_empty ? ' checked' : '') + '> 所引用的 {%key%} 全为空时隐藏此行</label></div></div>';
+      } else if (row.type === 'footer') {
+        fields = '<div class="form-row">'
+          + '<div class="form-group form-group-grow"><label class="form-label">文字（自动逐字加空格，如「到底啦」→「到 底 啦」）</label>'
+          + '<div class="insert-bar"><input type="text" class="form-input r-text" data-index="' + i + '" value="' + esc(row.text != null ? row.text : '到底啦') + '">' + ins(i, 'text') + '</div></div>'
+          + '<div class="form-group"><label class="form-label"><input type="checkbox" class="r-thick" data-index="' + i + '"' + (row.thick_border !== false ? ' checked' : '') + '> 底部 8px 厚色条</label></div>'
+          + '</div>'
+          + '<div class="form-row"><div class="form-group"><label class="form-label"><input type="checkbox" class="r-hide" data-index="' + i + '"' + (row.hide_if_empty ? ' checked' : '') + '> 所引用的 {%key%} 全为空时隐藏此行</label></div></div>';
       } else if (row.type === 'image') {
         fields = '<div class="form-row">'
           + '<div class="form-group form-group-grow"><label class="form-label">图片地址（URL 或 pack:// URI）</label>'
@@ -458,6 +483,8 @@
           + '<div class="form-row"><div class="form-group"><label class="form-label"><input type="checkbox" class="r-hide" data-index="' + i + '"' + (row.hide_if_empty ? ' checked' : '') + '> 所引用的 {%key%} 全为空时隐藏此行</label></div></div>';
       } else if (row.type === 'divider') {
         fields = '<div class="form-row">'
+          + '<div class="form-group form-group-grow"><label class="form-label">中间文字（可选，填写后变为带字分隔线）</label>'
+          + '<div class="insert-bar"><input type="text" class="form-input r-text" data-index="' + i + '" value="' + esc(row.text || '') + '" placeholder="如：历史版本">' + ins(i, 'text') + '</div></div>'
           + '<div class="form-group"><label class="form-label">线宽</label>'
           + '<input type="number" class="form-input r-thickness" data-index="' + i + '" value="' + (row.thickness || 1.5) + '" min="0.5" max="10" step="0.5"></div>'
           + '<div class="form-group"><label class="form-label">不透明度（0-1，留空 1）</label>'
@@ -471,7 +498,7 @@
       return '<div class="row-editor" data-index="' + i + '">'
         + '<div class="row-editor-head">'
         + '<select class="form-input r-type" data-index="' + i + '">'
-        + [['list_item', '列表项'], ['text', '文本'], ['hint', '提示'], ['status_dot', '状态点'], ['image', '图片'], ['divider', '分割线']].map(function (t) {
+        + [['list_item', '列表项'], ['text', '文本'], ['hint', '提示'], ['status_dot', '状态点'], ['image', '图片'], ['divider', '分割线'], ['header_image', '头图（三线夹图）'], ['notice', '公告条'], ['footer', '页脚封底']].map(function (t) {
             return '<option value="' + t[0] + '"' + (row.type === t[0] ? ' selected' : '') + '>' + t[1] + '</option>';
           }).join('')
         + '</select>'
@@ -507,6 +534,8 @@
       else if (t.classList.contains('r-color')) row.color = t.value;
       else if (t.classList.contains('r-theme')) row.theme = t.value;
       else if (t.classList.contains('r-src')) row.src = t.value;
+      else if (t.classList.contains('r-badge')) row.badge = t.value;
+      else if (t.classList.contains('r-thick')) row.thick_border = t.checked;
       else if (t.classList.contains('r-img-w')) row.width = +t.value || 0;
       else if (t.classList.contains('r-img-h')) row.height = +t.value || 0;
       else if (t.classList.contains('r-stretch')) row.stretch = t.value;
@@ -554,6 +583,7 @@
           + keys.map(function (k) { return '<option value="{%' + k[0] + '%}">{' + '%' + k[0] + '%}</option>'; }).join('')
           + '</select>';
       }
+      var isIcon = btn.style === 'icon_text';
       return '<div class="row-editor" data-index="' + i + '">'
         + '<div class="row-editor-head"><span class="text-muted">按钮 ' + (i + 1) + '</span>'
         + '<div class="row-editor-ops">'
@@ -562,6 +592,11 @@
         + '<button type="button" class="btn btn-ghost btn-sm admin-btn-danger r-del">删除</button>'
         + '</div></div>'
         + '<div class="form-row">'
+        + '<div class="form-group"><label class="form-label">按钮样式</label>'
+        + '<select class="form-input b-style" data-index="' + i + '">'
+        + '<option value="text"' + (!isIcon ? ' selected' : '') + '>文字按钮</option>'
+        + '<option value="icon_text"' + (isIcon ? ' selected' : '') + '>图标文字按钮</option>'
+        + '</select></div>'
         + '<div class="form-group"><label class="form-label">按钮文字</label>'
         + '<div class="insert-bar"><input type="text" class="form-input b-text" data-index="' + i + '" value="' + esc(btn.text || '') + '">' + ins('text') + '</div></div>'
         + '<div class="form-group"><label class="form-label">事件类型</label>'
@@ -570,13 +605,23 @@
             return '<option value="' + esc(et) + '"' + (btn.event_type === et ? ' selected' : '') + '>' + esc(et) + '</option>';
           }).join('')
         + '</select></div>'
-        + '<div class="form-group"><label class="form-label">颜色</label>'
+        + (isIcon ? '' : '<div class="form-group"><label class="form-label">颜色</label>'
         + '<select class="form-input b-color" data-index="' + i + '">'
         + COLOR_TYPES.map(function (ct) {
             return '<option value="' + ct + '"' + (btn.color_type === ct ? ' selected' : '') + '>' + ct + '</option>';
           }).join('')
-        + '</select></div>'
+        + '</select></div>')
         + '</div>'
+        + (isIcon
+            ? '<div class="form-row">'
+              + '<div class="form-group form-group-grow"><label class="form-label">矢量 Path 数据（Logo，如 M8 9.5a1.5 1.5 0 1 0 0-3 …）</label>'
+              + '<textarea class="form-input b-logo" data-index="' + i + '" rows="2">' + esc(btn.logo_path || '') + '</textarea></div>'
+              + '<div class="form-group"><label class="form-label">图标缩放（0.1-5，默认 1）</label>'
+              + '<input type="number" class="form-input b-scale" data-index="' + i + '" value="' + (btn.logo_scale != null && btn.logo_scale !== '' ? btn.logo_scale : '') + '" min="0.1" max="5" step="0.1"></div>'
+              + '<div class="form-group"><label class="form-label">ToolTip（可选）</label>'
+              + '<input type="text" class="form-input b-tip" data-index="' + i + '" value="' + esc(btn.tooltip || '') + '"></div>'
+              + '</div>'
+            : '')
         + '<div class="form-row"><div class="form-group form-group-grow"><label class="form-label">事件数据</label>'
         + '<div class="insert-bar"><input type="text" class="form-input b-data" data-index="' + i + '" value="' + esc(btn.event_data || '') + '" placeholder="如 URL / 要复制的文本 / 标题|内容">' + ins('event_data') + '</div></div>'
         + '<div class="form-group"><label class="form-label">宽（px，留空自动）</label>'
@@ -603,6 +648,10 @@
       else if (t.classList.contains('b-color')) btn.color_type = t.value;
       else if (t.classList.contains('b-width')) btn.width = +t.value || 0;
       else if (t.classList.contains('b-height')) btn.height = +t.value || 0;
+      else if (t.classList.contains('b-style')) { btn.style = t.value === 'icon_text' ? 'icon_text' : 'text'; renderButtons(); }
+      else if (t.classList.contains('b-logo')) btn.logo_path = t.value;
+      else if (t.classList.contains('b-scale')) btn.logo_scale = t.value === '' ? undefined : +t.value;
+      else if (t.classList.contains('b-tip')) btn.tooltip = t.value;
       updatePreview();
     };
     wrap.onclick = function (e) {
@@ -700,6 +749,26 @@
     });
   }
 
+  /** 逐字插空格（与 homepage/index.php 的 spaceOut 同构） */
+  function spaceOut(text) {
+    return String(text == null ? '' : text).replace(/(\S)(?=\S)/g, '$1 ');
+  }
+
+  /** 带字分隔线（与 homepage/index.php 的 labeledLine 同构），返回行数组 */
+  function labeledLine(text, fontSize, stroke, thicknessStr, opacityAttr) {
+    function lineAt(col) {
+      return '<Line X1="0" X2="100" Stroke="' + stroke + '" StrokeThickness="' + thicknessStr + '" HorizontalAlignment="Center" Stretch="Fill" Grid.Column="' + col + '"' + opacityAttr + ' />';
+    }
+    return [
+      '      <Grid Margin="0,10">',
+      '        <Grid.ColumnDefinitions><ColumnDefinition Width="1*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="1*" /></Grid.ColumnDefinitions>',
+      '        ' + lineAt(0),
+      '        <TextBlock Text="' + xesc(text) + '" FontSize="' + fontSize + '" Foreground="' + stroke + '" Grid.Column="1" VerticalAlignment="Center" Margin="12,0" />',
+      '        ' + lineAt(2),
+      '      </Grid>'
+    ];
+  }
+
   function rowEmpty(row) {
     if (!row.hide_if_empty) return false;
     var json = JSON.stringify(row);
@@ -722,10 +791,7 @@
       if (row.type === 'status_dot') {
         if (state.kind !== 'server') return;
         var color = SAMPLE_MAP.status_color || '#F44336';
-        body.push('      <StackPanel Orientation="Horizontal" Margin="0,0,0,8">');
-        body.push('        <TextBlock Text="● " Foreground="' + xesc(color) + '" FontSize="14" />');
-        body.push('        <TextBlock Text="' + xesc(SAMPLE_MAP.status) + '" Foreground="' + xesc(color) + '" FontSize="14" FontWeight="Bold" />');
-        body.push('      </StackPanel>');
+        body.push('      <TextBlock Margin="0,0,0,8" FontSize="14" FontWeight="Bold"><InlineUIContainer><Border Background="' + xesc(color) + '" CornerRadius="2" Height="10" Width="10" Margin="0,0,0,1" /></InlineUIContainer><Run Text=" ' + xesc(SAMPLE_MAP.status) + '" /></TextBlock>');
       } else if (row.type === 'list_item') {
         var logo = row.logo || '';
         var logoAttr = !logo ? '' : (logo.indexOf('://') !== -1
@@ -760,18 +826,72 @@
         var stroke = row.color ? xesc(sub(row.color)) : '{DynamicResource ColorBrush4}';
         var op = row.opacity == null || row.opacity === '' ? 1 : +row.opacity;
         if (!(op > 0 && op < 1)) op = 1;
-        body.push('      <Line X1="0" X2="100" Stroke="' + stroke + '" StrokeThickness="' + th + '" HorizontalAlignment="Center" Stretch="Fill" Margin="4,4"' + (op < 1 ? ' Opacity="' + op + '"' : '') + ' />');
+        var opAttr = op < 1 ? ' Opacity="' + op + '"' : '';
+        var divText = spaceOut(sub(row.text));
+        if (divText !== '') {
+          body.push.apply(body, labeledLine(divText, 15, stroke, String(th), opAttr));
+        } else {
+          body.push('      <Line X1="0" X2="100" Stroke="' + stroke + '" StrokeThickness="' + th + '" HorizontalAlignment="Center" Stretch="Fill" Margin="4,4"' + opAttr + ' />');
+        }
+      } else if (row.type === 'header_image') {
+        var hdSrc = sub(row.src || '');
+        if (!hdSrc) return;
+        var hh = +row.height || 0;
+        if (hh <= 0) hh = 170;
+        hh = Math.max(60, Math.min(hh, 500));
+        body.push('      <Grid Margin="0,6,0,0">');
+        body.push('        <StackPanel>');
+        body.push('          <Line X1="0" X2="100" Stroke="{DynamicResource ColorBrush4}" StrokeThickness="3" HorizontalAlignment="Center" Stretch="Fill" />');
+        body.push('          <local:MyImage Source="' + xesc(hdSrc) + '" Stretch="UniformToFill" MaxHeight="' + hh + '" />');
+        body.push('          <Line X1="0" X2="100" Stroke="{DynamicResource ColorBrush4}" StrokeThickness="3" HorizontalAlignment="Center" Stretch="Fill" />');
+        body.push('        </StackPanel>');
+        var badge = sub(row.badge || '');
+        if (badge !== '') {
+          body.push('        <Border Background="{DynamicResource ColorBrush3}" BorderBrush="{DynamicResource ColorBrush2}" BorderThickness="0,0,0,2" CornerRadius="5" Padding="12,3" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,0,-2">');
+          body.push('          <TextBlock Text="' + xesc(badge) + '" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource ColorBrush7}" />');
+          body.push('        </Border>');
+        }
+        body.push('      </Grid>');
+      } else if (row.type === 'notice') {
+        var nRuns = parseMcRuns(sub(row.text));
+        var tb = nRuns == null
+          ? '<TextBlock TextWrapping="Wrap" Margin="10,0" FontSize="12" FontWeight="Bold" Text="' + xescNl(sub(row.text)) + '" />'
+          : '<TextBlock TextWrapping="Wrap" Margin="10,0" FontSize="12" FontWeight="Bold">' + nRuns + '</TextBlock>';
+        body.push('      <Border Margin="0,6,0,0" Padding="2,8" BorderThickness="1" Background="{DynamicResource ColorBrush5}" BorderBrush="{DynamicResource ColorBrush3}" CornerRadius="5" Opacity="0.7">');
+        body.push('        ' + tb);
+        body.push('      </Border>');
+      } else if (row.type === 'footer') {
+        var fRaw = row.text != null ? sub(row.text) : '到底啦';
+        var thick = row.thick_border !== false;
+        if (fRaw !== '') {
+          body.push.apply(body, labeledLine(spaceOut(fRaw), 14, '{DynamicResource ColorBrush4}', '1.5', ''));
+        }
+        if (thick) {
+          body.push('      <Border BorderThickness="0,0,0,8" BorderBrush="{DynamicResource ColorBrush2}" Margin="0,4,0,0" />');
+        }
       }
     });
     if (state.buttons.length) {
-      body.push('      <StackPanel Orientation="Horizontal" Margin="0,10,0,0">');
+      body.push('      <WrapPanel Orientation="Horizontal" Margin="0,10,0,0">');
       state.buttons.forEach(function (btn) {
         var sizeAttr = '';
         if (+btn.width > 0) sizeAttr += ' Width="' + Math.min(+btn.width, 2000) + '"';
+        if (btn.style === 'icon_text') {
+          var logo = String(btn.logo_path || '').replace(/^\s+|\s+$/g, '');
+          if (!logo) return;
+          if (+btn.height > 0) sizeAttr += ' Height="' + Math.min(+btn.height, 2000) + '"';
+          var tip = sub(btn.tooltip || '');
+          var tipAttr = tip !== '' ? ' ToolTip="' + xesc(tip) + '"' : '';
+          var scale = +btn.logo_scale;
+          if (!(scale >= 0.1 && scale <= 5)) scale = 1;
+          body.push('        <local:MyIconTextButton Text="' + xesc(sub(btn.text)) + '"' + tipAttr + ' EventType="' + xesc(btn.event_type || 'None') + '" EventData="' + xesc(sub(btn.event_data)) + '" Logo="' + xesc(logo) + '" LogoScale="' + scale + '"' + sizeAttr + ' Margin="0,0,5,5" />');
+          return;
+        }
         if (+btn.height > 0) sizeAttr += ' Height="' + Math.min(+btn.height, 2000) + '"';
-        body.push('        <local:MyButton Text="' + xesc(sub(btn.text)) + '" EventType="' + xesc(btn.event_type || 'None') + '" EventData="' + xesc(sub(btn.event_data)) + '" ColorType="' + xesc(btn.color_type || 'Normal') + '"' + sizeAttr + ' />');
+        else sizeAttr += ' Height="35"';
+        body.push('        <local:MyButton Text="' + xesc(sub(btn.text)) + '" EventType="' + xesc(btn.event_type || 'None') + '" EventData="' + xesc(sub(btn.event_data)) + '" ColorType="' + xesc(btn.color_type || 'Normal') + '" Padding="13,0"' + sizeAttr + ' Margin="0,0,5,5" />');
       });
-      body.push('      </StackPanel>');
+      body.push('      </WrapPanel>');
     }
     out.push('<StackPanel>');
     var titleRaw = sub(state.title);
@@ -781,7 +901,7 @@
       if (tfs < 8) tfs = 8;
       out.push('  <local:MyCard Title="" Margin="0,0,0,15" CanSwap="True">');
       out.push('    <StackPanel Margin="25,15,23,15">');
-      out.push('      <TextBlock Text="' + xesc(titleRaw) + '" FontSize="' + tfs + '" FontWeight="Bold" Foreground="{DynamicResource ColorBrush1}" TextWrapping="Wrap" Margin="0,0,0,8" />');
+      out.push('      <TextBlock Text="' + xesc(titleRaw) + '" FontSize="' + tfs + '" FontWeight="Bold" Foreground="{DynamicResource ColorBrush3}" TextWrapping="Wrap" Margin="0,0,0,8" />');
     } else {
       out.push('  <local:MyCard Title="' + xesc(titleRaw) + '" Margin="0,0,0,15" CanSwap="True">');
       out.push('    <StackPanel Margin="25,40,23,15">');
