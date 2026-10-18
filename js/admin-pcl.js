@@ -899,9 +899,10 @@
     if (tfs > 0 && titleRaw !== '') {
       if (tfs > 200) tfs = 200;
       if (tfs < 8) tfs = 8;
-      out.push('  <local:MyCard Title="" Margin="0,0,0,15" CanSwap="True">');
-      out.push('    <StackPanel Margin="25,15,23,15">');
-      out.push('      <TextBlock Text="' + xesc(titleRaw) + '" FontSize="' + tfs + '" FontWeight="Bold" Foreground="{DynamicResource ColorBrush3}" TextWrapping="Wrap" Margin="0,0,0,8" />');
+      var top = Math.max(40, Math.round(tfs * 1.4 + 22));
+      out.push('  <local:MyCard Margin="0,0,0,15" CanSwap="True">');
+      out.push('    <local:MyCard.Inlines><InlineUIContainer><TextBlock Text="' + xesc(titleRaw) + '" FontSize="' + tfs + '" FontWeight="Bold" Foreground="{DynamicResource ColorBrush3}" /></InlineUIContainer></local:MyCard.Inlines>');
+      out.push('    <StackPanel Margin="25,' + top + ',23,15">');
     } else {
       out.push('  <local:MyCard Title="' + xesc(titleRaw) + '" Margin="0,0,0,15" CanSwap="True">');
       out.push('    <StackPanel Margin="25,40,23,15">');

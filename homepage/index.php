@@ -575,13 +575,17 @@ function renderCard($card, $map) {
 
     $titleRaw = substitute($card['title'] ?? '', $map);
     // MyCard 的标题字号在其 Init() 里写死 13，Title 属性改不动；
-    // 自定义字号时改用 Title="" + 正文首行 TextBlock（参考 PCL2-NewsHomepage 的大标题做法）
+    // 自定义字号时把大标题放进 MyCard.Inlines（卡片头，参考 PCL2-NewsHomepage 的 BetaNotice 写法）。
+    // 标题必须在卡片头而不能画在正文里——正文收起（CanSwap 折叠）时会整块隐藏，
+    // 画在正文里的标题会跟着消失。Inlines 属于卡片头，收起后仍然可见。
     $tfs = (int)($card['title_font_size'] ?? 0);
     if ($tfs > 0 && $titleRaw !== '') {
         $tfs = max(8, min($tfs, 200));
-        $out  = '    <local:MyCard Title="" Margin="0,0,0,15" CanSwap="True">' . "\n";
-        $out .= '        <StackPanel Margin="25,15,23,15">' . "\n";
-        $out .= '            <TextBlock Text="' . xesc($titleRaw) . '" FontSize="' . $tfs . '" FontWeight="Bold" Foreground="{DynamicResource ColorBrush3}" TextWrapping="Wrap" Margin="0,0,0,8" />' . "\n";
+        // 正文顶距按标题字号放大，给更高的标题行让位（13 号时正好是惯例的 40）
+        $top = max(40, (int)round($tfs * 1.4 + 22));
+        $out  = '    <local:MyCard Margin="0,0,0,15" CanSwap="True">' . "\n";
+        $out .= '        <local:MyCard.Inlines><InlineUIContainer><TextBlock Text="' . xesc($titleRaw) . '" FontSize="' . $tfs . '" FontWeight="Bold" Foreground="{DynamicResource ColorBrush3}" /></InlineUIContainer></local:MyCard.Inlines>' . "\n";
+        $out .= '        <StackPanel Margin="25,' . $top . ',23,15">' . "\n";
         $out .= $body;
         $out .= '        </StackPanel>' . "\n";
         $out .= '    </local:MyCard>' . "\n";
