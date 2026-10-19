@@ -70,12 +70,12 @@
       var item = NAV_ITEMS[i];
       var active = isActive(item);
       if (item.isDropdown) {
-        // noLink 下拉（如「资料」）：触发器不可跳转，任一子项命中时高亮触发器
+        // 下拉触发器高亮：自身命中或任一子项命中（「资料」「关于我们」同一套逻辑）
         var anyChild = false;
         for (var j = 0; j < item.children.length; j++) {
           if (childActive(item.children[j])) anyChild = true;
         }
-        var triggerActive = item.noLink ? anyChild : active;
+        var triggerActive = active || anyChild;
         navLinks += '<div class="nav-dropdown">';
         if (item.noLink) {
           navLinks += '<button type="button" class="nav-drop-trigger' + (triggerActive ? ' is-active' : '') + '">' + item.label + '</button>';
@@ -103,6 +103,12 @@
     for (var i = 0; i < NAV_ITEMS.length; i++) {
       var item = NAV_ITEMS[i];
       var active = isActive(item);
+      // 下拉父项：自身命中或任一子项命中时高亮（与桌面触发器同逻辑）
+      if (item.isDropdown) {
+        for (var j = 0; j < item.children.length; j++) {
+          if (childActive(item.children[j])) active = true;
+        }
+      }
       if (item.noLink) {
         // 不可点击的分组标签（如「资料」），子项缩进排在下面
         mobileLinks += '<div class="mobile-group-label">' + item.label + '</div>';
