@@ -16,9 +16,14 @@
       ]
     },
     { label: '活动中心',   path: '/events.html',   match: ['/events.html'] },
-    { label: '资讯动态',   path: '/news/',         match: ['/news/'] },
-    { label: '指南与文档', path: '/docs/',         match: ['/docs/'] },
-    { label: '留言墙',     path: '/wall/',         match: ['/wall/'] }
+    { label: '资料',       path: '',               match: [], isDropdown: true, noLink: true,
+      children: [
+        { label: '资讯动态',   path: '/news/', match: ['/news'] },
+        { label: '指南与文档', path: '/docs/', match: ['/docs'] }
+      ]
+    },
+    { label: '留言墙',     path: '/wall/',         match: ['/wall/'] },
+    { label: '捐赠者',     path: '/donors/',       match: ['/donors/'] }
   ];
 
   /* ---- 工具函数 ---- */
@@ -38,6 +43,23 @@
     return false;
   }
 
+  /* 前缀命中：/news/slug、/docs/slug 这类子路径也算（子项高亮用） */
+  function isUnder(prefixes) {
+    var cur = currentPath();
+    for (var i = 0; i < prefixes.length; i++) {
+      var m = prefixes[i];
+      if (m.length > 1 && m.slice(-1) === '/') m = m.slice(0, -1);
+      if (cur === m || cur.indexOf(m + '/') === 0) return true;
+    }
+    return false;
+  }
+
+  /* 子项是否命中（外部链接不算） */
+  function childActive(ch) {
+    if (ch.external) return false;
+    return isUnder(ch.match || [ch.path]);
+  }
+
   /* ---- 渲染导航栏 ---- */
   function renderNav() {
     // 注：docs 页的 .docs-detail（导航栏内容左右贴边）由 docs/index.php 直接写在
@@ -48,15 +70,26 @@
       var item = NAV_ITEMS[i];
       var active = isActive(item);
       if (item.isDropdown) {
+        // noLink 下拉（如「资料」）：触发器不可跳转，任一子项命中时高亮触发器
+        var anyChild = false;
+        for (var j = 0; j < item.children.length; j++) {
+          if (childActive(item.children[j])) anyChild = true;
+        }
+        var triggerActive = item.noLink ? anyChild : active;
         navLinks += '<div class="nav-dropdown">';
-        navLinks += '<a href="' + item.path + '" class="nav-drop-trigger' + (active ? ' is-active' : '') + '">' + item.label + '</a>';
+        if (item.noLink) {
+          navLinks += '<button type="button" class="nav-drop-trigger' + (triggerActive ? ' is-active' : '') + '">' + item.label + '</button>';
+        } else {
+          navLinks += '<a href="' + item.path + '" class="nav-drop-trigger' + (triggerActive ? ' is-active' : '') + '">' + item.label + '</a>';
+        }
         navLinks += '<div class="nav-drop-menu">';
         for (var j = 0; j < item.children.length; j++) {
           var ch = item.children[j];
+          var chAct = childActive(ch) ? ' is-active' : '';
           if (ch.external) {
             navLinks += '<a href="' + ch.path + '" target="_blank" rel="noopener">' + ch.label + '</a>';
           } else {
-            navLinks += '<a href="' + ch.path + '">' + ch.label + '</a>';
+            navLinks += '<a href="' + ch.path + '" class="' + (chAct ? 'is-active' : '') + '">' + ch.label + '</a>';
           }
         }
         navLinks += '</div></div>';
@@ -70,14 +103,20 @@
     for (var i = 0; i < NAV_ITEMS.length; i++) {
       var item = NAV_ITEMS[i];
       var active = isActive(item);
-      mobileLinks += '<a href="' + item.path + '"' + (active ? ' class="is-active"' : '') + '>' + item.label + '</a>';
+      if (item.noLink) {
+        // 不可点击的分组标签（如「资料」），子项缩进排在下面
+        mobileLinks += '<div class="mobile-group-label">' + item.label + '</div>';
+      } else {
+        mobileLinks += '<a href="' + item.path + '"' + (active ? ' class="is-active"' : '') + '>' + item.label + '</a>';
+      }
       if (item.children) {
         for (var j = 0; j < item.children.length; j++) {
           var ch = item.children[j];
+          var chAct = childActive(ch) ? ' is-active' : '';
           if (ch.external) {
             mobileLinks += '<a href="' + ch.path + '" class="mobile-sub" target="_blank" rel="noopener">' + ch.label + '</a>';
           } else {
-            mobileLinks += '<a href="' + ch.path + '" class="mobile-sub">' + ch.label + '</a>';
+            mobileLinks += '<a href="' + ch.path + '" class="mobile-sub' + chAct + '">' + ch.label + '</a>';
           }
         }
       }

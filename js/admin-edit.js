@@ -22,6 +22,8 @@
       initDocsEdit();
     } else if (document.getElementById('serverForm')) {
       initServersEdit();
+    } else if (document.getElementById('donationForm')) {
+      initDonationsEdit();
     }
   }).catch(function () {});
 
@@ -540,6 +542,104 @@
         is_featured: parseInt(getVal('inputFeatured')) || 0,
         hide_address: parseInt(getVal('inputHideAddress')) || 0,
         sort_order: parseInt(getVal('inputSortOrder')) || 0
+      };
+    }
+  }
+
+  // ============================================================
+  //  捐赠编辑
+  // ============================================================
+  function initDonationsEdit() {
+    var params = new URLSearchParams(window.location.search);
+    var editId = params.get('id');
+    var isEdit = !!editId;
+    var apiBase = '../api/donations.php';
+    var MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
+
+    if (isEdit) {
+      setText('heroTitle', '编辑捐赠');
+      setText('heroSub', '修改捐赠信息');
+      setText('crumbAction', '编辑');
+      document.title = '编辑捐赠 — UEMCraft';
+    }
+
+    var form = document.getElementById('donationForm');
+    var msg = document.getElementById('formMessage');
+    var btn = document.getElementById('saveBtn');
+
+    // 编辑模式：加载现有数据
+    if (isEdit) {
+      Auth.api(apiBase + '?action=admin_detail&id=' + editId).then(function (json) {
+        if (!json.success || !json.data) {
+          showMessage(msg, '捐赠记录不存在', 'error');
+          return;
+        }
+        fillDonationForm(json.data);
+      }).catch(function () {
+        showMessage(msg, '加载失败', 'error');
+      });
+    }
+
+    // 提交
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var data = getDonationFormData();
+
+      if (!data.donor_name) {
+        showMessage(msg, '昵称不能为空', 'error');
+        return;
+      }
+      if (data.donor_name.length < 2 || data.donor_name.length > 50) {
+        showMessage(msg, '昵称长度应为 2–50 个字符', 'error');
+        return;
+      }
+      if (!MONTH_RE.test(data.month)) {
+        showMessage(msg, '请选择所属月份（YYYY-MM）', 'error');
+        return;
+      }
+      if (isNaN(data.amount) || data.amount < 0 || data.amount > 999999.99) {
+        showMessage(msg, '金额应为 0–999999.99 之间的数字', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '保存中…';
+      showMessage(msg, '', '');
+
+      var action = isEdit ? 'update' : 'create';
+      var body = isEdit ? Object.assign({ id: parseInt(editId) }, data) : data;
+
+      Auth.api(apiBase + '?action=' + action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      }).then(function (json) {
+        if (json.success) {
+          showMessage(msg, '保存成功！', 'success');
+          setTimeout(function () { window.location.href = 'donations.html'; }, 800);
+        } else {
+          showMessage(msg, '保存失败：' + (json.error || '未知错误'), 'error');
+          btn.disabled = false;
+          btn.textContent = '保存';
+        }
+      }).catch(function () {
+        showMessage(msg, '请求失败', 'error');
+        btn.disabled = false;
+        btn.textContent = '保存';
+      });
+    });
+
+    function fillDonationForm(item) {
+      setInput('inputName', item.donor_name);
+      setInput('inputAmount', item.amount != null ? String(item.amount) : '');
+      setInput('inputMonth', item.month);
+    }
+
+    function getDonationFormData() {
+      return {
+        donor_name: getVal('inputName'),
+        amount: parseFloat(getVal('inputAmount')),
+        month: getVal('inputMonth')
       };
     }
   }

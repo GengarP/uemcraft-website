@@ -241,6 +241,17 @@ function createSiteTables($db, $driver) {
             KEY idx_works_status (status),
             KEY idx_works_sort (sort_order)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        $db->exec("CREATE TABLE IF NOT EXISTS donations (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            donor_name VARCHAR(100) NOT NULL,
+            amount_fen INT NOT NULL DEFAULT 0,
+            month VARCHAR(7) NOT NULL,
+            created_at INT NOT NULL,
+            updated_at INT NOT NULL,
+            PRIMARY KEY (id),
+            KEY idx_donations_month (month)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
         return;
 
     }
@@ -326,6 +337,16 @@ function createSiteTables($db, $driver) {
     $db->exec("CREATE INDEX idx_docs_cat    ON docs(category)");
     $db->exec("CREATE INDEX idx_docs_status ON docs(status)");
     $db->exec("CREATE INDEX idx_docs_sort   ON docs(sort_order)");
+
+    $db->exec("CREATE TABLE donations (
+        id           INTEGER PRIMARY KEY AUTOINCREMENT,
+        donor_name   TEXT NOT NULL,
+        amount_fen   INTEGER NOT NULL DEFAULT 0,
+        month        TEXT NOT NULL,
+        created_at   INTEGER NOT NULL,
+        updated_at   INTEGER NOT NULL
+    )");
+    $db->exec("CREATE INDEX idx_donations_month ON donations(month)");
 }
 
 function migrateSiteTables($db, $driver) {
@@ -648,6 +669,36 @@ function migrateSiteTables($db, $driver) {
             $db->exec("CREATE INDEX IF NOT EXISTS idx_docs_cat    ON docs(category)");
             $db->exec("CREATE INDEX IF NOT EXISTS idx_docs_status ON docs(status)");
             $db->exec("CREATE INDEX IF NOT EXISTS idx_docs_sort   ON docs(sort_order)");
+        } catch (PDOException $e) {
+            if (strpos($e->getMessage(), 'already exists') === false) {
+                throw $e;
+            }
+        }
+    }
+
+    // 迁移：新增 donations 表（捐赠记录，金额存整数分）
+    if ($driver === 'mysql') {
+        $db->exec("CREATE TABLE IF NOT EXISTS donations (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            donor_name VARCHAR(100) NOT NULL,
+            amount_fen INT NOT NULL DEFAULT 0,
+            month VARCHAR(7) NOT NULL,
+            created_at INT NOT NULL,
+            updated_at INT NOT NULL,
+            PRIMARY KEY (id),
+            KEY idx_donations_month (month)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    } else {
+        try {
+            $db->exec("CREATE TABLE donations (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                donor_name   TEXT NOT NULL,
+                amount_fen   INTEGER NOT NULL DEFAULT 0,
+                month        TEXT NOT NULL,
+                created_at   INTEGER NOT NULL,
+                updated_at   INTEGER NOT NULL
+            )");
+            $db->exec("CREATE INDEX IF NOT EXISTS idx_donations_month ON donations(month)");
         } catch (PDOException $e) {
             if (strpos($e->getMessage(), 'already exists') === false) {
                 throw $e;

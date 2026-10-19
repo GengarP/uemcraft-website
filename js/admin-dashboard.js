@@ -67,6 +67,18 @@
       }
     }).catch(function () {});
 
+    // 捐赠统计（总量 + 本月）
+    Auth.api('../api/donations.php?action=admin_list&limit=1').then(function (json) {
+      if (json.success) {
+        Auth.setText('donationCount', json.total || 0);
+        var d = new Date();
+        var month = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2);
+        Auth.api('../api/donations.php?action=admin_list&limit=1&month=' + month).then(function (r) {
+          Auth.setText('donationMonthCount', r.success ? (r.total || 0) : 0);
+        });
+      }
+    }).catch(function () {});
+
     // PCL 主页统计
     Auth.api('../api/pcl.php?action=card_list').then(function (json) {
       if (json.success) {

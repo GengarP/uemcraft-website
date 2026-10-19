@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#213d87">
+  <title>捐赠管理 — UEMCraft</title>
+  <link rel="icon" href="../favicon.ico" type="images/x-icon">
+  <script>
+    (function(){
+      var t = localStorage.getItem('uemcraft-theme');
+      if(!t) t = window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+      document.documentElement.style.colorScheme = t;
+      var tex = localStorage.getItem('uemcraft-texture');
+      if(tex && tex !== 'none'){
+        document.documentElement.setAttribute('data-texture', tex);
+        var s = document.createElement('style');
+        s.id = 'texture-style';
+        s.textContent = 'body::after{background-image:url(/assets/img/background_textures/'+tex+'.png);}';
+        document.head.appendChild(s);
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="/css/tokens.css?v=c25e2b2">
+  <link rel="stylesheet" href="/css/base.css?v=c25e2b2">
+  <link rel="stylesheet" href="/css/layout.css?v=c25e2b2">
+  <link rel="stylesheet" href="/css/components.css?v=c25e2b2">
+  <link rel="stylesheet" href="/css/pages.css?v=c25e2b2">
+  <link rel="stylesheet" href="css/admin.css?v=c25e2b2">
+</head>
+<body>
+<script src="/js/components-admin.js?v=c25e2b2"></script>
+
+<a href="#main" class="skip-link">跳转到主内容</a>
+
+
+
+
+<!-- ====== Main ====== -->
+<main id="main">
+
+<div class="admin-page-header">
+  <h1>捐赠管理</h1>
+  <p class="hero-sub">记录成员捐赠，金额仅后台可见</p>
+  <nav class="breadcrumb" aria-label="面包屑">
+    <a href="/index.html">首页</a> <span>/</span> <a href="index.html">管理后台</a> <span>/</span> <span>捐赠</span>
+  </nav>
+</div>
+
+<section class="section">
+  <div class="container">
+
+    <div class="admin-toolbar">
+      <div></div>
+      <div class="admin-toolbar-right">
+        <div class="view-toggle">
+          <button class="view-toggle-btn is-active" data-view="list" title="列表视图">☰</button>
+          <button class="view-toggle-btn" data-view="grid" title="网格视图">▦</button>
+        </div>
+        <span class="text-muted">共 <strong id="totalCount">0</strong> 条</span>
+        <a href="donations-edit.html" class="btn btn-primary btn-sm">+ 新建捐赠</a>
+      </div>
+    </div>
+
+    <div id="donationsList" class="admin-list">
+      <div class="wall-loading">正在加载捐赠记录…</div>
+    </div>
+
+    <div id="pagination" class="wall-pagination" style="display:none;">
+      <button class="btn btn-ghost btn-sm" id="prevPage" disabled>‹ 上一页</button>
+      <span id="pageInfo" class="wall-page-info"></span>
+      <button class="btn btn-ghost btn-sm" id="nextPage" disabled>下一页 ›</button>
+    </div>
+
+  </div>
+</section>
+
+</main>
+
+
+
+<script src="/js/components-footer.js?v=c25e2b2"></script>
+<script defer src="/js/utils.js?v=c25e2b2"></script>
+<script defer src="/js/cjk-spacing.js?v=c25e2b2"></script>
+<script defer src="/js/nav.js?v=c25e2b2"></script>
+<script defer src="/js/page-transition.js?v=c25e2b2"></script>
+<script defer src="/js/theme.js?v=c25e2b2"></script>
+<script defer src="/js/admin-auth.js?v=c25e2b2"></script>
+<script defer src="/js/admin-list.js?v=c25e2b2"></script>
+</body>
+</html>

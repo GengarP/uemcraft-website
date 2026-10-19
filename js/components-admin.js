@@ -22,6 +22,7 @@
     { label: '服务器管理', path: 'servers.html', match: ['servers', 'servers-edit'], icon: '服' },
     { label: 'PCL 主页',   path: 'pcl-cards.html', match: ['pcl-cards', 'pcl-cards-edit'], icon: 'P' },
     { label: '图片管理',   path: 'images.html',  match: ['images'],                 icon: '图' },
+    { label: '捐赠管理',   path: 'donations.html', match: ['donations', 'donations-edit'], icon: '捐' },
     { label: '留言墙管理', path: 'wall.html',    match: ['wall'],                   icon: '墙' }
   ];
 

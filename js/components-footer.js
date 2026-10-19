@@ -31,7 +31,8 @@
       ['/gallery/', '作品展示'],
       ['/docs/', '指南与文档'],
       ['/wall/', '留言墙'],
-      ['/join.html', '加入我们']
+      ['/join.html', '加入我们'],
+      ['/donors/', '捐赠者']
     ];
     for (var i = 0; i < footerLinks.length; i++) {
       html += '<li><a href="' + footerLinks[i][0] + '">' + footerLinks[i][1] + '</a></li>';

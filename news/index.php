@@ -112,15 +112,15 @@ $iso_date = $article_date ? $article_date . 'T00:00:00+08:00' : '';
       }
     })();
   </script>
-  <link rel="stylesheet" href="/css/tokens.css?v=434b90f">
-  <link rel="stylesheet" href="/css/base.css?v=434b90f">
-  <link rel="stylesheet" href="/css/layout.css?v=434b90f">
-  <link rel="stylesheet" href="/css/components.css?v=434b90f">
-  <link rel="stylesheet" href="/css/pages.css?v=434b90f">
+  <link rel="stylesheet" href="/css/tokens.css?v=c25e2b2">
+  <link rel="stylesheet" href="/css/base.css?v=c25e2b2">
+  <link rel="stylesheet" href="/css/layout.css?v=c25e2b2">
+  <link rel="stylesheet" href="/css/components.css?v=c25e2b2">
+  <link rel="stylesheet" href="/css/pages.css?v=c25e2b2">
 </head>
 <body>
 
-<script src="/js/components-header.js?v=434b90f"></script>
+<script src="/js/components-header.js?v=c25e2b2"></script>
 <a href="#main" class="skip-link">跳转到主内容</a>
 
 <!-- ====== Main ====== -->
@@ -174,22 +174,22 @@ $iso_date = $article_date ? $article_date . 'T00:00:00+08:00' : '';
 
 </main>
 
-<script src="/js/components-footer.js?v=434b90f"></script>
+<script src="/js/components-footer.js?v=c25e2b2"></script>
 
 <!-- Markdown 引擎：marked.js（自托管，零依赖，避免 CDN 阻塞） -->
-<script defer src="/js/marked.umd.js?v=434b90f"></script>
+<script defer src="/js/marked.umd.js?v=c25e2b2"></script>
 
 <!-- 内容数据与渲染 -->
-<script defer src="/js/utils.js?v=434b90f"></script>
-<script defer src="/js/cjk-spacing.js?v=434b90f"></script>
-<script defer src="/js/code-highlight.js?v=434b90f"></script>
-<script defer src="/js/content.js?v=434b90f"></script>
+<script defer src="/js/utils.js?v=c25e2b2"></script>
+<script defer src="/js/cjk-spacing.js?v=c25e2b2"></script>
+<script defer src="/js/code-highlight.js?v=c25e2b2"></script>
+<script defer src="/js/content.js?v=c25e2b2"></script>
 
 <!-- 全局交互脚本 -->
-<script defer src="/js/nav.js?v=434b90f"></script>
-<script defer src="/js/page-transition.js?v=434b90f"></script>
-<script defer src="/js/theme.js?v=434b90f"></script>
-<script defer src="/js/reveal.js?v=434b90f"></script>
+<script defer src="/js/nav.js?v=c25e2b2"></script>
+<script defer src="/js/page-transition.js?v=c25e2b2"></script>
+<script defer src="/js/theme.js?v=c25e2b2"></script>
+<script defer src="/js/reveal.js?v=c25e2b2"></script>
 
 <?php if ($isDetail): ?>
 <!-- 传递 slug 给前端 -->

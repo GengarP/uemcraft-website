@@ -1577,3 +1577,62 @@
   .docs-pager { grid-template-columns:1fr; }
   .docs-empty { padding:var(--space-2xl) var(--space-md); }
 }
+
+/* ========== 捐赠者页（/donors/） ========== */
+.donor-stats {
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:var(--space-lg);
+  margin-bottom:var(--space-xl);
+}
+.donor-month {
+  background:var(--c-surface);
+  border:2px solid var(--c-border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-hard-sm);
+  margin-bottom:var(--space-lg);
+}
+.donor-month-head {
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:var(--space-md);
+  padding:var(--space-md) var(--space-lg);
+  border-bottom:2px solid var(--c-border);
+}
+.donor-month-title {
+  font-size:1.15rem;
+  font-weight:700;
+}
+.donor-month-count {
+  font-family:var(--font-mono);
+  font-weight:700;
+  color:var(--c-gold);
+  white-space:nowrap;
+}
+.donor-chips {
+  display:flex;
+  flex-wrap:wrap;
+  gap:var(--space-sm);
+  padding:var(--space-lg);
+}
+.donor-chip {
+  display:inline-flex;
+  align-items:center;
+  padding:.35rem .75rem;
+  border:2px solid var(--c-border);
+  border-radius:var(--radius);
+  font-size:var(--fs-sm);
+  font-weight:600;
+  background:var(--c-bg-2);
+  transition:border-color var(--duration),color var(--duration);
+}
+.donor-chip:hover {
+  border-color:var(--c-primary);
+  color:var(--c-primary);
+}
+@media (max-width: 768px) {
+  .donor-stats { grid-template-columns:1fr; }
+  .donor-month-head { padding:var(--space-sm) var(--space-md); }
+  .donor-chips { padding:var(--space-md); }
+}

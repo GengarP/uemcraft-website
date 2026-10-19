@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#213d87">
+  <title id="pageTitle">新增捐赠 — UEMCraft</title>
+  <link rel="icon" href="../favicon.ico" type="images/x-icon">
+  <script>
+    (function(){
+      var t = localStorage.getItem('uemcraft-theme');
+      if(!t) t = window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+      document.documentElement.style.colorScheme = t;
+      var tex = localStorage.getItem('uemcraft-texture');
+      if(tex && tex !== 'none'){
+        document.documentElement.setAttribute('data-texture', tex);
+        var s = document.createElement('style');
+        s.id = 'texture-style';
+        s.textContent = 'body::after{background-image:url(/assets/img/background_textures/'+tex+'.png);}';
+        document.head.appendChild(s);
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="/css/tokens.css?v=c25e2b2">
+  <link rel="stylesheet" href="/css/base.css?v=c25e2b2">
+  <link rel="stylesheet" href="/css/layout.css?v=c25e2b2">
+  <link rel="stylesheet" href="/css/components.css?v=c25e2b2">
+  <link rel="stylesheet" href="/css/pages.css?v=c25e2b2">
+  <link rel="stylesheet" href="css/admin.css?v=c25e2b2">
+</head>
+<body>
+<script src="/js/components-admin.js?v=c25e2b2"></script>
+
+<a href="#main" class="skip-link">跳转到主内容</a>
+
+
+
+
+<!-- ====== Main ====== -->
+<main id="main">
+
+<div class="admin-page-header">
+  <h1 id="heroTitle">新增捐赠</h1>
+  <p class="hero-sub" id="heroSub">填写捐赠信息并保存</p>
+  <nav class="breadcrumb" aria-label="面包屑">
+    <a href="/index.html">首页</a> <span>/</span> <a href="index.html">管理后台</a> <span>/</span> <a href="donations.html">捐赠</a> <span>/</span> <span id="crumbAction">新增</span>
+  </nav>
+</div>
+
+<section class="section">
+  <div class="container">
+    <form id="donationForm" class="admin-edit-form" novalidate>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="inputName">捐赠者昵称 <span class="required">*</span></label>
+          <input type="text" id="inputName" class="form-input" placeholder="如：张三" required maxlength="50">
+          <small class="form-help">公示名单只显示昵称，2–50 个字符</small>
+        </div>
+        <div class="form-group">
+          <label for="inputAmount">金额（元）<span class="required">*</span></label>
+          <input type="number" id="inputAmount" class="form-input" placeholder="如：50.00" required min="0" max="999999.99" step="0.01">
+          <small class="form-help">仅后台记录，前台不显示</small>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="inputMonth">所属月份 <span class="required">*</span></label>
+          <input type="month" id="inputMonth" class="form-input" required>
+          <small class="form-help">按月分组公示，格式 YYYY-MM</small>
+        </div>
+      </div>
+
+      <span id="formMessage" class="wall-form-message" role="status" aria-live="polite"></span>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="saveBtn">保存</button>
+        <a href="donations.html" class="btn btn-ghost">取消</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+</main>
+
+
+<script src="/js/components-footer.js?v=c25e2b2"></script>
+<script defer src="/js/utils.js?v=c25e2b2"></script>
+<script defer src="/js/cjk-spacing.js?v=c25e2b2"></script>
+<script defer src="/js/nav.js?v=c25e2b2"></script>
+<script defer src="/js/page-transition.js?v=c25e2b2"></script>
+<script defer src="/js/theme.js?v=c25e2b2"></script>
+<script defer src="/js/admin-auth.js?v=c25e2b2"></script>
+<script defer src="/js/admin-edit.js?v=c25e2b2"></script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 /* ============================================================
-   admin-list.js — 管理后台列表页（新闻/活动/作品/服务器/图片）
+   admin-list.js — 管理后台列表页（新闻/活动/作品/捐赠/服务器/图片）
    依赖：admin-auth.js（UEMAdminAuth）
    由 admin/*.html 中的列表页加载。
    ============================================================ */
@@ -18,6 +18,7 @@
     if (document.getElementById('newsList')) initNewsList();
     else if (document.getElementById('eventsList')) initEventsList();
     else if (document.getElementById('worksList')) initWorksList();
+    else if (document.getElementById('donationsList')) initDonationsList();
     else if (document.getElementById('docsList')) initDocsList();
     else if (document.getElementById('serversList')) initServersList();
     else if (document.getElementById('imagesGrid')) initImagesPage();
@@ -319,6 +320,76 @@
         load();
       });
     });
+
+    function updatePagination(page, pages, total) {
+      if (pages <= 1) { pagEl.style.display = 'none'; return; }
+      pagEl.style.display = 'flex';
+      prevBtn.disabled = page <= 1; nextBtn.disabled = page >= pages;
+      infoEl.textContent = page + ' / ' + pages + '（共 ' + total + ' 条）';
+    }
+    prevBtn.addEventListener('click', function () { currentPage--; load(); });
+    nextBtn.addEventListener('click', function () { currentPage++; load(); });
+
+    setupViewToggle(listEl);
+    load();
+  }
+
+  // ============================================================
+  //  捐赠记录列表
+  // ============================================================
+  function initDonationsList() {
+    var currentPage = 1, limit = 20;
+    var listEl = document.getElementById('donationsList');
+    var totalEl = document.getElementById('totalCount');
+    var pagEl = document.getElementById('pagination');
+    var prevBtn = document.getElementById('prevPage');
+    var nextBtn = document.getElementById('nextPage');
+    var infoEl = document.getElementById('pageInfo');
+
+    function load() {
+      var url = '../api/donations.php?action=admin_list&page=' + currentPage + '&limit=' + limit;
+      listEl.innerHTML = '<div class="wall-loading">正在加载…</div>';
+
+      Auth.api(url).then(function (json) {
+        if (!json.success) { listEl.innerHTML = '<div class="wall-empty">加载失败</div>'; return; }
+        totalEl.textContent = json.total;
+        var items = json.data || [];
+        if (items.length === 0) { listEl.innerHTML = '<div class="wall-empty">暂无捐赠记录</div>'; pagEl.style.display = 'none'; return; }
+        listEl.innerHTML = items.map(renderCard).join('');
+        bindActions(listEl);
+        updatePagination(json.page, json.pages, json.total);
+      }).catch(function () { listEl.innerHTML = '<div class="wall-empty">加载失败</div>'; });
+    }
+
+    function renderCard(item) {
+      var d = new Date(item.created_at * 1000);
+      var dateStr = d.getFullYear() + '-' + Auth.pad(d.getMonth() + 1) + '-' + Auth.pad(d.getDate())
+                  + ' ' + Auth.pad(d.getHours()) + ':' + Auth.pad(d.getMinutes());
+      return '<article class="admin-card" data-id="' + item.id + '">'
+        + '<div class="admin-card-info"><span class="admin-card-name">' + Auth.escapeHtml(item.donor_name) + '</span>'
+        + '<div class="admin-card-title-row"><span class="admin-badge">' + Auth.escapeHtml(item.month) + '</span>'
+        + '<span class="admin-badge is-approved">¥' + Auth.escapeHtml(String(item.amount)) + '</span></div></div>'
+        + '<div class="admin-card-header"><div class="admin-card-meta"><span class="admin-card-name">' + Auth.escapeHtml(item.donor_name) + '</span>'
+        + '<span class="admin-badge">' + Auth.escapeHtml(item.month) + '</span>'
+        + '<span class="admin-badge is-approved">¥' + Auth.escapeHtml(String(item.amount)) + '</span></div>'
+        + '<div class="admin-card-actions"><a href="donations-edit.html?id=' + item.id + '" class="btn btn-ghost btn-sm">编辑</a>'
+        + '<button class="btn btn-ghost btn-sm admin-btn-danger" data-action="delete" data-id="' + item.id + '">删除</button></div></div>'
+        + '<div class="admin-card-body"><small class="text-muted">创建于 ' + Auth.escapeHtml(dateStr) + '</small></div>'
+        + '<div class="admin-card-actions admin-card-actions--grid"><a href="donations-edit.html?id=' + item.id + '" class="btn btn-ghost btn-sm">编辑</a>'
+        + '<button class="btn btn-ghost btn-sm admin-btn-danger" data-action="delete" data-id="' + item.id + '">删除</button></div></article>';
+    }
+
+    function bindActions(container) {
+      container.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        if (btn.getAttribute('data-action') === 'delete') {
+          if (!confirm('确定要删除这条捐赠记录吗？此操作不可撤销。')) return;
+          Auth.api('../api/donations.php?action=delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: parseInt(btn.getAttribute('data-id')) }) })
+            .then(function (json) { if (json.success) load(); else alert('删除失败：' + (json.error || '未知错误')); });
+        }
+      });
+    }
 
     function updatePagination(page, pages, total) {
       if (pages <= 1) { pagEl.style.display = 'none'; return; }

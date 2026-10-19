@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="description" content="UEMCraft 捐赠者名单——感谢每一位支持应急管理大学 Minecraft 同好会的朋友。">
+  <meta name="theme-color" content="#213d87">
+  <title>捐赠者 — UEMCraft</title>
+  <link rel="icon" href="../favicon.ico" type="images/x-icon">
+  <script>
+    (function(){
+      var t = localStorage.getItem('uemcraft-theme');
+      if(!t) t = window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+      document.documentElement.style.colorScheme = t;
+      var tex = localStorage.getItem('uemcraft-texture');
+      if(tex && tex !== 'none'){
+        document.documentElement.setAttribute('data-texture', tex);
+        var s = document.createElement('style');
+        s.id = 'texture-style';
+        s.textContent = 'body::after{background-image:url(/assets/img/background_textures/'+tex+'.png);}';
+        document.head.appendChild(s);
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="/css/tokens.css?v=c25e2b2">
+  <link rel="stylesheet" href="/css/base.css?v=c25e2b2">
+  <link rel="stylesheet" href="/css/layout.css?v=c25e2b2">
+  <link rel="stylesheet" href="/css/components.css?v=c25e2b2">
+  <link rel="stylesheet" href="/css/pages.css?v=c25e2b2">
+</head>
+<body>
+<script src="/js/components-header.js?v=c25e2b2"></script>
+
+<a href="#main" class="skip-link">跳转到主内容</a>
+
+<!-- ====== Main ====== -->
+<main id="main">
+
+<section class="page-hero">
+  <div class="container">
+    <h1>捐赠者</h1>
+    <p class="hero-sub">感谢每一位支持 UEMCraft 的朋友，你们的每一份心意都记在这里</p>
+    <nav class="breadcrumb" aria-label="面包屑">
+      <a href="/index.html">首页</a> <span>/</span> <span>捐赠者</span>
+    </nav>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="container">
+    <div class="donor-stats reveal">
+      <div class="stat-card">
+        <div class="stat-num"><span id="statTotal">0</span></div>
+        <div class="stat-label">累计捐赠人次</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num"><span id="statMonths">0</span></div>
+        <div class="stat-label">覆盖月份</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num"><span id="statThisMonth">0</span></div>
+        <div class="stat-label">本月捐赠人次</div>
+      </div>
+    </div>
+
+    <div id="donorList" class="donor-list">
+      <div class="wall-loading">正在加载捐赠名单…</div>
+    </div>
+  </div>
+</section>
+
+<!-- Join CTA -->
+<section class="section-sm">
+  <div class="container">
+    <div class="highlight-banner reveal">
+      <h2>想加入我们？</h2>
+      <p>无论是否捐赠，都欢迎你加入 UEMCraft，一起用方块创造快乐！</p>
+      <div class="cta-row">
+        <a href="/join.html" class="btn btn-gold btn-lg">加入我们</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script src="/js/components-footer.js?v=c25e2b2"></script>
+<script defer src="/js/utils.js?v=c25e2b2"></script>
+<script defer src="/js/cjk-spacing.js?v=c25e2b2"></script>
+<script defer src="/js/nav.js?v=c25e2b2"></script>
+<script defer src="/js/page-transition.js?v=c25e2b2"></script>
+<script defer src="/js/theme.js?v=c25e2b2"></script>
+<script defer src="/js/reveal.js?v=c25e2b2"></script>
+<script defer src="/js/donors.js?v=c25e2b2"></script>
+</body>
+</html>
