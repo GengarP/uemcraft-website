@@ -75,10 +75,12 @@
   white-space:nowrap;
 }
 /* 不可跳转的下拉触发器（如「资料」）：去掉按钮默认外观，与链接一致 */
+/* 注意不要用 font:inherit 简写——它会把上面规则的字号/字重一起重置掉 */
 .header-nav button.nav-drop-trigger {
   background:none;
   border:0;
-  font:inherit;
+  font-family:inherit;
+  line-height:inherit;
   cursor:pointer;
 }
 .header-nav a:hover,
