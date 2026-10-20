@@ -32,7 +32,20 @@
     ['players_online', '在线人数'], ['players_max', '最大人数'], ['players', '人数 x / y'],
     ['version', '游戏版本'], ['latency', '延迟'], ['motd', 'MOTD']
   ];
-  var GLOBAL_KEYS = [['year', '当前年份']];
+  // 全局键：时间 + 新闻 5 条 + 活动 3 条（键名与 homepage/index.php 的 buildDynamicMap 严格一致）
+  var GLOBAL_KEYS = [
+    ['year', '当前年份'], ['month', '当前月（01-12）'], ['day', '当前日（01-31）'], ['hour', '当前时（00-23）'],
+    ['minute', '当前分（00-59）'], ['date', '当前日期（Y-m-d）'], ['time', '当前时间（H:i）'], ['weekday', '星期几'],
+    ['news_1_title', '新闻1标题'], ['news_1_date', '新闻1日期'], ['news_1_excerpt', '新闻1摘要'], ['news_1_url', '新闻1链接'],
+    ['news_2_title', '新闻2标题'], ['news_2_date', '新闻2日期'], ['news_2_excerpt', '新闻2摘要'], ['news_2_url', '新闻2链接'],
+    ['news_3_title', '新闻3标题'], ['news_3_date', '新闻3日期'], ['news_3_excerpt', '新闻3摘要'], ['news_3_url', '新闻3链接'],
+    ['news_4_title', '新闻4标题'], ['news_4_date', '新闻4日期'], ['news_4_excerpt', '新闻4摘要'], ['news_4_url', '新闻4链接'],
+    ['news_5_title', '新闻5标题'], ['news_5_date', '新闻5日期'], ['news_5_excerpt', '新闻5摘要'], ['news_5_url', '新闻5链接'],
+    ['event_1_title', '活动1标题'], ['event_1_date', '活动1日期'], ['event_1_status', '活动1状态'], ['event_1_link', '活动1链接'],
+    ['event_2_title', '活动2标题'], ['event_2_date', '活动2日期'], ['event_2_status', '活动2状态'], ['event_2_link', '活动2链接'],
+    ['event_3_title', '活动3标题'], ['event_3_date', '活动3日期'], ['event_3_status', '活动3状态'], ['event_3_link', '活动3链接']
+  ];
+  var BUTTON_ALIGN_OPTS = [['', '默认（左组）'], ['left', '左组'], ['right', '右组（贴右）']];
 
   /* ============================================================
      通用工具
@@ -132,6 +145,8 @@
           + (c.kind === 'server' ? '模板卡' : '独立卡') + '</span>'
           + '<span class="admin-badge ' + (c.enabled ? 'is-approved' : 'is-hidden') + '">'
           + (c.enabled ? '已启用' : '已停用') + '</span>'
+          + (+c.bare ? '<span class="admin-badge">无外壳</span>' : '')
+          + (c.kind === 'server' && +c.merge_servers ? '<span class="admin-badge">合并</span>' : '')
           + '<span class="text-muted">排序 ' + c.sort_order + '</span>'
           + '<span class="text-muted">标题 ' + esc(c.title || '（空）') + '</span>'
           + '</div></div>'
@@ -237,25 +252,69 @@
      ============================================================ */
 
   var editId = null;
-  var state = { name: '', kind: 'server', title: '', title_font_size: 0, enabled: 1, sort_order: 0, rows: [], buttons: [] };
-  var SAMPLE_MAP = {
-    name: '生存服', address: 'play.***.cn', port: '25565', address_port: 'play.***.cn:25565',
-    edition: 'java', note: '欢迎加入', status: '在线', status_color: '#4CAF50',
-    players_online: '3', players_max: '20', players: '3 / 20', version: '1.21.1', latency: '42ms',
-    motd: '§bUEMCraft §6生存服务器', year: new Date().getFullYear().toString()
-  };
+  var state = { name: '', kind: 'server', title: '', title_font_size: 0, bare: 0, merge_servers: 0, buttons_align: 'left', enabled: 1, sort_order: 0, rows: [], buttons: [] };
+
+  /* ---- 预览示例值：全局键一份 + 每台服务器一份 ----
+     news_3..5 / event_2..3 故意缺省，演示 hide_if_empty 藏行 */
+  var SAMPLE_GLOBAL = (function () {
+    var d = new Date();
+    var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    return {
+      year: String(d.getFullYear()),
+      month: pad(d.getMonth() + 1), day: pad(d.getDate()),
+      hour: pad(d.getHours()), minute: pad(d.getMinutes()),
+      date: d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()),
+      time: pad(d.getHours()) + ':' + pad(d.getMinutes()),
+      weekday: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'][d.getDay()],
+      news_1_title: '迎新建筑大赛开启', news_1_date: '2026-01-02',
+      news_1_excerpt: '快来参加一年一度的建筑大赛！', news_1_url: 'https://uemcraft.cn/news/build-contest',
+      news_2_title: '服务器 1.21 升级公告', news_2_date: '2025-12-20',
+      news_2_excerpt: '本周六维护升级到 1.21。', news_2_url: 'https://uemcraft.cn/news/upgrade-121',
+      event_1_title: '建筑大赛', event_1_date: '2026-01-10 ~ 01-20', event_1_status: 'upcoming',
+      event_1_link: 'https://uemcraft.cn/events/'
+    };
+  })();
+  var SAMPLE_SERVER_LIST = [
+    {
+      name: '生存服', address: 'play.***.cn', port: '25565', address_port: 'play.***.cn:25565',
+      edition: 'java', note: '欢迎加入', status: '在线', status_color: '#4CAF50',
+      players_online: '3', players_max: '20', players: '3 / 20', version: '1.21.1', latency: '42ms',
+      motd: '§bUEMCraft §6生存服务器'
+    },
+    {
+      name: '空岛服', address: 'sky.***.cn', port: '25565', address_port: 'sky.***.cn:25565',
+      edition: 'java', note: '挑战极限', status: '离线', status_color: '#F44336',
+      players_online: '', players_max: '', players: '- / -', version: 'java', latency: '超时', motd: ''
+    }
+  ];
+  var sampleVarMap = {};
+
+  function globalSampleMap() {
+    var m = {};
+    Object.keys(SAMPLE_GLOBAL).forEach(function (k) { m[k] = SAMPLE_GLOBAL[k]; });
+    Object.keys(sampleVarMap).forEach(function (k) { m[k] = sampleVarMap[k]; });
+    return m;
+  }
+  function serverSampleMap(idx) {
+    var m = globalSampleMap();
+    var s = SAMPLE_SERVER_LIST[idx % SAMPLE_SERVER_LIST.length] || {};
+    Object.keys(s).forEach(function (k) { m[k] = s[k]; });
+    return m;
+  }
 
   function initEditPage() {
     var form = document.getElementById('cardForm');
     if (!form) return;
 
     loadVars(function (vars) {
-      vars.forEach(function (v) { SAMPLE_MAP[v.var_key] = v.var_value || v.var_key; });
+      vars.forEach(function (v) { sampleVarMap[v.var_key] = v.var_value || v.var_key; });
       fillInserters();
       renderRows();
       renderButtons();
       updatePreview();
     });
+
+    syncMergeVisibility();
 
     editId = new URLSearchParams(location.search).get('id');
     if (editId) {
@@ -263,6 +322,9 @@
         var c = res.data;
         state.name = c.name; state.kind = c.kind; state.title = c.title;
         state.title_font_size = +c.title_font_size || 0;
+        state.bare = +c.bare || 0;
+        state.merge_servers = +c.merge_servers || 0;
+        state.buttons_align = c.buttons_align || 'left';
         state.enabled = c.enabled; state.sort_order = c.sort_order;
         state.rows = safeJson(c.rows_json, []);
         state.buttons = safeJson(c.buttons_json, []);
@@ -270,23 +332,35 @@
         document.getElementById('fKind').value = state.kind;
         document.getElementById('fTitle').value = state.title;
         document.getElementById('fTitleSize').value = state.title_font_size || '';
+        document.getElementById('fBare').value = String(state.bare);
+        document.getElementById('fMerge').value = String(state.merge_servers);
+        document.getElementById('fButtonsAlign').value = state.buttons_align;
         document.getElementById('fEnabled').value = String(state.enabled);
         document.getElementById('fSort').value = state.sort_order;
         document.getElementById('pageTitle').textContent = '编辑卡片';
         document.getElementById('crumbLeaf').textContent = '编辑卡片';
+        syncMergeVisibility();
         renderRows(); renderButtons(); updatePreview();
       }).catch(function (e) { showMessage('加载卡片失败：' + e.message, false); });
     }
 
-    ['fName', 'fKind', 'fTitle', 'fTitleSize', 'fEnabled', 'fSort'].forEach(function (id) {
+    ['fName', 'fKind', 'fTitle', 'fTitleSize', 'fBare', 'fMerge', 'fButtonsAlign', 'fEnabled', 'fSort'].forEach(function (id) {
       document.getElementById(id).addEventListener('input', function () {
         state.name = document.getElementById('fName').value;
         state.kind = document.getElementById('fKind').value;
         state.title = document.getElementById('fTitle').value;
         state.title_font_size = +document.getElementById('fTitleSize').value || 0;
+        state.bare = +document.getElementById('fBare').value ? 1 : 0;
+        state.buttons_align = document.getElementById('fButtonsAlign').value || 'left';
         state.enabled = +document.getElementById('fEnabled').value;
         state.sort_order = +document.getElementById('fSort').value || 0;
-        if (id === 'fKind') { fillInserters(); renderRows(); }
+        if (id === 'fKind') {
+          syncMergeVisibility();
+          if (state.kind !== 'server') document.getElementById('fMerge').value = '0';
+          fillInserters(); renderRows(); renderButtons();
+        }
+        state.merge_servers = state.kind === 'server' ? (+document.getElementById('fMerge').value ? 1 : 0) : 0;
+        if (id === 'fMerge') { fillInserters(); renderButtons(); }
         updatePreview();
       });
     });
@@ -308,6 +382,7 @@
         id: editId ? +editId : undefined,
         name: state.name.trim(), kind: state.kind, title: state.title,
         title_font_size: state.title_font_size,
+        bare: state.bare, merge_servers: state.merge_servers, buttons_align: state.buttons_align,
         rows_json: JSON.stringify(state.rows), buttons_json: JSON.stringify(state.buttons),
         enabled: state.enabled, sort_order: state.sort_order
       };
@@ -327,19 +402,33 @@
     } catch (e) { return dflt; }
   }
 
+  /** 合并模式仅 kind=server 有效：独立卡隐藏合并开关 */
+  function syncMergeVisibility() {
+    var g = document.getElementById('fMergeGroup');
+    if (g) g.style.display = state.kind === 'server' ? '' : 'none';
+  }
+
   /* ---- {%key%} 插入器 ---- */
 
-  function availableKeys() {
-    var keys = GLOBAL_KEYS.slice();
-    if (state.kind === 'server') keys = SERVER_KEYS.concat(keys);
+  /**
+   * 可用键列表。scope: 'row' | 'title' | 'button'。
+   * 合并模式下标题/按钮只用全局映射（按钮只渲染一次、标题不随台变化），过滤服务器键；
+   * 内容行逐台渲染，保留服务器键。
+   */
+  function availableKeys(scope) {
+    var keys = [];
+    var includeServer = state.kind === 'server' && !(state.merge_servers && scope !== 'row');
+    if (includeServer) keys = keys.concat(SERVER_KEYS);
+    keys = keys.concat(GLOBAL_KEYS);
     varsCache.forEach(function (v) { keys.push([v.var_key, v.var_label || v.var_key]); });
     return keys;
   }
 
   function fillInserters() {
+    var keys = availableKeys('title');
     Array.prototype.forEach.call(document.querySelectorAll('.insert-select'), function (sel) {
       sel.innerHTML = '<option value="">插入 {%key%}…</option>'
-        + availableKeys().map(function (k) {
+        + keys.map(function (k) {
             return '<option value="{%' + k[0] + '%}">{' + '%' + k[0] + '%} — ' + esc(k[1]) + '</option>';
           }).join('');
     });
@@ -374,7 +463,7 @@
   function renderRows() {
     var wrap = document.getElementById('rowsWrap');
     wrap.innerHTML = state.rows.map(function (row, i) {
-      var keys = availableKeys();
+      var keys = availableKeys('row');
       function ins(target, field) {
         return '<select class="form-input insert-select" data-row-index="' + i + '" data-field="' + field + '" title="插入 {%key%}">'
           + '<option value="">插入 {%key%}…</option>'
@@ -576,7 +665,7 @@
   function renderButtons() {
     var wrap = document.getElementById('buttonsWrap');
     wrap.innerHTML = state.buttons.map(function (btn, i) {
-      var keys = availableKeys();
+      var keys = availableKeys('button');
       function ins(field) {
         return '<select class="form-input insert-select" data-btn-index="' + i + '" data-field="' + field + '" title="插入 {%key%}">'
           + '<option value="">插入 {%key%}…</option>'
@@ -628,6 +717,12 @@
         + '<input type="number" class="form-input b-width" data-index="' + i + '" value="' + (btn.width || '') + '" min="0" max="2000"></div>'
         + '<div class="form-group"><label class="form-label">高（px，留空自动）</label>'
         + '<input type="number" class="form-input b-height" data-index="' + i + '" value="' + (btn.height || '') + '" min="0" max="2000"></div>'
+        + '<div class="form-group"><label class="form-label">对齐</label>'
+        + '<select class="form-input b-align" data-index="' + i + '">'
+        + BUTTON_ALIGN_OPTS.map(function (a) {
+            return '<option value="' + a[0] + '"' + ((btn.align || '') === a[0] ? ' selected' : '') + '>' + a[1] + '</option>';
+          }).join('')
+        + '</select></div>'
         + '</div>'
         + '</div>';
     }).join('');
@@ -648,6 +743,7 @@
       else if (t.classList.contains('b-color')) btn.color_type = t.value;
       else if (t.classList.contains('b-width')) btn.width = +t.value || 0;
       else if (t.classList.contains('b-height')) btn.height = +t.value || 0;
+      else if (t.classList.contains('b-align')) btn.align = t.value;
       else if (t.classList.contains('b-style')) { btn.style = t.value === 'icon_text' ? 'icon_text' : 'text'; renderButtons(); }
       else if (t.classList.contains('b-logo')) btn.logo_path = t.value;
       else if (t.classList.contains('b-scale')) btn.logo_scale = t.value === '' ? undefined : +t.value;
@@ -678,6 +774,9 @@
     state.kind = document.getElementById('fKind').value;
     state.title = document.getElementById('fTitle').value;
     state.title_font_size = +document.getElementById('fTitleSize').value || 0;
+    state.bare = +document.getElementById('fBare').value ? 1 : 0;
+    state.merge_servers = state.kind === 'server' ? (+document.getElementById('fMerge').value ? 1 : 0) : 0;
+    state.buttons_align = document.getElementById('fButtonsAlign').value || 'left';
     state.enabled = +document.getElementById('fEnabled').value;
     state.sort_order = +document.getElementById('fSort').value || 0;
   }
@@ -743,9 +842,9 @@
     return runs === '' ? null : runs;
   }
 
-  function sub(tpl) {
+  function sub(tpl, map) {
     return String(tpl == null ? '' : tpl).replace(/\{%([a-zA-Z0-9_]+)%\}/g, function (_, k) {
-      return SAMPLE_MAP[k] != null ? SAMPLE_MAP[k] : '';
+      return map && map[k] != null ? map[k] : '';
     });
   }
 
@@ -769,29 +868,26 @@
     ];
   }
 
-  function rowEmpty(row) {
+  function rowEmpty(row, map) {
     if (!row.hide_if_empty) return false;
     var json = JSON.stringify(row);
     var keys = json.match(/\{%([a-zA-Z0-9_]+)%\}/g) || [];
     if (!keys.length) return false;
     for (var i = 0; i < keys.length; i++) {
       var k = keys[i].slice(2, -2);
-      if (SAMPLE_MAP[k] != null && SAMPLE_MAP[k] !== '') return false;
+      if (map && map[k] != null && map[k] !== '') return false;
     }
     return true;
   }
 
-  function updatePreview() {
-    var pre = document.getElementById('xamlPreview');
-    if (!pre) return;
-    var out = [];
-    var body = [];
+  /** 行渲染（不含按钮），与 homepage/index.php 的 renderRowsBody 同构；map 参数化供合并模式逐台替换 */
+  function renderRowsInto(arr, map) {
     state.rows.forEach(function (row) {
-      if (rowEmpty(row)) return;
+      if (rowEmpty(row, map)) return;
       if (row.type === 'status_dot') {
         if (state.kind !== 'server') return;
-        var color = SAMPLE_MAP.status_color || '#F44336';
-        body.push('      <TextBlock Margin="0,0,0,8" FontSize="14" FontWeight="Bold"><InlineUIContainer><Border Background="' + xesc(color) + '" CornerRadius="2" Height="10" Width="10" Margin="0,0,0,1" /></InlineUIContainer><Run Text=" ' + xesc(SAMPLE_MAP.status) + '" /></TextBlock>');
+        var color = map.status_color || '#F44336';
+        arr.push('      <TextBlock Margin="0,0,0,8" FontSize="14" FontWeight="Bold"><InlineUIContainer><Border Background="' + xesc(color) + '" CornerRadius="2" Height="10" Width="10" Margin="0,0,0,1" /></InlineUIContainer><Run Text=" ' + xesc(map.status) + '" /></TextBlock>');
       } else if (row.type === 'list_item') {
         var logo = row.logo || '';
         var logoAttr = !logo ? '' : (logo.indexOf('://') !== -1
@@ -799,117 +895,186 @@
           : ' Logo="pack://application:,,,/images/Blocks/' + xesc(logo) + '"');
         var click = '';
         if (row.clickable && row.clickable.event_type) {
-          click = ' Type="Clickable" EventType="' + xesc(row.clickable.event_type) + '" EventData="' + xesc(sub(row.clickable.event_data)) + '"';
+          click = ' Type="Clickable" EventType="' + xesc(row.clickable.event_type) + '" EventData="' + xesc(sub(row.clickable.event_data, map)) + '"';
         }
-        body.push('      <local:MyListItem' + logoAttr + ' Title="' + xesc(sub(row.title)) + '" Info="' + xesc(sub(row.info)) + '"' + click + ' />');
+        arr.push('      <local:MyListItem' + logoAttr + ' Title="' + xesc(sub(row.title, map)) + '" Info="' + xesc(sub(row.info, map)) + '"' + click + ' />');
       } else if (row.type === 'text') {
         var colorAttr = row.color ? ' Foreground="' + xesc(row.color) + '"' : '';
-        var runs = parseMcRuns(sub(row.text));
+        var runs = parseMcRuns(sub(row.text, map));
         if (runs == null) {
-          body.push('      <TextBlock TextWrapping="Wrap" FontSize="' + (row.font_size || 12) + '"' + colorAttr + ' Text="' + xescNl(sub(row.text)) + '" />');
+          arr.push('      <TextBlock TextWrapping="Wrap" FontSize="' + (row.font_size || 12) + '"' + colorAttr + ' Text="' + xescNl(sub(row.text, map)) + '" />');
         } else {
-          body.push('      <TextBlock TextWrapping="Wrap" FontSize="' + (row.font_size || 12) + '"' + colorAttr + '>' + runs + '</TextBlock>');
+          arr.push('      <TextBlock TextWrapping="Wrap" FontSize="' + (row.font_size || 12) + '"' + colorAttr + '>' + runs + '</TextBlock>');
         }
       } else if (row.type === 'hint') {
-        body.push('      <local:MyHint Theme="' + xesc(row.theme || 'Blue') + '" Text="' + xesc(sub(row.text)) + '" />');
+        arr.push('      <local:MyHint Theme="' + xesc(row.theme || 'Blue') + '" Text="' + xesc(sub(row.text, map)) + '" />');
       } else if (row.type === 'image') {
-        var src = sub(row.src || '');
+        var src = sub(row.src || '', map);
         if (!src) return;
         var imgAttr = ' Source="' + xesc(src) + '"';
         if (+row.width > 0) imgAttr += ' Width="' + Math.min(+row.width, 2000) + '"';
         if (+row.height > 0) imgAttr += ' Height="' + Math.min(+row.height, 2000) + '"';
         imgAttr += ' Stretch="' + xesc(row.stretch || 'Uniform') + '"';
-        body.push('      <local:MyImage Margin="0,6,0,0"' + imgAttr + ' />');
+        arr.push('      <local:MyImage Margin="0,6,0,0"' + imgAttr + ' />');
       } else if (row.type === 'divider') {
         var th = +row.thickness || 1.5;
         if (th > 10) th = 10;
-        var stroke = row.color ? xesc(sub(row.color)) : '{DynamicResource ColorBrush4}';
+        var stroke = row.color ? xesc(sub(row.color, map)) : '{DynamicResource ColorBrush4}';
         var op = row.opacity == null || row.opacity === '' ? 1 : +row.opacity;
         if (!(op > 0 && op < 1)) op = 1;
         var opAttr = op < 1 ? ' Opacity="' + op + '"' : '';
-        var divText = spaceOut(sub(row.text));
+        var divText = spaceOut(sub(row.text, map));
         if (divText !== '') {
-          body.push.apply(body, labeledLine(divText, 15, stroke, String(th), opAttr));
+          arr.push.apply(arr, labeledLine(divText, 15, stroke, String(th), opAttr));
         } else {
-          body.push('      <Line X1="0" X2="100" Stroke="' + stroke + '" StrokeThickness="' + th + '" HorizontalAlignment="Center" Stretch="Fill" Margin="4,4"' + opAttr + ' />');
+          arr.push('      <Line X1="0" X2="100" Stroke="' + stroke + '" StrokeThickness="' + th + '" HorizontalAlignment="Center" Stretch="Fill" Margin="4,4"' + opAttr + ' />');
         }
       } else if (row.type === 'header_image') {
-        var hdSrc = sub(row.src || '');
+        var hdSrc = sub(row.src || '', map);
         if (!hdSrc) return;
         var hh = +row.height || 0;
         if (hh <= 0) hh = 170;
         hh = Math.max(60, Math.min(hh, 500));
-        body.push('      <Grid Margin="0,6,0,0">');
-        body.push('        <StackPanel>');
-        body.push('          <Line X1="0" X2="100" Stroke="{DynamicResource ColorBrush4}" StrokeThickness="3" HorizontalAlignment="Center" Stretch="Fill" />');
-        body.push('          <local:MyImage Source="' + xesc(hdSrc) + '" Stretch="UniformToFill" MaxHeight="' + hh + '" />');
-        body.push('          <Line X1="0" X2="100" Stroke="{DynamicResource ColorBrush4}" StrokeThickness="3" HorizontalAlignment="Center" Stretch="Fill" />');
-        body.push('        </StackPanel>');
-        var badge = sub(row.badge || '');
+        arr.push('      <Grid Margin="0,6,0,0">');
+        arr.push('        <StackPanel>');
+        arr.push('          <Line X1="0" X2="100" Stroke="{DynamicResource ColorBrush4}" StrokeThickness="3" HorizontalAlignment="Center" Stretch="Fill" />');
+        arr.push('          <local:MyImage Source="' + xesc(hdSrc) + '" Stretch="UniformToFill" MaxHeight="' + hh + '" />');
+        arr.push('          <Line X1="0" X2="100" Stroke="{DynamicResource ColorBrush4}" StrokeThickness="3" HorizontalAlignment="Center" Stretch="Fill" />');
+        arr.push('        </StackPanel>');
+        var badge = sub(row.badge || '', map);
         if (badge !== '') {
-          body.push('        <Border Background="{DynamicResource ColorBrush3}" BorderBrush="{DynamicResource ColorBrush2}" BorderThickness="0,0,0,2" CornerRadius="5" Padding="12,3" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,0,-2">');
-          body.push('          <TextBlock Text="' + xesc(badge) + '" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource ColorBrush7}" />');
-          body.push('        </Border>');
+          arr.push('        <Border Background="{DynamicResource ColorBrush3}" BorderBrush="{DynamicResource ColorBrush2}" BorderThickness="0,0,0,2" CornerRadius="5" Padding="12,3" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,0,-2">');
+          arr.push('          <TextBlock Text="' + xesc(badge) + '" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource ColorBrush7}" />');
+          arr.push('        </Border>');
         }
-        body.push('      </Grid>');
+        arr.push('      </Grid>');
       } else if (row.type === 'notice') {
-        var nRuns = parseMcRuns(sub(row.text));
+        var nRuns = parseMcRuns(sub(row.text, map));
         var tb = nRuns == null
-          ? '<TextBlock TextWrapping="Wrap" Margin="10,0" FontSize="12" FontWeight="Bold" Text="' + xescNl(sub(row.text)) + '" />'
+          ? '<TextBlock TextWrapping="Wrap" Margin="10,0" FontSize="12" FontWeight="Bold" Text="' + xescNl(sub(row.text, map)) + '" />'
           : '<TextBlock TextWrapping="Wrap" Margin="10,0" FontSize="12" FontWeight="Bold">' + nRuns + '</TextBlock>';
-        body.push('      <Border Margin="0,6,0,0" Padding="2,8" BorderThickness="1" Background="{DynamicResource ColorBrush5}" BorderBrush="{DynamicResource ColorBrush3}" CornerRadius="5" Opacity="0.7">');
-        body.push('        ' + tb);
-        body.push('      </Border>');
+        arr.push('      <Border Margin="0,6,0,0" Padding="2,8" BorderThickness="1" Background="{DynamicResource ColorBrush5}" BorderBrush="{DynamicResource ColorBrush3}" CornerRadius="5" Opacity="0.7">');
+        arr.push('        ' + tb);
+        arr.push('      </Border>');
       } else if (row.type === 'footer') {
-        var fRaw = row.text != null ? sub(row.text) : '到底啦';
+        var fRaw = row.text != null ? sub(row.text, map) : '到底啦';
         var thick = row.thick_border !== false;
         if (fRaw !== '') {
-          body.push.apply(body, labeledLine(spaceOut(fRaw), 14, '{DynamicResource ColorBrush4}', '1.5', ''));
+          arr.push.apply(arr, labeledLine(spaceOut(fRaw), 14, '{DynamicResource ColorBrush4}', '1.5', ''));
         }
         if (thick) {
-          body.push('      <Border BorderThickness="0,0,0,8" BorderBrush="{DynamicResource ColorBrush2}" Margin="0,4,0,0" />');
+          arr.push('      <Border BorderThickness="0,0,0,8" BorderBrush="{DynamicResource ColorBrush2}" Margin="0,4,0,0" />');
         }
       }
     });
-    if (state.buttons.length) {
-      body.push('      <WrapPanel Orientation="Horizontal" Margin="0,10,0,0">');
-      state.buttons.forEach(function (btn) {
-        var sizeAttr = '';
-        if (+btn.width > 0) sizeAttr += ' Width="' + Math.min(+btn.width, 2000) + '"';
-        if (btn.style === 'icon_text') {
-          var logo = String(btn.logo_path || '').replace(/^\s+|\s+$/g, '');
-          if (!logo) return;
-          if (+btn.height > 0) sizeAttr += ' Height="' + Math.min(+btn.height, 2000) + '"';
-          var tip = sub(btn.tooltip || '');
-          var tipAttr = tip !== '' ? ' ToolTip="' + xesc(tip) + '"' : '';
-          var scale = +btn.logo_scale;
-          if (!(scale >= 0.1 && scale <= 5)) scale = 1;
-          body.push('        <local:MyIconTextButton Text="' + xesc(sub(btn.text)) + '"' + tipAttr + ' EventType="' + xesc(btn.event_type || 'None') + '" EventData="' + xesc(sub(btn.event_data)) + '" Logo="' + xesc(logo) + '" LogoScale="' + scale + '"' + sizeAttr + ' Margin="0,0,5,5" />');
-          return;
-        }
-        if (+btn.height > 0) sizeAttr += ' Height="' + Math.min(+btn.height, 2000) + '"';
-        else sizeAttr += ' Height="35"';
-        body.push('        <local:MyButton Text="' + xesc(sub(btn.text)) + '" EventType="' + xesc(btn.event_type || 'None') + '" EventData="' + xesc(sub(btn.event_data)) + '" ColorType="' + xesc(btn.color_type || 'Normal') + '" Padding="13,0"' + sizeAttr + ' Margin="0,0,5,5" />');
-      });
-      body.push('      </WrapPanel>');
+  }
+
+  /** 单个按钮元素行（与 homepage/index.php 的 renderButtons 条目同构） */
+  function buildButtonItem(btn, map, indent) {
+    indent = indent || '        ';
+    var sizeAttr = '';
+    if (+btn.width > 0) sizeAttr += ' Width="' + Math.min(+btn.width, 2000) + '"';
+    if (btn.style === 'icon_text') {
+      var logo = String(btn.logo_path || '').replace(/^\s+|\s+$/g, '');
+      if (!logo) return '';
+      if (+btn.height > 0) sizeAttr += ' Height="' + Math.min(+btn.height, 2000) + '"';
+      var tip = sub(btn.tooltip || '', map);
+      var tipAttr = tip !== '' ? ' ToolTip="' + xesc(tip) + '"' : '';
+      var scale = +btn.logo_scale;
+      if (!(scale >= 0.1 && scale <= 5)) scale = 1;
+      return indent + '<local:MyIconTextButton Text="' + xesc(sub(btn.text, map)) + '"' + tipAttr + ' EventType="' + xesc(btn.event_type || 'None') + '" EventData="' + xesc(sub(btn.event_data, map)) + '" Logo="' + xesc(logo) + '" LogoScale="' + scale + '"' + sizeAttr + ' Margin="0,0,5,5" />';
     }
-    out.push('<StackPanel>');
-    var titleRaw = sub(state.title);
-    var tfs = +state.title_font_size || 0;
-    if (tfs > 0 && titleRaw !== '') {
-      if (tfs > 200) tfs = 200;
-      if (tfs < 8) tfs = 8;
-      var top = Math.max(40, Math.round(tfs * 1.4 + 22));
-      out.push('  <local:MyCard Margin="0,0,0,15" CanSwap="True">');
-      out.push('    <local:MyCard.Inlines><InlineUIContainer><TextBlock Text="' + xesc(titleRaw) + '" FontSize="' + tfs + '" FontWeight="Bold" Foreground="{DynamicResource ColorBrush3}" /></InlineUIContainer></local:MyCard.Inlines>');
-      out.push('    <StackPanel Margin="25,' + top + ',23,15">');
+    if (+btn.height > 0) sizeAttr += ' Height="' + Math.min(+btn.height, 2000) + '"';
+    else sizeAttr += ' Height="35"';
+    return indent + '<local:MyButton Text="' + xesc(sub(btn.text, map)) + '" EventType="' + xesc(btn.event_type || 'None') + '" EventData="' + xesc(sub(btn.event_data, map)) + '" ColorType="' + xesc(btn.color_type || 'Normal') + '" Padding="13,0"' + sizeAttr + ' Margin="0,0,5,5" />';
+  }
+
+  /** 按钮区（与 homepage/index.php 的 renderButtons 同构三分支：仅左组 / 仅右组 / Grid 左右分置） */
+  function renderButtonsInto(arr, map) {
+    if (!state.buttons.length) return;
+    var leftItems = [];
+    var rightItems = [];
+    state.buttons.forEach(function (btn) {
+      var item = buildButtonItem(btn, map);
+      if (!item) return;
+      if (btn.align === 'right') rightItems.push(item); else leftItems.push(item);
+    });
+    if (!leftItems.length && !rightItems.length) return;
+    if (leftItems.length && rightItems.length) {
+      // 左右分组：忽略卡级对齐；右组适合少量按钮（Auto 列单行贴右）
+      arr.push('      <Grid Margin="0,10,0,0">');
+      arr.push('        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>');
+      arr.push('        <WrapPanel Orientation="Horizontal" Grid.Column="0">');
+      leftItems.forEach(function (item) { arr.push('  ' + item); });
+      arr.push('        </WrapPanel>');
+      arr.push('        <WrapPanel Orientation="Horizontal" Grid.Column="1">');
+      rightItems.forEach(function (item) { arr.push('  ' + item); });
+      arr.push('        </WrapPanel>');
+      arr.push('      </Grid>');
+      return;
+    }
+    var items = leftItems.length ? leftItems : rightItems;
+    var ha = '';
+    if (leftItems.length) {
+      if (state.buttons_align === 'center') ha = ' HorizontalAlignment="Center"';
+      else if (state.buttons_align === 'right') ha = ' HorizontalAlignment="Right"';
     } else {
-      out.push('  <local:MyCard Title="' + xesc(titleRaw) + '" Margin="0,0,0,15" CanSwap="True">');
-      out.push('    <StackPanel Margin="25,40,23,15">');
+      ha = ' HorizontalAlignment="Right"'; // 仅右组：贴右
     }
-    body.forEach(function (line) { out.push(line); });
-    out.push('    </StackPanel>');
-    out.push('  </local:MyCard>');
+    arr.push('      <WrapPanel Orientation="Horizontal" Margin="0,10,0,0"' + ha + '>');
+    items.forEach(function (item) { arr.push(item); });
+    arr.push('      </WrapPanel>');
+  }
+
+  function updatePreview() {
+    var pre = document.getElementById('xamlPreview');
+    if (!pre) return;
+    var isServer = state.kind === 'server';
+    var isMerge = isServer && !!state.merge_servers;
+    var body = [];
+
+    if (isMerge) {
+      // 合并模式：模板行集对每台示例服务器各渲染一遍（hide_if_empty 按台生效）
+      SAMPLE_SERVER_LIST.forEach(function (_, idx) {
+        renderRowsInto(body, serverSampleMap(idx));
+      });
+    } else {
+      renderRowsInto(body, isServer ? serverSampleMap(0) : globalSampleMap());
+    }
+    // 按钮/标题：合并模式只用全局键（按钮只渲染一次），否则与行同映射
+    var headMap = isMerge ? globalSampleMap() : (isServer ? serverSampleMap(0) : globalSampleMap());
+    renderButtonsInto(body, headMap);
+
+    var out = ['<StackPanel>'];
+    if (!body.length) {
+      // 空 rows/空按钮不输出空面板（与 PHP 一致）
+      out.push('</StackPanel>');
+      pre.textContent = out.join('\n');
+      return;
+    }
+    if (state.bare) {
+      // 无外壳：行+按钮直接作页面顶层元素，title/title_font_size 被忽略
+      out.push('  <StackPanel Margin="0,0,0,15">');
+      body.forEach(function (line) { out.push(line); });
+      out.push('  </StackPanel>');
+    } else {
+      var titleRaw = sub(state.title, headMap);
+      var tfs = +state.title_font_size || 0;
+      if (tfs > 0 && titleRaw !== '') {
+        if (tfs > 200) tfs = 200;
+        if (tfs < 8) tfs = 8;
+        var top = Math.max(40, Math.round(tfs * 1.4 + 22));
+        out.push('  <local:MyCard Margin="0,0,0,15" CanSwap="True">');
+        out.push('    <local:MyCard.Inlines><InlineUIContainer><TextBlock Text="' + xesc(titleRaw) + '" FontSize="' + tfs + '" FontWeight="Bold" Foreground="{DynamicResource ColorBrush3}" /></InlineUIContainer></local:MyCard.Inlines>');
+        out.push('    <StackPanel Margin="25,' + top + ',23,15">');
+      } else {
+        out.push('  <local:MyCard Title="' + xesc(titleRaw) + '" Margin="0,0,0,15" CanSwap="True">');
+        out.push('    <StackPanel Margin="25,40,23,15">');
+      }
+      body.forEach(function (line) { out.push(line); });
+      out.push('    </StackPanel>');
+      out.push('  </local:MyCard>');
+    }
     out.push('</StackPanel>');
     pre.textContent = out.join('\n');
   }

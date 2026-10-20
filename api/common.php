@@ -563,6 +563,9 @@ function migrateSiteTables($db, $driver) {
             kind VARCHAR(16) NOT NULL DEFAULT 'server',
             title VARCHAR(255) NOT NULL DEFAULT '',
             title_font_size INT NOT NULL DEFAULT 0,
+            bare TINYINT NOT NULL DEFAULT 0,
+            merge_servers TINYINT NOT NULL DEFAULT 0,
+            buttons_align VARCHAR(8) NOT NULL DEFAULT 'left',
             rows_json TEXT NOT NULL,
             buttons_json TEXT NOT NULL,
             enabled TINYINT NOT NULL DEFAULT 1,
@@ -592,6 +595,9 @@ function migrateSiteTables($db, $driver) {
                 kind            TEXT NOT NULL DEFAULT 'server',
                 title           TEXT NOT NULL DEFAULT '',
                 title_font_size INTEGER NOT NULL DEFAULT 0,
+                bare            INTEGER NOT NULL DEFAULT 0,
+                merge_servers   INTEGER NOT NULL DEFAULT 0,
+                buttons_align   TEXT NOT NULL DEFAULT 'left',
                 rows_json       TEXT NOT NULL DEFAULT '[]',
                 buttons_json    TEXT NOT NULL DEFAULT '[]',
                 enabled         INTEGER NOT NULL DEFAULT 1,
@@ -631,6 +637,39 @@ function migrateSiteTables($db, $driver) {
             $db->exec("ALTER TABLE pcl_cards ADD COLUMN title_font_size INT NOT NULL DEFAULT 0");
         } else {
             $db->exec("ALTER TABLE pcl_cards ADD COLUMN title_font_size INTEGER NOT NULL DEFAULT 0");
+        }
+    }
+
+    // 迁移：pcl_cards 新增 bare 列（无外壳卡，1=不渲染 MyCard 外壳，行直接作顶层元素）
+    try {
+        $test = $db->query("SELECT bare FROM pcl_cards LIMIT 0");
+    } catch (PDOException $e) {
+        if ($driver === 'mysql') {
+            $db->exec("ALTER TABLE pcl_cards ADD COLUMN bare TINYINT NOT NULL DEFAULT 0");
+        } else {
+            $db->exec("ALTER TABLE pcl_cards ADD COLUMN bare INTEGER NOT NULL DEFAULT 0");
+        }
+    }
+
+    // 迁移：pcl_cards 新增 merge_servers 列（server 卡合并模式，1=全部服务器拼进一张卡）
+    try {
+        $test = $db->query("SELECT merge_servers FROM pcl_cards LIMIT 0");
+    } catch (PDOException $e) {
+        if ($driver === 'mysql') {
+            $db->exec("ALTER TABLE pcl_cards ADD COLUMN merge_servers TINYINT NOT NULL DEFAULT 0");
+        } else {
+            $db->exec("ALTER TABLE pcl_cards ADD COLUMN merge_servers INTEGER NOT NULL DEFAULT 0");
+        }
+    }
+
+    // 迁移：pcl_cards 新增 buttons_align 列（按钮区对齐 left/center/right；MySQL TEXT 不能带 DEFAULT，用 VARCHAR）
+    try {
+        $test = $db->query("SELECT buttons_align FROM pcl_cards LIMIT 0");
+    } catch (PDOException $e) {
+        if ($driver === 'mysql') {
+            $db->exec("ALTER TABLE pcl_cards ADD COLUMN buttons_align VARCHAR(8) NOT NULL DEFAULT 'left'");
+        } else {
+            $db->exec("ALTER TABLE pcl_cards ADD COLUMN buttons_align TEXT NOT NULL DEFAULT 'left'");
         }
     }
 

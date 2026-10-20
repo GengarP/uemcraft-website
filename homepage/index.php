@@ -27,7 +27,9 @@ try {
     // 卡片设计器：卡片与自定义变量均来自后台（api/pcl.php 管理）
     $cards = $db->query('SELECT * FROM pcl_cards ORDER BY sort_order ASC, id ASC')->fetchAll(PDO::FETCH_ASSOC);
     $varRows = $db->query('SELECT * FROM pcl_vars ORDER BY sort_order ASC, id ASC')->fetchAll(PDO::FETCH_ASSOC);
-    $xml = generateXaml($servers, $serverStatuses, $cards, $varRows);
+    // 时间/新闻/活动键：查一次，全部卡共用（globalMap 内不查库，避免 server 卡逐台放大查询）
+    $dynMap = buildDynamicMap($db);
+    $xml = generateXaml($servers, $serverStatuses, $cards, $varRows, $dynMap);
 } catch (Throwable $e) {
     error_log('homepage 生成失败: ' . $e->getMessage());
     $xml  = '<StackPanel>' . "\n";
@@ -280,9 +282,59 @@ function substitute($tpl, $map) {
     }, (string)$tpl);
 }
 
-/** 全局键值映射：自定义变量 + 内置 {%year%} */
-function globalMap($varRows) {
-    $map = ['year' => date('Y')];
+/**
+ * 时间键 + 新闻键 + 活动键（主流程查一次，全部卡共用）。
+ * 新闻/活动查询软失败：加载失败只缺键（行被 hide_if_empty 藏掉），不触发整页错误卡。
+ * 不足的槽位不写键 —— substitute 缺键即空串，与 hide_if_empty 自然配合。
+ */
+function buildDynamicMap($db) {
+    $map = [
+        'year'    => date('Y'),
+        'month'   => date('m'),
+        'day'     => date('d'),
+        'hour'    => date('H'),
+        'minute'  => date('i'),
+        'date'    => date('Y-m-d'),
+        'time'    => date('H:i'),
+        'weekday' => ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'][(int)date('w')],
+    ];
+    try {
+        // 与 api/news.php 列表同序：置顶优先、日期新→旧
+        $stmt = $db->query("SELECT title, slug, excerpt, date FROM news WHERE status = 'published' ORDER BY is_pinned DESC, date DESC LIMIT 5");
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $i => $n) {
+            $k = $i + 1;
+            $map['news_' . $k . '_title']   = (string)$n['title'];
+            $map['news_' . $k . '_date']    = (string)$n['date'];
+            $map['news_' . $k . '_excerpt'] = (string)$n['excerpt'];
+            $map['news_' . $k . '_url']     = 'https://uemcraft.cn/news/' . urlencode((string)$n['slug']);
+        }
+    } catch (Throwable $e) {
+        error_log('新闻键加载失败: ' . $e->getMessage());
+    }
+    try {
+        // 两级取数：优先即将开始/进行中（api/events.php upcoming 同序），无则回落已结束
+        $stmt = $db->query("SELECT title, date_label, status, link FROM events WHERE status IN ('upcoming', 'ongoing') ORDER BY is_featured DESC, sort_order ASC, date_start ASC LIMIT 3");
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (empty($rows)) {
+            $stmt = $db->query("SELECT title, date_label, status, link FROM events WHERE status = 'past' ORDER BY is_featured DESC, date_start DESC LIMIT 3");
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+        foreach ($rows as $i => $n) {
+            $k = $i + 1;
+            $map['event_' . $k . '_title'] = (string)$n['title'];
+            $map['event_' . $k . '_date']  = (string)$n['date_label'];
+            $map['event_' . $k . '_status'] = (string)$n['status'];
+            $map['event_' . $k . '_link']  = (string)$n['link'];
+        }
+    } catch (Throwable $e) {
+        error_log('活动键加载失败: ' . $e->getMessage());
+    }
+    return $map;
+}
+
+/** 全局键值映射：动态内置键（时间/新闻/活动）+ 自定义变量覆盖 */
+function globalMap($varRows, $dyn = []) {
+    $map = $dyn;
     foreach ($varRows as $v) {
         $map[(string)$v['var_key']] = (string)$v['var_value'];
     }
@@ -290,8 +342,8 @@ function globalMap($varRows) {
 }
 
 /** 服务器键值映射（叠加全局映射），address 已按 hide_address 掩码 */
-function serverMap($server, $statuses, $varRows) {
-    $map = globalMap($varRows);
+function serverMap($server, $statuses, $varRows, $dyn = []) {
+    $map = globalMap($varRows, $dyn);
     $address = !empty($server['hide_address']) ? mask_address($server['address']) : $server['address'];
     $displayPort = (int)$server['port'];
     if ($displayPort <= 0) {
@@ -497,9 +549,14 @@ function renderRow($row, $map) {
     return '';
 }
 
-/** 渲染按钮行（WrapPanel 可换行，事件属性为直接属性写法；style=icon_text 走 MyIconTextButton） */
-function renderButtons($buttons, $map) {
-    $items = '';
+/**
+ * 渲染按钮行（WrapPanel 可换行，事件属性为直接属性写法；style=icon_text 走 MyIconTextButton）。
+ * 对齐两层：$align = 卡级按钮区对齐（left/center/right）；按钮 align='right' 进右组。
+ * 仅左组 → 按卡级对齐；仅右组 → 贴右；左右都有 → Grid 两列（左列 * 可换行，右列 Auto 单行贴右，忽略卡级）。
+ */
+function renderButtons($buttons, $map, $align = 'left') {
+    $leftItems = '';
+    $rightItems = '';
     foreach ($buttons as $btn) {
         if (!is_array($btn)) {
             continue;
@@ -516,6 +573,7 @@ function renderButtons($buttons, $map) {
         $h = intval($btn['height'] ?? 0);
         if ($w > 0) $sizeAttr .= ' Width="' . min($w, 2000) . '"';
 
+        $item = '';
         if ($style === 'icon_text') {
             // 图标文字按钮：矢量 Path 数据作 Logo（自由文本，非空即可）
             $logo = trim((string)($btn['logo_path'] ?? ''));
@@ -528,30 +586,67 @@ function renderButtons($buttons, $map) {
             $scale = (float)($btn['logo_scale'] ?? 1);
             if ($scale < 0.1 || $scale > 5) $scale = 1;
             if ($h > 0) $sizeAttr .= ' Height="' . min($h, 2000) . '"';
-            $items .= '                <local:MyIconTextButton Text="' . $text . '"' . $tipAttr . ' EventType="' . $et . '" EventData="' . $ed . '" Logo="' . xesc($logo) . '" LogoScale="' . sprintf('%g', $scale) . '"' . $sizeAttr . ' Margin="0,0,5,5" />' . "\n";
-            continue;
+            $item = '                <local:MyIconTextButton Text="' . $text . '"' . $tipAttr . ' EventType="' . $et . '" EventData="' . $ed . '" Logo="' . xesc($logo) . '" LogoScale="' . sprintf('%g', $scale) . '"' . $sizeAttr . ' Margin="0,0,5,5" />' . "\n";
+        } else {
+            $text = xesc(substitute($btn['text'] ?? '', $map));
+            $ct = $btn['color_type'] ?? 'Normal';
+            if (!in_array($ct, ['Normal', 'Highlight', 'Red'], true)) {
+                $ct = 'Normal';
+            }
+            if ($h > 0) {
+                $sizeAttr .= ' Height="' . min($h, 2000) . '"';
+            } else {
+                $sizeAttr .= ' Height="35"'; // 参考仓库按钮规范高度
+            }
+            $item = '                <local:MyButton Text="' . $text . '" EventType="' . $et . '" EventData="' . $ed . '" ColorType="' . $ct . '" Padding="13,0"' . $sizeAttr . ' Margin="0,0,5,5" />' . "\n";
         }
 
-        $text = xesc(substitute($btn['text'] ?? '', $map));
-        $ct = $btn['color_type'] ?? 'Normal';
-        if (!in_array($ct, ['Normal', 'Highlight', 'Red'], true)) {
-            $ct = 'Normal';
-        }
-        if ($h > 0) {
-            $sizeAttr .= ' Height="' . min($h, 2000) . '"';
+        if (($btn['align'] ?? '') === 'right') {
+            $rightItems .= $item;
         } else {
-            $sizeAttr .= ' Height="35"'; // 参考仓库按钮规范高度
+            $leftItems .= $item;
         }
-        $items .= '                <local:MyButton Text="' . $text . '" EventType="' . $et . '" EventData="' . $ed . '" ColorType="' . $ct . '" Padding="13,0"' . $sizeAttr . ' Margin="0,0,5,5" />' . "\n";
     }
-    if ($items === '') {
+    if ($leftItems === '' && $rightItems === '') {
         return '';
     }
-    return '            <WrapPanel Orientation="Horizontal" Margin="0,10,0,0">' . "\n" . $items . '            </WrapPanel>' . "\n";
+    if ($leftItems !== '' && $rightItems !== '') {
+        // 左右分组：忽略卡级对齐；右组适合少量按钮（Auto 列单行贴右）
+        $out  = '            <Grid Margin="0,10,0,0">' . "\n";
+        $out .= '                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>' . "\n";
+        $out .= '                <WrapPanel Orientation="Horizontal" Grid.Column="0">' . "\n" . $leftItems . '                </WrapPanel>' . "\n";
+        $out .= '                <WrapPanel Orientation="Horizontal" Grid.Column="1">' . "\n" . $rightItems . '                </WrapPanel>' . "\n";
+        $out .= '            </Grid>' . "\n";
+        return $out;
+    }
+    $items = $leftItems !== '' ? $leftItems : $rightItems;
+    $ha = '';
+    if ($leftItems !== '') {
+        if ($align === 'center') {
+            $ha = ' HorizontalAlignment="Center"';
+        } elseif ($align === 'right') {
+            $ha = ' HorizontalAlignment="Right"';
+        }
+    } else {
+        $ha = ' HorizontalAlignment="Right"'; // 仅右组：贴右
+    }
+    return '            <WrapPanel Orientation="Horizontal" Margin="0,10,0,0"' . $ha . '>' . "\n" . $items . '            </WrapPanel>' . "\n";
 }
 
-/** 渲染一张卡片（server 模板卡传入单台的映射，standalone 卡传入全局映射） */
-function renderCard($card, $map) {
+/** 行渲染（不含按钮）。供单卡渲染与合并模式逐台拼接复用 */
+function renderRowsBody($rows, $map) {
+    $body = '';
+    foreach ($rows as $row) {
+        if (!is_array($row) || rowHidden($row, $map)) {
+            continue;
+        }
+        $body .= renderRow($row, $map);
+    }
+    return $body;
+}
+
+/** 解析 rows_json / buttons_json 为数组 */
+function decodeCardJson($card) {
     $rows = json_decode((string)($card['rows_json'] ?? '[]'), true);
     if (!is_array($rows)) {
         $rows = [];
@@ -560,17 +655,20 @@ function renderCard($card, $map) {
     if (!is_array($buttons)) {
         $buttons = [];
     }
+    return [$rows, $buttons];
+}
 
-    $body = '';
-    foreach ($rows as $row) {
-        if (!is_array($row) || rowHidden($row, $map)) {
-            continue;
-        }
-        $body .= renderRow($row, $map);
-    }
-    $body .= renderButtons($buttons, $map);
-    if ($body === '') {
-        return ''; // 空 rows/空按钮不输出空面板
+/**
+ * 卡片外壳：bare=1 → 轻量 StackPanel（行+按钮直接作顶层元素，title/title_font_size 被忽略）；
+ * 否则 MyCard 两分支（自定义标题字号走 MyCard.Inlines）。
+ */
+function wrapCardShell($card, $body, $map) {
+    if ((int)($card['bare'] ?? 0) === 1) {
+        // Margin 与 MyCard 底边距一致；不加水平内缩 —— bare 的意义就是通栏
+        $out  = '    <StackPanel Margin="0,0,0,15">' . "\n";
+        $out .= $body;
+        $out .= '    </StackPanel>' . "\n";
+        return $out;
     }
 
     $titleRaw = substitute($card['title'] ?? '', $map);
@@ -600,21 +698,56 @@ function renderCard($card, $map) {
     return $out;
 }
 
+/** 渲染一张卡片（server 模板卡传入单台的映射，standalone 卡传入全局映射） */
+function renderCard($card, $map) {
+    list($rows, $buttons) = decodeCardJson($card);
+    $body  = renderRowsBody($rows, $map);
+    $body .= renderButtons($buttons, $map, (string)($card['buttons_align'] ?? 'left'));
+    if ($body === '') {
+        return ''; // 空 rows/空按钮不输出空面板
+    }
+    return wrapCardShell($card, $body, $map);
+}
+
 /**
- * 按 sort_order 遍历卡片：server 模板卡展开为每台服务器一张，standalone 卡渲染一次。
+ * 合并模式（merge_servers=1）：模板行集对每台服务器各渲染一遍拼进同一卡体
+ * （hide_if_empty 按台生效；用户在模板末尾放 divider 行即形成服务器间分隔），
+ * 按钮只渲染一次（globalMap，按钮不能用 server 键）放卡体末尾，标题也只用 globalMap。
  */
-function generateXaml($servers, $statuses, $cards, $varRows) {
+function renderMergedServerCard($card, $servers, $statuses, $varRows, $dyn) {
+    list($rows, $buttons) = decodeCardJson($card);
+    $gmap = globalMap($varRows, $dyn);
+    $body = '';
+    foreach ($servers as $server) {
+        $body .= renderRowsBody($rows, serverMap($server, $statuses, $varRows, $dyn));
+    }
+    $body .= renderButtons($buttons, $gmap, (string)($card['buttons_align'] ?? 'left'));
+    if ($body === '') {
+        return '';
+    }
+    return wrapCardShell($card, $body, $gmap);
+}
+
+/**
+ * 按 sort_order 遍历卡片：server 模板卡展开为每台服务器一张（merge_servers=1 则合并为一张），
+ * standalone 卡渲染一次。
+ */
+function generateXaml($servers, $statuses, $cards, $varRows, $dyn = []) {
     $xaml = '<StackPanel>' . "\n";
     foreach ($cards as $card) {
         if ((int)($card['enabled'] ?? 1) !== 1) {
             continue;
         }
         if (($card['kind'] ?? '') === 'server') {
-            foreach ($servers as $server) {
-                $xaml .= renderCard($card, serverMap($server, $statuses, $varRows));
+            if (!empty($card['merge_servers'])) {
+                $xaml .= renderMergedServerCard($card, $servers, $statuses, $varRows, $dyn);
+            } else {
+                foreach ($servers as $server) {
+                    $xaml .= renderCard($card, serverMap($server, $statuses, $varRows, $dyn));
+                }
             }
         } else {
-            $xaml .= renderCard($card, globalMap($varRows));
+            $xaml .= renderCard($card, globalMap($varRows, $dyn));
         }
     }
     if (empty($servers)) {

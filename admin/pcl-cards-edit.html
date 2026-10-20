@@ -23,15 +23,15 @@
       }
     })();
   </script>
-  <link rel="stylesheet" href="/css/tokens.css?v=3cb682e">
-  <link rel="stylesheet" href="/css/base.css?v=3cb682e">
-  <link rel="stylesheet" href="/css/layout.css?v=3cb682e">
-  <link rel="stylesheet" href="/css/components.css?v=3cb682e">
-  <link rel="stylesheet" href="/css/pages.css?v=3cb682e">
-  <link rel="stylesheet" href="css/admin.css?v=3cb682e">
+  <link rel="stylesheet" href="/css/tokens.css?v=79dfb06">
+  <link rel="stylesheet" href="/css/base.css?v=79dfb06">
+  <link rel="stylesheet" href="/css/layout.css?v=79dfb06">
+  <link rel="stylesheet" href="/css/components.css?v=79dfb06">
+  <link rel="stylesheet" href="/css/pages.css?v=79dfb06">
+  <link rel="stylesheet" href="css/admin.css?v=79dfb06">
 </head>
 <body>
-<script src="/js/components-admin.js?v=3cb682e"></script>
+<script src="/js/components-admin.js?v=79dfb06"></script>
 
 <a href="#main" class="skip-link">跳转到主内容</a>
 
@@ -39,7 +39,7 @@
 
 <div class="admin-page-header">
   <h1 id="pageTitle">设计卡片</h1>
-  <p class="hero-sub">模板卡按每台服务器展开，独立卡只渲染一次；任意文本字段支持 {%key%} 替换</p>
+  <p class="hero-sub">模板卡按每台服务器展开（可合并为一张卡），独立卡只渲染一次；任意文本字段支持 {%key%} 替换</p>
   <nav class="breadcrumb" aria-label="面包屑">
     <a href="/index.html">首页</a> <span>/</span> <a href="index.html">管理后台</a> <span>/</span> <a href="pcl-cards.html">PCL 主页</a> <span>/</span> <span id="crumbLeaf">设计卡片</span>
   </nav>
@@ -89,6 +89,24 @@
             </select>
           </div>
         </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="fBare">无卡片外壳</label>
+            <select id="fBare" class="form-input">
+              <option value="0">关闭（渲染 MyCard）</option>
+              <option value="1">开启（内容直接作页面元素）</option>
+            </select>
+            <small class="form-help">开启后不渲染 MyCard，标题与标题字号被忽略</small>
+          </div>
+          <div class="form-group" id="fMergeGroup">
+            <label class="form-label" for="fMerge">合并服务器到一张卡</label>
+            <select id="fMerge" class="form-input">
+              <option value="0">关闭（每台服务器一张卡）</option>
+              <option value="1">开启（全部服务器拼进一张卡）</option>
+            </select>
+            <small class="form-help">合并时模板行按每台服务器重复渲染进同一张卡，按钮只渲染一次且不能用服务器键；仅模板卡有效</small>
+          </div>
+        </div>
       </fieldset>
 
       <!-- ====== 内容行 ====== -->
@@ -103,6 +121,17 @@
       <!-- ====== 按钮 ====== -->
       <fieldset class="form-fieldset">
         <legend>按钮</legend>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="fButtonsAlign">按钮区对齐</label>
+            <select id="fButtonsAlign" class="form-input">
+              <option value="left">左（默认）</option>
+              <option value="center">居中</option>
+              <option value="right">右</option>
+            </select>
+            <small class="form-help">仅左组按钮时生效；有按钮选「右对齐」时自动左右分置，右组适合少量按钮</small>
+          </div>
+        </div>
         <div id="buttonsWrap"></div>
         <div class="form-actions">
           <button type="button" class="btn btn-ghost btn-sm" id="addBtnBtn">+ 添加按钮</button>
@@ -119,7 +148,7 @@
 
     <!-- ====== XAML 预览 ====== -->
     <fieldset class="form-fieldset">
-      <legend>XAML 预览（示例值模拟替换结果）</legend>
+      <legend>XAML 预览（示例值模拟替换结果；合并模式用两个示例服务器演示）</legend>
       <pre id="xamlPreview" class="xaml-preview"></pre>
     </fieldset>
 
@@ -136,13 +165,13 @@
 
 </main>
 
-<script src="/js/components-footer.js?v=3cb682e"></script>
-<script defer src="/js/utils.js?v=3cb682e"></script>
-<script defer src="/js/cjk-spacing.js?v=3cb682e"></script>
-<script defer src="/js/nav.js?v=3cb682e"></script>
-<script defer src="/js/page-transition.js?v=3cb682e"></script>
-<script defer src="/js/theme.js?v=3cb682e"></script>
-<script defer src="/js/admin-auth.js?v=3cb682e"></script>
-<script defer src="/js/admin-pcl.js?v=3cb682e"></script>
+<script src="/js/components-footer.js?v=79dfb06"></script>
+<script defer src="/js/utils.js?v=79dfb06"></script>
+<script defer src="/js/cjk-spacing.js?v=79dfb06"></script>
+<script defer src="/js/nav.js?v=79dfb06"></script>
+<script defer src="/js/page-transition.js?v=79dfb06"></script>
+<script defer src="/js/theme.js?v=79dfb06"></script>
+<script defer src="/js/admin-auth.js?v=79dfb06"></script>
+<script defer src="/js/admin-pcl.js?v=79dfb06"></script>
 </body>
 </html>

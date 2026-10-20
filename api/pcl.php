@@ -34,6 +34,12 @@ const PCL_EVENT_TYPES = [
 /** 按钮 ColorType 白名单 */
 const PCL_COLOR_TYPES = ['Normal', 'Highlight', 'Red'];
 
+/** 卡级按钮区对齐白名单 */
+const PCL_BUTTONS_ALIGN = ['left', 'center', 'right'];
+
+/** 按钮级对齐白名单（'' = 默认，进左组） */
+const PCL_BUTTON_ALIGN = ['', 'left', 'right'];
+
 /**
  * 校验并规范化 rows_json：必须是 JSON 数组，每行 type 合法。
  * 返回规范化后的 JSON 字符串；非法时 json_response 报错退出。
@@ -105,6 +111,11 @@ function validateButtonsJson($raw) {
             json_response(['success' => false, 'error' => '按钮样式必须是 text/icon_text'], 400);
         }
         $btn['style'] = $style;
+        $align = $btn['align'] ?? '';
+        if (!is_string($align) || !in_array($align, PCL_BUTTON_ALIGN, true)) {
+            json_response(['success' => false, 'error' => '按钮对齐必须是 left/right 或留空'], 400);
+        }
+        $btn['align'] = $align; // 全量覆盖语义：缺省回写 ''
         if ($style === 'icon_text') {
             // 图标文字按钮：矢量 Path 数据必填（自由文本，只限长度）
             $logo = trim((string)($btn['logo_path'] ?? ''));
@@ -141,9 +152,29 @@ function normalizeCardRow($row) {
     $row['enabled'] = (int)$row['enabled'];
     $row['sort_order'] = (int)$row['sort_order'];
     $row['title_font_size'] = (int)($row['title_font_size'] ?? 0);
+    $row['bare'] = (int)($row['bare'] ?? 0);
+    $row['merge_servers'] = (int)($row['merge_servers'] ?? 0);
+    $row['buttons_align'] = (string)($row['buttons_align'] ?? 'left');
     $row['created_at'] = (int)$row['created_at'];
     $row['updated_at'] = (int)$row['updated_at'];
     return $row;
+}
+
+/** 卡片布局字段校验：bare / merge_servers / buttons_align（全量覆盖语义，缺省回写默认值） */
+function validateCardLayout($input, $kind) {
+    $bare = intval($input['bare'] ?? 0) ? 1 : 0;
+    $mergeServers = intval($input['merge_servers'] ?? 0) ? 1 : 0;
+    $buttonsAlign = (string)($input['buttons_align'] ?? 'left');
+    if ($buttonsAlign === '') {
+        $buttonsAlign = 'left';
+    }
+    if (!in_array($buttonsAlign, PCL_BUTTONS_ALIGN, true)) {
+        json_response(['success' => false, 'error' => '按钮区对齐必须是 left/center/right'], 400);
+    }
+    if ($kind === 'standalone') {
+        $mergeServers = 0; // 合并模式仅对 kind='server' 有意义
+    }
+    return ['bare' => $bare, 'merge_servers' => $mergeServers, 'buttons_align' => $buttonsAlign];
 }
 
 /** 标题字号校验：0=默认（MyCard 原生 13），否则 8-200 */
@@ -206,10 +237,11 @@ try {
         $enabled = intval($input['enabled'] ?? 1) ? 1 : 0;
         $sortOrder = intval($input['sort_order'] ?? 0);
         $titleFontSize = validateTitleFontSize($input);
+        $layout = validateCardLayout($input, $kind);
         $ts = now();
 
-        $stmt = $db->prepare("INSERT INTO pcl_cards (name, kind, title, title_font_size, rows_json, buttons_json, enabled, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$name, $kind, $title, $titleFontSize, $rowsJson, $buttonsJson, $enabled, $sortOrder, $ts, $ts]);
+        $stmt = $db->prepare("INSERT INTO pcl_cards (name, kind, title, title_font_size, bare, merge_servers, buttons_align, rows_json, buttons_json, enabled, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$name, $kind, $title, $titleFontSize, $layout['bare'], $layout['merge_servers'], $layout['buttons_align'], $rowsJson, $buttonsJson, $enabled, $sortOrder, $ts, $ts]);
 
         json_response(['success' => true, 'data' => ['id' => (int)$db->lastInsertId()]]);
     }
@@ -246,9 +278,10 @@ try {
         $enabled = intval($input['enabled'] ?? 1) ? 1 : 0;
         $sortOrder = intval($input['sort_order'] ?? 0);
         $titleFontSize = validateTitleFontSize($input);
+        $layout = validateCardLayout($input, $kind);
 
-        $stmt = $db->prepare("UPDATE pcl_cards SET name = ?, kind = ?, title = ?, title_font_size = ?, rows_json = ?, buttons_json = ?, enabled = ?, sort_order = ?, updated_at = ? WHERE id = ?");
-        $stmt->execute([$name, $kind, $title, $titleFontSize, $rowsJson, $buttonsJson, $enabled, $sortOrder, now(), $id]);
+        $stmt = $db->prepare("UPDATE pcl_cards SET name = ?, kind = ?, title = ?, title_font_size = ?, bare = ?, merge_servers = ?, buttons_align = ?, rows_json = ?, buttons_json = ?, enabled = ?, sort_order = ?, updated_at = ? WHERE id = ?");
+        $stmt->execute([$name, $kind, $title, $titleFontSize, $layout['bare'], $layout['merge_servers'], $layout['buttons_align'], $rowsJson, $buttonsJson, $enabled, $sortOrder, now(), $id]);
 
         json_response(['success' => true]);
     }
