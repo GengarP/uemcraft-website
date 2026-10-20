@@ -27,29 +27,35 @@
   ];
 
   /* ---- 工具函数 ---- */
-  function currentPath() {
-    var p = location.pathname;
+  /* 路径归一化：线上 Apache 会把 /about.html 301 到 /about（去掉 .html 后缀），
+     本地开发访问的仍是 /about.html。两侧统一归一后再比对：去尾斜杠、去 .html、
+     末尾 /index 段视作目录本身（根上的 /index 即 /），否则线上无后缀路径永远
+     命中不了带 .html 的 match，高亮会丢（/about、/join、/events、/index 全中招）。 */
+  function normPath(p) {
     if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+    if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+    if (p.slice(-6) === '/index') p = p.slice(0, -6);
     return p || '/';
+  }
+
+  function currentPath() {
+    return normPath(location.pathname);
   }
 
   function isActive(item) {
     var cur = currentPath();
     for (var i = 0; i < item.match.length; i++) {
-      var m = item.match[i];
-      if (m.length > 1 && m.slice(-1) === '/') m = m.slice(0, -1);
-      if (cur === m || cur === m + '/') return true;
+      if (cur === normPath(item.match[i])) return true;
     }
     return false;
   }
 
-  /* 前缀命中：/news/slug、/docs/slug 这类子路径也算（子项高亮用） */
+  /* 前缀命中：/news/slug、/gallery/detail 这类子路径也算（子项高亮用） */
   function isUnder(prefixes) {
     var cur = currentPath();
     for (var i = 0; i < prefixes.length; i++) {
-      var m = prefixes[i];
-      if (m.length > 1 && m.slice(-1) === '/') m = m.slice(0, -1);
-      if (cur === m || cur.indexOf(m + '/') === 0) return true;
+      var m = normPath(prefixes[i]);
+      if (cur === m || (m !== '/' && cur.indexOf(m + '/') === 0)) return true;
     }
     return false;
   }
