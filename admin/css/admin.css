@@ -1061,3 +1061,46 @@
   white-space: pre;
   max-width: 900px;
 }
+
+/* ===== 跑酷排行管理布局优化 ===== */
+.admin-page-header + .section .container {
+  display: block;
+}
+.admin-card {
+  margin-bottom: var(--space-lg);
+}
+.admin-card h2 {
+  margin: 0 0 var(--space-sm);
+}
+.admin-card > p {
+  margin: 0 0 var(--space-md);
+}
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-md);
+  align-items: end;
+}
+.admin-form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  font-weight: 600;
+}
+.admin-form-grid input,
+.admin-form-grid select {
+  width: 100%;
+  padding: var(--space-sm);
+  border: 1px solid var(--c-border);
+  background: var(--c-bg);
+  color: var(--c-text);
+  font: inherit;
+}
+.admin-card .btn {
+  align-self: end;
+}
+@media (max-width: 768px) {
+  .admin-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
