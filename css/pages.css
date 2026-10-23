@@ -1728,43 +1728,51 @@
 .parkour-player-card {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 1rem;
+  gap: 1.5rem;
   align-items: center;
-  padding: 1.25rem;
-  border: 1px solid var(--c-border);
-  background: var(--c-surface);
 }
 .parkour-stat-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: .75rem;
-  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .65rem 1.15rem;
+  margin-top: .9rem;
 }
 .parkour-stat {
-  padding: .85rem 1rem;
-  border: 1px solid var(--c-border);
-  background: var(--c-bg-section-alt);
+  display: inline-flex;
+  align-items: baseline;
+  gap: .45rem;
+  padding-left: 1.15rem;
+  border-left: 1px solid var(--c-border);
+}
+.parkour-stat:first-child {
+  padding-left: 0;
+  border-left: 0;
 }
 .parkour-stat .label {
-  display: block;
   font-size: .85rem;
   opacity: .7;
-  margin-bottom: .25rem;
 }
 .parkour-stat .value {
-  font-size: 1.15rem;
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--c-primary);
+  word-break: break-word;
 }
 .parkour-trend {
-  padding: 1rem;
-  border: 1px solid var(--c-border);
-  background: var(--c-surface);
+  position: relative;
 }
 .parkour-trend-svg {
+  display: block;
   width: 100%;
   height: auto;
   color: var(--c-text);
+}
+.parkour-trend-caption {
+  margin-top: .85rem;
+  font-size: .85rem;
+  color: var(--c-text-muted);
 }
 .parkour-section-title {
   margin: 1.5rem 0 .75rem;
@@ -1802,21 +1810,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.parkour-stat-grid {
-  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
-}
-.parkour-stat {
-  min-height: 4.5rem;
-}
-.parkour-stat .value {
-  word-break: break-word;
-}
-.parkour-trend {
-  position: relative;
-}
-.parkour-trend-svg {
-  display: block;
-}
 
 @media (max-width: 768px) {
   .parkour-toolbar {
@@ -1849,14 +1842,15 @@
     margin: 0 auto;
   }
   .parkour-stat-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: center;
+  }
+  .parkour-stat {
+    padding-left: 0;
+    border-left: 0;
   }
 }
 
 @media (max-width: 480px) {
-  .parkour-stat-grid {
-    grid-template-columns: 1fr;
-  }
   .parkour-ranking th,
   .parkour-ranking td {
     font-size: .85rem;

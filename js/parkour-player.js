@@ -68,7 +68,7 @@
       svg += '</circle>';
     });
     svg += '</svg>';
-    svg += '<p class="text-muted">纵轴为排名（越靠上越好），横轴为达成时间顺序。</p>';
+    svg += '<p class="parkour-trend-caption">纵轴为排名（越靠上越好），横轴为达成时间顺序。</p>';
     wrap.innerHTML = svg;
   }
 
@@ -143,4 +143,3 @@
       });
   });
 })();
-PY
