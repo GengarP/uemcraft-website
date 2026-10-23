@@ -64,7 +64,7 @@
     svg += '<path d="' + path + '" fill="none" stroke="var(--c-primary)" stroke-width="2"/>';
     points.forEach(function (p) {
       svg += '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="4" fill="var(--c-primary)">';
-      svg += '<title>' + escapeHtml(p.t.map_name) + ' · 第 ' + p.t.rank_at_time + ' 名 · ' + formatMs(p.t.time_ms) + '</title>';
+      svg += '<title>' + escapeHtml(p.t.map_name) + '，第 ' + p.t.rank_at_time + ' 名，' + formatMs(p.t.time_ms) + '</title>';
       svg += '</circle>';
     });
     svg += '</svg>';
@@ -98,9 +98,9 @@
         document.getElementById('playerAvatar').alt = p.player_name;
         document.getElementById('playerName').textContent = p.player_name;
         document.getElementById('playerSummary').textContent =
-          '参与地图：' + s.maps_played + ' · 最好名次：' + (s.best_rank ? '第 ' + s.best_rank + ' 名' : '-') +
-          ' · 冠军：' + s.top1_count + ' 次 · 前三：' + s.top3_count + ' 次 · 前十：' + s.top10_count + ' 次' +
-          (s.best_map ? ' · 表现最好的地图：' + s.best_map.display_name : '');
+          '参与地图：' + s.maps_played + '，最好名次：' + (s.best_rank ? '第 ' + s.best_rank + ' 名' : '-') +
+          '，冠军：' + s.top1_count + ' 次，前三：' + s.top3_count + ' 次，前十：' + s.top10_count + ' 次' +
+          (s.best_map ? '，表现最好的地图：' + s.best_map.display_name : '');
 
         var mapBody = document.getElementById('mapBody');
         var mapHtml = '';

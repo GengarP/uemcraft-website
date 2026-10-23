@@ -72,7 +72,7 @@
 
         var map = json.map;
         var meta = document.getElementById('mapMeta');
-        meta.textContent = map.display_name + ' · 共 ' + json.total + ' 名玩家' + (map.close_at ? ' · 已封榜' : '');
+        meta.textContent = map.display_name + '，共 ' + json.total + ' 名玩家' + (map.close_at ? '，已封榜' : '');
 
         var tbody = document.getElementById('rankingBody');
         if (!json.data || json.data.length === 0) {
