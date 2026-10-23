@@ -16,7 +16,11 @@ function parkourNow() {
 }
 
 function parkourUuidValid($uuid) {
-    return is_string($uuid) && preg_match('/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/', $uuid);
+    if (!is_string($uuid)) {
+        return false;
+    }
+    $clean = str_replace('-', '', $uuid);
+    return preg_match('/^[0-9a-fA-F]{32}$/', $clean) === 1;
 }
 
 function parkourFormatCloseDate($ts) {
@@ -51,10 +55,14 @@ function parkourResolvePlayer($db, $uuid) {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 3);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         $raw = curl_exec($ch);
-        curl_close($ch);
     } else {
-        $ctx = stream_context_create(['http' => ['timeout' => 3]]);
+        $ctx = stream_context_create([
+            'http' => ['timeout' => 3],
+            'ssl' => ['verify_peer' => false, 'verify_peer_name' => false],
+        ]);
         $raw = @file_get_contents($url, false, $ctx);
     }
 
@@ -416,7 +424,7 @@ try {
         if ($token === '' || $courseId <= 0) {
             json_response(['success' => false, 'error' => '缺少上传令牌或 courseId'], 400);
         }
-        if ($displayName === '' || mb_strlen($displayName, 'UTF-8') > 100) {
+        if ($displayName === '' || charCount($displayName) > 100) {
             json_response(['success' => false, 'error' => '展示名称长度应为 1–100'], 400);
         }
 
@@ -566,7 +574,7 @@ try {
             }
         }
 
-        if ($displayName === '' || mb_strlen($displayName, 'UTF-8') > 100) {
+        if ($displayName === '' || charCount($displayName) > 100) {
             json_response(['success' => false, 'error' => '展示名称长度应为 1–100'], 400);
         }
         if (!in_array($status, ['published', 'draft'], true)) {

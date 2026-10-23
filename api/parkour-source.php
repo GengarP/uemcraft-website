@@ -95,7 +95,10 @@ function parkourToTimestamp($value) {
 
 function parkourValidateSource($path) {
     $tables = parkourSourceTables($path);
-    if (!is_array($tables) || !in_array('course', $tables, true) || !in_array('time', $tables, true)) {
+    if (!is_array($tables)) {
+        json_response(['success' => false, 'error' => '无法读取 SQLite 数据库：请启用 pdo_sqlite/sqlite3 扩展，或安装 sqlite3 命令行工具'], 400);
+    }
+    if (!in_array('course', $tables, true) || !in_array('time', $tables, true)) {
         json_response(['success' => false, 'error' => '数据库中缺少 course 或 time 表'], 400);
     }
 
