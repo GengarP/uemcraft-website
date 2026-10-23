@@ -4,6 +4,7 @@
  */
 
 require_once __DIR__ . '/common.php';
+require_once __DIR__ . '/parkour-source.php';
 
 date_default_timezone_set('Asia/Shanghai');
 
@@ -23,81 +24,6 @@ function parkourFormatCloseDate($ts) {
         return null;
     }
     return (int) $ts;
-}
-
-function parkourOpenSourceDb($path) {
-    if (!is_file($path) || !is_readable($path)) {
-        json_response(['success' => false, 'error' => '无法读取上传文件'], 400);
-    }
-
-    try {
-        $db = new PDO('sqlite:' . $path);
-        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-    } catch (Throwable $e) {
-        json_response(['success' => false, 'error' => '不是有效的 SQLite 数据库'], 400);
-    }
-
-    // 校验必需表
-    $tables = [];
-    $stmt = $db->query("SELECT name FROM sqlite_master WHERE type='table'");
-    foreach ($stmt->fetchAll() as $row) {
-        $tables[] = $row['name'];
-    }
-
-    if (!in_array('course', $tables, true) || !in_array('time', $tables, true)) {
-        json_response(['success' => false, 'error' => '数据库中缺少 course 或 time 表'], 400);
-    }
-
-    return $db;
-}
-
-function parkourSourceColumns($db, $table) {
-    $cols = [];
-    $stmt = $db->query("PRAGMA table_info($table)");
-    foreach ($stmt->fetchAll() as $row) {
-        $cols[] = $row['name'];
-    }
-    return $cols;
-}
-
-function parkourValidateSourceDb($db) {
-    $courseCols = parkourSourceColumns($db, 'course');
-    $timeCols = parkourSourceColumns($db, 'time');
-
-    foreach (['courseId', 'name'] as $col) {
-        if (!in_array($col, $courseCols, true)) {
-            json_response(['success' => false, 'error' => "course 表缺少字段：$col"], 400);
-        }
-    }
-    foreach (['courseId', 'playerId', 'time', 'deaths', 'achieved'] as $col) {
-        if (!in_array($col, $timeCols, true)) {
-            json_response(['success' => false, 'error' => "time 表缺少字段：$col"], 400);
-        }
-    }
-}
-
-function parkourFetchCourses($srcDb) {
-    $stmt = $srcDb->query("SELECT courseId, name, created FROM course ORDER BY courseId ASC");
-    $courses = $stmt->fetchAll();
-
-    $result = [];
-    foreach ($courses as $course) {
-        $cid = (int) $course['courseId'];
-        $countStmt = $srcDb->prepare("SELECT COUNT(*) AS c, MIN(achieved) AS mn, MAX(achieved) AS mx FROM time WHERE courseId = ?");
-        $countStmt->execute([$cid]);
-        $agg = $countStmt->fetch();
-
-        $result[] = [
-            'courseId' => $cid,
-            'name' => (string) $course['name'],
-            'created' => (int) ($course['created'] ?? 0),
-            'recordCount' => (int) ($agg['c'] ?? 0),
-            'firstAchieved' => (int) ($agg['mn'] ?? 0),
-            'lastAchieved' => (int) ($agg['mx'] ?? 0),
-        ];
-    }
-    return $result;
 }
 
 function parkourResolvePlayer($db, $uuid) {
@@ -458,9 +384,8 @@ try {
             json_response(['success' => false, 'error' => '文件保存失败'], 500);
         }
 
-        $srcDb = parkourOpenSourceDb($tmpPath);
-        parkourValidateSourceDb($srcDb);
-        $courses = parkourFetchCourses($srcDb);
+        parkourValidateSource($tmpPath);
+        $courses = parkourReadCourses($tmpPath);
 
         $stmt = $db->prepare("INSERT INTO parkour_import_uploads (token, original_name, file_path, created_at) VALUES (?, ?, ?, ?)");
         $stmt->execute([$token, $_FILES['db']['name'], $tmpPath, parkourNow()]);
@@ -502,12 +427,9 @@ try {
             json_response(['success' => false, 'error' => '上传记录不存在或已过期'], 404);
         }
 
-        $srcDb = parkourOpenSourceDb($upload['file_path']);
-        parkourValidateSourceDb($srcDb);
+        parkourValidateSource($upload['file_path']);
 
-        $courseStmt = $srcDb->prepare("SELECT courseId, name, created FROM course WHERE courseId = ?");
-        $courseStmt->execute([$courseId]);
-        $course = $courseStmt->fetch();
+        $course = parkourReadCourse($upload['file_path'], $courseId);
         if (!$course) {
             json_response(['success' => false, 'error' => '指定 courseId 不存在'], 404);
         }
@@ -521,9 +443,7 @@ try {
             $closeAt = $ts;
         }
 
-        $timeStmt = $srcDb->prepare("SELECT timeId, playerId, time, deaths, achieved FROM time WHERE courseId = ? ORDER BY timeId ASC");
-        $timeStmt->execute([$courseId]);
-        $timeRows = $timeStmt->fetchAll();
+        $timeRows = parkourReadTimeRows($upload['file_path'], $courseId);
 
         $now = parkourNow();
         $sourceFile = (string) $upload['original_name'];
@@ -549,10 +469,7 @@ try {
             $insRec = $db->prepare("INSERT INTO parkour_records (map_id, player_uuid, time_ms, deaths, achieved_at, source_time_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)");
             $imported = 0;
             foreach ($timeRows as $tr) {
-                $achieved = (int) ($tr['achieved'] ?? 0);
-                if ($achieved <= 0) {
-                    $achieved = $now;
-                }
+                $achieved = parkourToTimestamp($tr['achieved'] ?? null);
                 $insRec->execute([
                     $mapId,
                     (string) $tr['playerId'],
