@@ -252,6 +252,55 @@ function createSiteTables($db, $driver) {
             PRIMARY KEY (id),
             KEY idx_donations_month (month)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        $db->exec("CREATE TABLE IF NOT EXISTS parkour_maps (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            source_file VARCHAR(255) NOT NULL,
+            source_course_id INT NOT NULL,
+            source_name VARCHAR(15) NOT NULL,
+            display_name VARCHAR(100) NOT NULL,
+            close_at INT NULL,
+            status VARCHAR(16) NOT NULL DEFAULT 'published',
+            created_at INT NOT NULL,
+            updated_at INT NOT NULL,
+            PRIMARY KEY (id),
+            UNIQUE KEY idx_parkour_maps_source (source_file, source_course_id),
+            KEY idx_parkour_maps_status (status)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        $db->exec("CREATE TABLE IF NOT EXISTS parkour_records (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            map_id INT UNSIGNED NOT NULL,
+            player_uuid CHAR(36) NOT NULL,
+            time_ms BIGINT NOT NULL,
+            deaths INT NOT NULL,
+            achieved_at INT NOT NULL,
+            source_time_id INT NULL,
+            created_at INT NOT NULL,
+            PRIMARY KEY (id),
+            KEY idx_parkour_records_map (map_id),
+            KEY idx_parkour_records_player (player_uuid),
+            KEY idx_parkour_records_time (time_ms),
+            FOREIGN KEY (map_id) REFERENCES parkour_maps(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        $db->exec("CREATE TABLE IF NOT EXISTS parkour_player_cache (
+            uuid CHAR(36) NOT NULL,
+            player_name VARCHAR(100) NOT NULL,
+            avatar_url VARCHAR(500) NOT NULL DEFAULT '',
+            fetched_at INT NOT NULL,
+            expires_at INT NOT NULL,
+            PRIMARY KEY (uuid)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        $db->exec("CREATE TABLE IF NOT EXISTS parkour_import_uploads (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            token CHAR(32) NOT NULL,
+            original_name VARCHAR(255) NOT NULL,
+            file_path VARCHAR(500) NOT NULL,
+            created_at INT NOT NULL,
+            PRIMARY KEY (id),
+            UNIQUE KEY idx_parkour_imports_token (token)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
         return;
 
     }
@@ -347,6 +396,52 @@ function createSiteTables($db, $driver) {
         updated_at   INTEGER NOT NULL
     )");
     $db->exec("CREATE INDEX idx_donations_month ON donations(month)");
+
+    $db->exec("CREATE TABLE parkour_maps (
+        id             INTEGER PRIMARY KEY AUTOINCREMENT,
+        source_file    TEXT NOT NULL,
+        source_course_id INTEGER NOT NULL,
+        source_name    TEXT NOT NULL,
+        display_name   TEXT NOT NULL,
+        close_at       INTEGER,
+        status         TEXT NOT NULL DEFAULT 'published',
+        created_at     INTEGER NOT NULL,
+        updated_at     INTEGER NOT NULL
+    )");
+    $db->exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_parkour_maps_source ON parkour_maps(source_file, source_course_id)");
+    $db->exec("CREATE INDEX IF NOT EXISTS idx_parkour_maps_status ON parkour_maps(status)");
+
+    $db->exec("CREATE TABLE parkour_records (
+        id             INTEGER PRIMARY KEY AUTOINCREMENT,
+        map_id         INTEGER NOT NULL,
+        player_uuid    TEXT NOT NULL,
+        time_ms        INTEGER NOT NULL,
+        deaths         INTEGER NOT NULL,
+        achieved_at    INTEGER NOT NULL,
+        source_time_id INTEGER,
+        created_at     INTEGER NOT NULL,
+        FOREIGN KEY (map_id) REFERENCES parkour_maps(id) ON DELETE CASCADE
+    )");
+    $db->exec("CREATE INDEX IF NOT EXISTS idx_parkour_records_map ON parkour_records(map_id)");
+    $db->exec("CREATE INDEX IF NOT EXISTS idx_parkour_records_player ON parkour_records(player_uuid)");
+    $db->exec("CREATE INDEX IF NOT EXISTS idx_parkour_records_time ON parkour_records(time_ms)");
+    $db->exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_parkour_records_source ON parkour_records(map_id, source_time_id)");
+
+    $db->exec("CREATE TABLE parkour_player_cache (
+        uuid        TEXT PRIMARY KEY,
+        player_name TEXT NOT NULL,
+        avatar_url  TEXT NOT NULL DEFAULT '',
+        fetched_at  INTEGER NOT NULL,
+        expires_at  INTEGER NOT NULL
+    )");
+
+    $db->exec("CREATE TABLE parkour_import_uploads (
+        id            INTEGER PRIMARY KEY AUTOINCREMENT,
+        token         TEXT NOT NULL UNIQUE,
+        original_name TEXT NOT NULL,
+        file_path     TEXT NOT NULL,
+        created_at    INTEGER NOT NULL
+    )");
 }
 
 function migrateSiteTables($db, $driver) {
@@ -743,6 +838,99 @@ function migrateSiteTables($db, $driver) {
                 throw $e;
             }
         }
+    }
+
+    // 迁移：新增跑酷排行榜相关表
+    if ($driver === 'mysql') {
+        $db->exec("CREATE TABLE IF NOT EXISTS parkour_maps (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            source_file VARCHAR(255) NOT NULL,
+            source_course_id INT NOT NULL,
+            source_name VARCHAR(15) NOT NULL,
+            display_name VARCHAR(100) NOT NULL,
+            close_at INT NULL,
+            status VARCHAR(16) NOT NULL DEFAULT 'published',
+            created_at INT NOT NULL,
+            updated_at INT NOT NULL,
+            PRIMARY KEY (id),
+            UNIQUE KEY idx_parkour_maps_source (source_file, source_course_id),
+            KEY idx_parkour_maps_status (status)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        $db->exec("CREATE TABLE IF NOT EXISTS parkour_records (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            map_id INT UNSIGNED NOT NULL,
+            player_uuid CHAR(36) NOT NULL,
+            time_ms BIGINT NOT NULL,
+            deaths INT NOT NULL,
+            achieved_at INT NOT NULL,
+            source_time_id INT NULL,
+            created_at INT NOT NULL,
+            PRIMARY KEY (id),
+            KEY idx_parkour_records_map (map_id),
+            KEY idx_parkour_records_player (player_uuid),
+            KEY idx_parkour_records_time (time_ms),
+            FOREIGN KEY (map_id) REFERENCES parkour_maps(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        $db->exec("CREATE TABLE IF NOT EXISTS parkour_player_cache (
+            uuid CHAR(36) NOT NULL,
+            player_name VARCHAR(100) NOT NULL,
+            avatar_url VARCHAR(500) NOT NULL DEFAULT '',
+            fetched_at INT NOT NULL,
+            expires_at INT NOT NULL,
+            PRIMARY KEY (uuid)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        $db->exec("CREATE TABLE IF NOT EXISTS parkour_import_uploads (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            token CHAR(32) NOT NULL,
+            original_name VARCHAR(255) NOT NULL,
+            file_path VARCHAR(500) NOT NULL,
+            created_at INT NOT NULL,
+            PRIMARY KEY (id),
+            UNIQUE KEY idx_parkour_imports_token (token)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    } else {
+        $db->exec("CREATE TABLE IF NOT EXISTS parkour_maps (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            source_file TEXT NOT NULL,
+            source_course_id INTEGER NOT NULL,
+            source_name TEXT NOT NULL,
+            display_name TEXT NOT NULL,
+            close_at INTEGER,
+            status TEXT NOT NULL DEFAULT 'published',
+            created_at INTEGER NOT NULL,
+            updated_at INTEGER NOT NULL
+        )");
+        $db->exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_parkour_maps_source ON parkour_maps(source_file, source_course_id)");
+        $db->exec("CREATE INDEX IF NOT EXISTS idx_parkour_maps_status ON parkour_maps(status)");
+        $db->exec("CREATE TABLE IF NOT EXISTS parkour_records (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            map_id INTEGER NOT NULL,
+            player_uuid TEXT NOT NULL,
+            time_ms INTEGER NOT NULL,
+            deaths INTEGER NOT NULL,
+            achieved_at INTEGER NOT NULL,
+            source_time_id INTEGER,
+            created_at INTEGER NOT NULL,
+            FOREIGN KEY (map_id) REFERENCES parkour_maps(id) ON DELETE CASCADE
+        )");
+        $db->exec("CREATE INDEX IF NOT EXISTS idx_parkour_records_map ON parkour_records(map_id)");
+        $db->exec("CREATE INDEX IF NOT EXISTS idx_parkour_records_player ON parkour_records(player_uuid)");
+        $db->exec("CREATE INDEX IF NOT EXISTS idx_parkour_records_time ON parkour_records(time_ms)");
+        $db->exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_parkour_records_source ON parkour_records(map_id, source_time_id)");
+        $db->exec("CREATE TABLE IF NOT EXISTS parkour_player_cache (
+            uuid TEXT PRIMARY KEY,
+            player_name TEXT NOT NULL,
+            avatar_url TEXT NOT NULL DEFAULT '',
+            fetched_at INTEGER NOT NULL,
+            expires_at INTEGER NOT NULL
+        )");
+        $db->exec("CREATE TABLE IF NOT EXISTS parkour_import_uploads (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            token TEXT NOT NULL UNIQUE,
+            original_name TEXT NOT NULL,
+            file_path TEXT NOT NULL,
+            created_at INTEGER NOT NULL
+        )");
     }
 
     return;

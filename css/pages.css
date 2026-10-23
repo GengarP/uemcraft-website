@@ -1636,3 +1636,82 @@
   .donor-month-head { padding:var(--space-sm) var(--space-md); }
   .donor-chips { padding:var(--space-md); }
 }
+
+/* ===== 跑酷排行榜 ===== */
+.parkour-toolbar {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.parkour-toolbar select {
+  min-width: 16rem;
+  padding: .4rem .6rem;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
+  color: var(--c-text);
+  font: inherit;
+}
+.parkour-table-wrap {
+  overflow-x: auto;
+}
+.parkour-ranking {
+  width: 100%;
+  border-collapse: collapse;
+  margin: .5rem 0 1rem;
+}
+.parkour-ranking th,
+.parkour-ranking td {
+  padding: .6rem .75rem;
+  border-bottom: 1px solid var(--c-border);
+  text-align: left;
+  white-space: nowrap;
+}
+.parkour-ranking th {
+  font-weight: 700;
+  background: var(--c-bg-section-alt);
+}
+.parkour-ranking tbody tr:hover {
+  background: var(--c-bg-section-alt);
+}
+.parkour-player-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  color: inherit;
+  text-decoration: none;
+}
+.parkour-player-link:hover {
+  color: var(--c-primary);
+}
+.parkour-avatar {
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+  border: 1px solid var(--c-border);
+}
+.parkour-avatar-lg {
+  width: 64px;
+  height: 64px;
+  image-rendering: pixelated;
+  border: 1px solid var(--c-border);
+}
+.parkour-player-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
+}
+.parkour-trend {
+  padding: 1rem;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
+}
+.parkour-trend-svg {
+  width: 100%;
+  height: auto;
+  color: var(--c-text);
+}

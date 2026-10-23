@@ -66,15 +66,15 @@ if ($isDetail) {
       }
     })();
   </script>
-  <link rel="stylesheet" href="/css/tokens.css?v=8924243">
-  <link rel="stylesheet" href="/css/base.css?v=8924243">
-  <link rel="stylesheet" href="/css/layout.css?v=8924243">
-  <link rel="stylesheet" href="/css/components.css?v=8924243">
-  <link rel="stylesheet" href="/css/pages.css?v=8924243">
+  <link rel="stylesheet" href="/css/tokens.css?v=916f01c">
+  <link rel="stylesheet" href="/css/base.css?v=916f01c">
+  <link rel="stylesheet" href="/css/layout.css?v=916f01c">
+  <link rel="stylesheet" href="/css/components.css?v=916f01c">
+  <link rel="stylesheet" href="/css/pages.css?v=916f01c">
 </head>
 <body class="docs-detail">
 
-<script src="/js/components-header.js?v=8924243"></script>
+<script src="/js/components-header.js?v=916f01c"></script>
 <a href="#main" class="skip-link">跳转到主内容</a>
 
 <!-- ====== Main ====== -->
@@ -129,25 +129,25 @@ if ($isDetail) {
 
 </main>
 
-<script src="/js/components-footer.js?v=8924243"></script>
+<script src="/js/components-footer.js?v=916f01c"></script>
 
 <!-- Markdown 引擎 -->
-<script defer src="/js/marked.umd.js?v=8924243"></script>
-<script defer src="/js/utils.js?v=8924243"></script>
-<script defer src="/js/cjk-spacing.js?v=8924243"></script>
-<script defer src="/js/code-highlight.js?v=8924243"></script>
+<script defer src="/js/marked.umd.js?v=916f01c"></script>
+<script defer src="/js/utils.js?v=916f01c"></script>
+<script defer src="/js/cjk-spacing.js?v=916f01c"></script>
+<script defer src="/js/code-highlight.js?v=916f01c"></script>
 
 <!-- 全局交互脚本 -->
-<script defer src="/js/nav.js?v=8924243"></script>
-<script defer src="/js/page-transition.js?v=8924243"></script>
-<script defer src="/js/theme.js?v=8924243"></script>
-<script defer src="/js/reveal.js?v=8924243"></script>
+<script defer src="/js/nav.js?v=916f01c"></script>
+<script defer src="/js/page-transition.js?v=916f01c"></script>
+<script defer src="/js/theme.js?v=916f01c"></script>
+<script defer src="/js/reveal.js?v=916f01c"></script>
 
 <!-- 图片查看器（与作品页共用） -->
-<script defer src="/js/lightbox.js?v=8924243"></script>
+<script defer src="/js/lightbox.js?v=916f01c"></script>
 
 <!-- 文档页面逻辑 -->
-<script defer src="/js/docs.js?v=8924243"></script>
+<script defer src="/js/docs.js?v=916f01c"></script>
 
 <?php if ($isDetail): ?>
 <script>

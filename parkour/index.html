@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="description" content="UEMCraft 跑酷排行榜——查看不同地图的跑酷成绩排名。">
+  <meta name="theme-color" content="#213d87">
+  <title>跑酷排行 — UEMCraft</title>
+  <link rel="icon" href="../favicon.ico" type="images/x-icon">
+  <script>
+    (function(){
+      var t = localStorage.getItem('uemcraft-theme');
+      if(!t) t = window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+      document.documentElement.style.colorScheme = t;
+      var tex = localStorage.getItem('uemcraft-texture');
+      if(tex && tex !== 'none'){
+        document.documentElement.setAttribute('data-texture', tex);
+        var s = document.createElement('style');
+        s.id = 'texture-style';
+        s.textContent = 'body::after{background-image:url(/assets/img/background_textures/'+tex+'.png);}';
+        document.head.appendChild(s);
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="/css/tokens.css?v=916f01c">
+  <link rel="stylesheet" href="/css/base.css?v=916f01c">
+  <link rel="stylesheet" href="/css/layout.css?v=916f01c">
+  <link rel="stylesheet" href="/css/components.css?v=916f01c">
+  <link rel="stylesheet" href="/css/pages.css?v=916f01c">
+</head>
+<body>
+<script src="/js/components-header.js?v=916f01c"></script>
+
+<a href="#main" class="skip-link">跳转到主内容</a>
+
+<main id="main">
+<section class="page-hero">
+  <div class="container">
+    <h1>跑酷排行</h1>
+    <p class="hero-sub">选择地图，查看最快成绩与玩家排名</p>
+    <nav class="breadcrumb" aria-label="面包屑">
+      <a href="/index.html">首页</a> <span>/</span> <span>跑酷排行</span>
+    </nav>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="container">
+    <div class="parkour-toolbar">
+      <label for="mapSelect">选择地图</label>
+      <select id="mapSelect"></select>
+      <span id="mapMeta" class="text-muted"></span>
+    </div>
+
+    <div id="rankingStatus" class="wall-loading">正在加载地图…</div>
+    <div class="parkour-table-wrap">
+      <table class="parkour-ranking">
+        <thead>
+          <tr>
+            <th>排名</th>
+            <th>玩家</th>
+            <th>成绩</th>
+            <th>死亡</th>
+            <th>达成时间</th>
+          </tr>
+        </thead>
+        <tbody id="rankingBody"></tbody>
+      </table>
+    </div>
+
+    <div id="pagination" class="wall-pagination" style="display:none;">
+      <button class="btn btn-ghost btn-sm" id="prevPage" disabled>‹ 上一页</button>
+      <span id="pageInfo" class="wall-page-info"></span>
+      <button class="btn btn-ghost btn-sm" id="nextPage" disabled>下一页 ›</button>
+    </div>
+  </div>
+</section>
+</main>
+
+<script src="/js/components-footer.js?v=916f01c"></script>
+<script defer src="/js/utils.js?v=916f01c"></script>
+<script defer src="/js/cjk-spacing.js?v=916f01c"></script>
+<script defer src="/js/nav.js?v=916f01c"></script>
+<script defer src="/js/page-transition.js?v=916f01c"></script>
+<script defer src="/js/theme.js?v=916f01c"></script>
+<script defer src="/js/parkour.js?v=916f01c"></script>
+</body>
+</html>
+PY

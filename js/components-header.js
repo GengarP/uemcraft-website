@@ -11,11 +11,16 @@
     { label: '关于我们',   path: '/about.html',    match: ['/about.html'], isDropdown: true,
       children: [
         { label: '加入我们', path: '/join.html' },
-        { label: '作品展示', path: '/gallery/' },
         { label: '皮肤站',   path: 'https://skin.uemcraft.cn/', external: true }
       ]
     },
     { label: '活动中心',   path: '/events.html',   match: ['/events.html'] },
+    { label: '风采',       path: '',               match: [], isDropdown: true, noLink: true,
+      children: [
+        { label: '作品展示', path: '/gallery/' },
+        { label: '跑酷排行', path: '/parkour/' }
+      ]
+    },
     { label: '资料',       path: '',               match: [], isDropdown: true, noLink: true,
       children: [
         { label: '资讯动态',   path: '/news/', match: ['/news'] },

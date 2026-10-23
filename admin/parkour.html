@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#213d87">
+  <title>跑酷排行管理 — UEMCraft</title>
+  <link rel="icon" href="../favicon.ico" type="images/x-icon">
+  <script>
+    (function(){
+      var t = localStorage.getItem('uemcraft-theme');
+      if(!t) t = window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+      document.documentElement.style.colorScheme = t;
+      var tex = localStorage.getItem('uemcraft-texture');
+      if(tex && tex !== 'none'){
+        document.documentElement.setAttribute('data-texture', tex);
+        var s = document.createElement('style');
+        s.id = 'texture-style';
+        s.textContent = 'body::after{background-image:url(/assets/img/background_textures/'+tex+'.png);}';
+        document.head.appendChild(s);
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="/css/tokens.css?v=916f01c">
+  <link rel="stylesheet" href="/css/base.css?v=916f01c">
+  <link rel="stylesheet" href="/css/layout.css?v=916f01c">
+  <link rel="stylesheet" href="/css/components.css?v=916f01c">
+  <link rel="stylesheet" href="/css/pages.css?v=916f01c">
+  <link rel="stylesheet" href="css/admin.css?v=916f01c">
+</head>
+<body>
+<script src="/js/components-admin.js?v=916f01c"></script>
+
+<a href="#main" class="skip-link">跳转到主内容</a>
+
+<main id="main">
+<div class="admin-page-header">
+  <h1>跑酷排行管理</h1>
+  <p class="hero-sub">导入 parkour.db，选择地图并发布排行榜</p>
+  <nav class="breadcrumb" aria-label="面包屑">
+    <a href="/index.html">首页</a> <span>/</span> <a href="index.html">管理后台</a> <span>/</span> <span>跑酷排行</span>
+  </nav>
+</div>
+
+<section class="section">
+  <div class="container">
+
+    <div class="admin-card" style="margin-bottom:1.5rem;">
+      <h2>1. 上传数据库文件</h2>
+      <p class="text-muted">支持 SQLite 的 <code>parkour.db</code>。上传后将解析其中的 <code>course</code> 列表。</p>
+      <form id="uploadForm">
+        <input type="file" id="dbFile" name="db" accept=".db,.sqlite,.sqlite3" required>
+        <button type="submit" class="btn btn-primary btn-sm" style="margin-left:.5rem;">上传并解析</button>
+      </form>
+      <div id="uploadMessage" class="wall-form-message" style="margin-top:.75rem;"></div>
+    </div>
+
+    <div class="admin-card" id="importCard" style="display:none; margin-bottom:1.5rem;">
+      <h2>2. 选择地图并导入</h2>
+      <div class="admin-form-grid">
+        <label>来源 Course
+          <select id="courseSelect"></select>
+        </label>
+        <label>对外展示名称
+          <input type="text" id="displayName" maxlength="100" placeholder="例如：跑酷地图 A">
+        </label>
+        <label>封榜日期（可选）
+          <input type="date" id="closeDate">
+        </label>
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" id="importBtn" style="margin-top:.75rem;">导入排行榜</button>
+      <div id="importMessage" class="wall-form-message" style="margin-top:.75rem;"></div>
+    </div>
+
+    <div class="admin-card">
+      <h2>已导入排行榜</h2>
+      <div id="mapsList" class="admin-list">
+        <div class="wall-loading">正在加载…</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+</main>
+
+<script src="/js/components-footer.js?v=916f01c"></script>
+<script defer src="/js/utils.js?v=916f01c"></script>
+<script defer src="/js/cjk-spacing.js?v=916f01c"></script>
+<script defer src="/js/nav.js?v=916f01c"></script>
+<script defer src="/js/page-transition.js?v=916f01c"></script>
+<script defer src="/js/theme.js?v=916f01c"></script>
+<script defer src="/js/admin-auth.js?v=916f01c"></script>
+<script defer src="/js/admin-parkour.js?v=916f01c"></script>
+</body>
+</html>
+PY
