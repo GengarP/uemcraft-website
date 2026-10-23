@@ -1640,45 +1640,71 @@
 /* ===== 跑酷排行榜 ===== */
 .parkour-toolbar {
   display: flex;
-  align-items: center;
+  align-items: end;
   gap: .75rem;
   flex-wrap: wrap;
-  margin-bottom: 1rem;
-}
-.parkour-toolbar select {
-  min-width: 16rem;
-  padding: .4rem .6rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem;
   border: 1px solid var(--c-border);
   background: var(--c-surface);
+}
+.parkour-toolbar label {
+  font-weight: 700;
+  color: var(--c-text);
+}
+.parkour-toolbar select {
+  min-width: 18rem;
+  max-width: 100%;
+  padding: .5rem .75rem;
+  border: 1px solid var(--c-border);
+  background: var(--c-bg);
   color: var(--c-text);
   font: inherit;
 }
+.parkour-meta {
+  margin-left: auto;
+  color: var(--c-text-muted, var(--c-text));
+  opacity: .75;
+}
 .parkour-table-wrap {
   overflow-x: auto;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
 }
 .parkour-ranking {
   width: 100%;
   border-collapse: collapse;
-  margin: .5rem 0 1rem;
+  margin: 0;
 }
 .parkour-ranking th,
 .parkour-ranking td {
-  padding: .6rem .75rem;
+  padding: .7rem .85rem;
   border-bottom: 1px solid var(--c-border);
   text-align: left;
   white-space: nowrap;
+  vertical-align: middle;
 }
-.parkour-ranking th {
+.parkour-ranking thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   font-weight: 700;
   background: var(--c-bg-section-alt);
+}
+.parkour-ranking tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--c-bg-section-alt) 45%, transparent);
 }
 .parkour-ranking tbody tr:hover {
   background: var(--c-bg-section-alt);
 }
+.parkour-ranking .rank-cell {
+  font-weight: 700;
+  color: var(--c-primary);
+}
 .parkour-player-link {
   display: inline-flex;
   align-items: center;
-  gap: .5rem;
+  gap: .6rem;
   color: inherit;
   text-decoration: none;
 }
@@ -1686,24 +1712,49 @@
   color: var(--c-primary);
 }
 .parkour-avatar {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   image-rendering: pixelated;
   border: 1px solid var(--c-border);
+  background: var(--c-bg);
 }
 .parkour-avatar-lg {
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
   image-rendering: pixelated;
   border: 1px solid var(--c-border);
+  background: var(--c-bg);
 }
 .parkour-player-card {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: auto 1fr;
   gap: 1rem;
-  padding: 1rem;
+  align-items: center;
+  padding: 1.25rem;
   border: 1px solid var(--c-border);
   background: var(--c-surface);
+}
+.parkour-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: .75rem;
+  margin-top: 1rem;
+}
+.parkour-stat {
+  padding: .85rem 1rem;
+  border: 1px solid var(--c-border);
+  background: var(--c-bg-section-alt);
+}
+.parkour-stat .label {
+  display: block;
+  font-size: .85rem;
+  opacity: .7;
+  margin-bottom: .25rem;
+}
+.parkour-stat .value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--c-primary);
 }
 .parkour-trend {
   padding: 1rem;
@@ -1714,4 +1765,7 @@
   width: 100%;
   height: auto;
   color: var(--c-text);
+}
+.parkour-section-title {
+  margin: 1.5rem 0 .75rem;
 }

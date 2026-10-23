@@ -84,7 +84,7 @@
         var html = '';
         json.data.forEach(function (r) {
           html += '<tr>';
-          html += '<td>' + r.rank + '</td>';
+          html += '<td class="rank-cell">' + r.rank + '</td>';
           html += '<td><a class="parkour-player-link" href="player.html?uuid=' + encodeURIComponent(r.player_uuid) + '">';
           html += '<img class="parkour-avatar" src="' + escapeHtml(r.avatar_url) + '" alt="">';
           html += '<span>' + escapeHtml(r.player_name) + '</span>';

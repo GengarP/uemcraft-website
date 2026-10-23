@@ -97,10 +97,18 @@
         document.getElementById('playerAvatar').src = p.avatar_url;
         document.getElementById('playerAvatar').alt = p.player_name;
         document.getElementById('playerName').textContent = p.player_name;
-        document.getElementById('playerSummary').textContent =
-          '参与地图：' + s.maps_played + '，最好名次：' + (s.best_rank ? '第 ' + s.best_rank + ' 名' : '-') +
-          '，冠军：' + s.top1_count + ' 次，前三：' + s.top3_count + ' 次，前十：' + s.top10_count + ' 次' +
-          (s.best_map ? '，表现最好的地图：' + s.best_map.display_name : '');
+        var summary = document.getElementById('playerSummary');
+        var stats = [
+          ['参与地图', s.maps_played],
+          ['最好名次', s.best_rank ? '第 ' + s.best_rank + ' 名' : '-'],
+          ['冠军次数', s.top1_count + ' 次'],
+          ['前三次数', s.top3_count + ' 次'],
+          ['前十次数', s.top10_count + ' 次'],
+          ['表现最好的地图', s.best_map ? s.best_map.display_name : '-']
+        ];
+        summary.innerHTML = stats.map(function (item) {
+          return '<div class="parkour-stat"><span class="label">' + escapeHtml(item[0]) + '</span><span class="value">' + escapeHtml(String(item[1])) + '</span></div>';
+        }).join('');
 
         var mapBody = document.getElementById('mapBody');
         var mapHtml = '';
