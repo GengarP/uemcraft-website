@@ -2245,6 +2245,21 @@ a.contact-card:hover .cc-title {
 .theme-option.is-active .icon-sun,
 .theme-option.is-active .icon-moon { color:#fff; }
 
+/* 万圣夜主题按钮图标:像素南瓜(3px 网格,恒定加载,任何主题下可见) */
+.theme-option .hw-icon-pumpkin {
+  display:block;
+  width:3px; height:3px;
+  background:#5E8C3A;
+  box-shadow:
+    -3px 3px 0 0 #E88F1F, 0px 3px 0 0 #E88F1F, 3px 3px 0 0 #E88F1F, 6px 3px 0 0 #E88F1F,
+    -6px 6px 0 0 #E88F1F, -3px 6px 0 0 #7A3D12, 0px 6px 0 0 #E88F1F, 3px 6px 0 0 #E88F1F, 6px 6px 0 0 #7A3D12, 9px 6px 0 0 #E88F1F,
+    -6px 9px 0 0 #E88F1F, -3px 9px 0 0 #E88F1F, 0px 9px 0 0 #7A3D12, 3px 9px 0 0 #7A3D12, 6px 9px 0 0 #E88F1F, 9px 9px 0 0 #E88F1F,
+    -6px 12px 0 0 #E88F1F, -3px 12px 0 0 #7A3D12, 0px 12px 0 0 #E88F1F, 3px 12px 0 0 #E88F1F, 6px 12px 0 0 #7A3D12, 9px 12px 0 0 #E88F1F,
+    -3px 15px 0 0 #E88F1F, 0px 15px 0 0 #E88F1F, 3px 15px 0 0 #E88F1F, 6px 15px 0 0 #E88F1F;
+}
+/* 激活态整体转白,与太阳/月亮图标一致 */
+.theme-option.is-active .hw-icon-pumpkin { filter:brightness(0) invert(1); }
+
 /* Texture grid */
 .texture-grid {
   display:grid;

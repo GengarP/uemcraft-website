@@ -16,15 +16,49 @@ document.addEventListener('DOMContentLoaded', function () {
 
   /* ---- 主题 ---- */
   function getTheme() {
+    /* URL ?theme= 预览覆盖(本标签页内有效) */
+    try {
+      var override = sessionStorage.getItem('uemcraft-theme-override');
+      if (override) return override;
+    } catch (e) {}
     var stored = localStorage.getItem(THEME_KEY);
     if (stored) return stored;
     return window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
   }
 
+  /* 万圣夜覆盖层:进入主题时注入,退出时移除(纯装饰,aria-hidden) */
+  function syncHalloweenOverlay(active) {
+    var existing = document.getElementById('halloween-overlay');
+    if (active && !existing) {
+      var ov = document.createElement('div');
+      ov.id = 'halloween-overlay';
+      ov.className = 'halloween-overlay';
+      ov.setAttribute('aria-hidden', 'true');
+      ov.innerHTML =
+        '<div class="hw-stars-a"></div>' +
+        '<div class="hw-stars-b"></div>' +
+        '<div class="hw-moon"><i class="hw-art"></i></div>' +
+        '<div class="hw-bat hw-bat-1"></div>' +
+        '<div class="hw-bat hw-bat-2"></div>' +
+        '<div class="hw-fog hw-fog-back"></div>' +
+        '<div class="hw-fog hw-fog-front"></div>' +
+        '<div class="hw-pumpkin"><i class="hw-art"></i></div>' +
+        '<div class="hw-web"></div>';
+      document.body.appendChild(ov);
+    } else if (!active && existing) {
+      existing.remove();
+    }
+  }
+
   function setTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
-    document.documentElement.style.colorScheme = t;
+    /* color-scheme 只接受 light/dark,万圣夜按深色处理 */
+    document.documentElement.style.colorScheme = t === 'halloween' ? 'dark' : t;
+    /* 浏览器地址栏配色跟随(仅万圣夜改写,亮/暗保持原行为) */
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta && t === 'halloween') meta.setAttribute('content', '#14172E');
     localStorage.setItem(THEME_KEY, t);
+    syncHalloweenOverlay(t === 'halloween');
     document.querySelectorAll('.theme-option').forEach(function (btn) {
       btn.classList.toggle('is-active', btn.dataset.theme === t);
     });
@@ -93,9 +127,18 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // 主题按钮
+  // 主题按钮(万圣夜期间手动选回亮/暗会写入 opted-out 标记,
+  // 本季不再被日期窗口强制拉回;选回万圣夜则清除标记)
   document.querySelectorAll('.theme-option').forEach(function (btn) {
-    btn.addEventListener('click', function () { setTheme(btn.dataset.theme); });
+    btn.addEventListener('click', function () {
+      if (btn.dataset.theme === 'halloween') {
+        localStorage.removeItem('uemcraft-halloween-off');
+      } else if (document.documentElement.getAttribute('data-theme') === 'halloween') {
+        localStorage.setItem('uemcraft-halloween-off', '1');
+      }
+      try { sessionStorage.removeItem('uemcraft-theme-override'); } catch (e) {}
+      setTheme(btn.dataset.theme);
+    });
   });
 
   // 纹理按钮
@@ -105,7 +148,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // 跟随系统主题变化
   window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change', function (e) {
-    if (!localStorage.getItem(THEME_KEY)) {
+    if (!localStorage.getItem(THEME_KEY) &&
+        document.documentElement.getAttribute('data-theme') !== 'halloween') {
       setTheme(e.matches ? 'dark' : 'light');
     }
   });

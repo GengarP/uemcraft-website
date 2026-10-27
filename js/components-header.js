@@ -167,6 +167,7 @@
     html += '<div class="theme-options">';
     html += '<button class="theme-option" data-theme="light" title="亮色模式"><span class="iconfont-theme icon-sun" aria-hidden="true"></span></button>';
     html += '<button class="theme-option" data-theme="dark" title="深色模式"><span class="iconfont-theme icon-moon" aria-hidden="true"></span></button>';
+    html += '<button class="theme-option" data-theme="halloween" title="万圣夜主题"><span class="hw-icon-pumpkin" aria-hidden="true"></span></button>';
     html += '</div></div>';
     html += '<div class="settings-group"><span class="settings-label">背景纹理</span>';
     html += '<div class="texture-grid">' + textureBtns + '</div>';

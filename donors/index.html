@@ -9,10 +9,35 @@
   <link rel="icon" href="../favicon.ico" type="images/x-icon">
   <script>
     (function(){
+      /* 万圣节主题窗口(顶部配置):enabled=false 一键关闭;窗口内默认启用,
+         在设置面板手动选回亮/暗会写入 uemcraft-halloween-off 本季豁免。
+         预览:URL 加 ?theme=halloween / ?theme=light / ?theme=dark */
+      var HW = { enabled:true, start:'10-15', end:'11-01' };
+      function hwNow(){
+        if(!HW.enabled) return false;
+        var d = new Date();
+        var md = ('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+        return md >= HW.start && md <= HW.end;
+      }
       var t = localStorage.getItem('uemcraft-theme');
       if(!t) t = window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+      var q = new URLSearchParams(location.search).get('theme');
+      if(q === 'halloween' || q === 'light' || q === 'dark'){
+        t = q;
+        /* 本标签页内预览生效:theme.js 初始化优先读它 */
+        try{ sessionStorage.setItem('uemcraft-theme-override', q); }catch(e){}
+      } else {
+        try{ sessionStorage.removeItem('uemcraft-theme-override'); }catch(e){}
+        if(hwNow() && t !== 'halloween' && !localStorage.getItem('uemcraft-halloween-off')){
+          t = 'halloween';
+        }
+      }
       document.documentElement.setAttribute('data-theme', t);
-      document.documentElement.style.colorScheme = t;
+      document.documentElement.style.colorScheme = t === 'halloween' ? 'dark' : t;
+      if(t === 'halloween'){
+        var mc = document.querySelector('meta[name="theme-color"]');
+        if(mc) mc.setAttribute('content', '#14172E');
+      }
       var tex = localStorage.getItem('uemcraft-texture');
       if(tex && tex !== 'none'){
         document.documentElement.setAttribute('data-texture', tex);
@@ -23,14 +48,15 @@
       }
     })();
   </script>
-  <link rel="stylesheet" href="/css/tokens.css?v=59dfbb2">
-  <link rel="stylesheet" href="/css/base.css?v=59dfbb2">
-  <link rel="stylesheet" href="/css/layout.css?v=59dfbb2">
-  <link rel="stylesheet" href="/css/components.css?v=59dfbb2">
-  <link rel="stylesheet" href="/css/pages.css?v=59dfbb2">
+  <link rel="stylesheet" href="/css/tokens.css?v=e88f1fa">
+  <link rel="stylesheet" href="/css/base.css?v=e88f1fa">
+  <link rel="stylesheet" href="/css/layout.css?v=e88f1fa">
+  <link rel="stylesheet" href="/css/components.css?v=e88f1fa">
+  <link rel="stylesheet" href="/css/pages.css?v=e88f1fa">
+  <link rel="stylesheet" href="/css/halloween.css?v=e88f1fa">
 </head>
 <body>
-<script src="/js/components-header.js?v=59dfbb2"></script>
+<script src="/js/components-header.js?v=e88f1fa"></script>
 
 <a href="#main" class="skip-link">跳转到主内容</a>
 
@@ -85,13 +111,13 @@
 
 </main>
 
-<script src="/js/components-footer.js?v=59dfbb2"></script>
-<script defer src="/js/utils.js?v=59dfbb2"></script>
-<script defer src="/js/cjk-spacing.js?v=59dfbb2"></script>
-<script defer src="/js/nav.js?v=59dfbb2"></script>
-<script defer src="/js/page-transition.js?v=59dfbb2"></script>
-<script defer src="/js/theme.js?v=59dfbb2"></script>
-<script defer src="/js/reveal.js?v=59dfbb2"></script>
-<script defer src="/js/donors.js?v=59dfbb2"></script>
+<script src="/js/components-footer.js?v=e88f1fa"></script>
+<script defer src="/js/utils.js?v=e88f1fa"></script>
+<script defer src="/js/cjk-spacing.js?v=e88f1fa"></script>
+<script defer src="/js/nav.js?v=e88f1fa"></script>
+<script defer src="/js/page-transition.js?v=e88f1fa"></script>
+<script defer src="/js/theme.js?v=e88f1fa"></script>
+<script defer src="/js/reveal.js?v=e88f1fa"></script>
+<script defer src="/js/donors.js?v=e88f1fa"></script>
 </body>
 </html>

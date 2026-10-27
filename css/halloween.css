@@ -1,0 +1,628 @@
+/* ============================================================
+   halloween.css — 万圣节主题皮肤 [data-theme="halloween"]
+   应急管理大学 Minecraft 同好会 UEMCraft 官方网站
+   ------------------------------------------------------------
+   纯皮肤层:不改动任何布局属性(width/height/margin/padding/
+   border-width/display/position/font-* 等一律保持原值),
+   仅调 color / background / border-color / box-shadow /
+   filter / outline。装饰全部挂在 body 末尾由 theme.js 注入的
+   .halloween-overlay(fixed、aria-hidden、pointer-events:none)。
+   移除 <html> 的 data-theme="halloween" 即完整还原。
+   ============================================================ */
+
+/* ============================================================
+   第 1 层|变量 —— 原色板落 --halloween-*,组件令牌映射到 --c-*
+   ============================================================ */
+[data-theme="halloween"] {
+  /* 原色板 */
+  --halloween-pumpkin:      #E88F1F;  /* 南瓜方块 */
+  --halloween-pumpkin-dark: #C1700B;  /* 南瓜暗面 */
+  --halloween-pumpkin-glow: #FFCE6A;  /* 南瓜灯发光 */
+  --halloween-night:        #14172E;  /* 夜空 */
+  --halloween-deep:         #0C0E1F;  /* 深空 */
+  --halloween-moonlight:    #F2F2DC;  /* 月光 */
+  --halloween-cobble:       #7E7E7E;  /* 圆石 */
+  --halloween-deepslate:    #38393D;  /* 深板岩 */
+  --halloween-mossy:        #6E7D57;  /* 苔石 */
+  --halloween-nether:       #7A2929;  /* 下界岩 */
+  --halloween-purpur:       #8B6BAB;  /* 紫珀 */
+  --halloween-witch:        #84CC16;  /* 女巫绿(点缀) */
+  --halloween-fog:          #EDEDE4;  /* 前景雾白 */
+
+  /* 派生中间档(夜空与紫珀之间的过渡纯色,取 4 的倍数明度阶梯) */
+  --halloween-night-2:      #181C33;
+  --halloween-night-3:      #101325;
+  --halloween-surface:      #1C2040;
+  --halloween-surface-2:    #232850;
+  --halloween-border:       #3C4066;
+  --halloween-muted:        #A2A7C3;
+  --halloween-enchanted:    #231A45;  /* 附魔台紫夜(hero 色带) */
+  --halloween-banner:       #2A1E45;  /* CTA 横幅深紫 */
+  --halloween-danger:       #E86A6A;  /* 报错红(夜空上 ≥4.5:1) */
+
+  /* 组件令牌映射(未列出的令牌继承 :root,主要是字体/间距/布局) */
+  --c-bg:            var(--halloween-night);
+  --c-bg-2:          var(--halloween-night-2);
+  --c-bg-section-alt:var(--halloween-night-3);
+  --c-surface:       var(--halloween-surface);
+  --c-surface-2:     var(--halloween-surface-2);
+  --c-border:        var(--halloween-border);
+
+  --c-primary:      var(--halloween-pumpkin);
+  --c-primary-hi:   var(--halloween-pumpkin-glow);
+  --c-primary-dark: var(--halloween-pumpkin-dark);
+  --c-accent-1:     var(--halloween-witch);
+  --c-accent-4:     var(--halloween-purpur);
+
+  --c-text:       var(--halloween-fog);
+  --c-text-muted: var(--halloween-muted);
+  --c-heading:    var(--halloween-moonlight);
+
+  --c-gold: var(--halloween-pumpkin-glow);
+  --c-red:  var(--halloween-danger);
+  --c-ok:   var(--halloween-witch);
+
+  /* 硬阴影:几何与原版完全一致,仅换紫黑夜色 */
+  --shadow-hard:    4px 4px 0 rgba(4,3,12,.55);
+  --shadow-hard-sm: 2px 2px 0 rgba(4,3,12,.45);
+  --shadow-hover:   6px 6px 0 rgba(4,3,12,.60);
+  --shadow-card:    0 2px 16px rgba(4,3,12,.35);
+  --shadow-nav:     0 2px 20px rgba(4,3,12,.45);
+
+  --pixel-grid: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(255,255,255,.015) 3px,
+      rgba(255,255,255,.015) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 3px,
+      rgba(255,255,255,.015) 3px,
+      rgba(255,255,255,.015) 4px
+    );
+}
+
+/* ============================================================
+   第 2 层|组件配色(只动 color / background / border-color /
+   box-shadow / filter,不动任何盒模型属性)
+   ============================================================ */
+
+/* ---- 加载幕布 / 页面过渡幕布:深空色 ---- */
+[data-theme="halloween"] .loader-curtain { background:var(--halloween-deep); }
+[data-theme="halloween"] .pt-curtain     { background:var(--halloween-deep); }
+[data-theme="halloween"] .loader-progress-bar { background:var(--halloween-pumpkin-glow); }
+/* 顶部进度条:双色块硬拼接(无平滑渐变) */
+[data-theme="halloween"] .nprogress-bar-inner {
+  background:linear-gradient(90deg,var(--halloween-pumpkin-glow) 0 50%,var(--halloween-pumpkin) 50% 100%);
+  box-shadow:0 0 8px rgba(255,206,106,.4);
+}
+
+/* ---- 原版白字落在南瓜/女巫绿底上的对比度修正(≥4.5:1) ----
+   南瓜橙 #E88F1F 上深灰 #1C1F2B ≈ 5.4:1;南瓜灯黄 #FFCE6A 上 ≈ 9.3:1 */
+[data-theme="halloween"] .btn-primary,
+[data-theme="halloween"] .btn-outline:hover,
+[data-theme="halloween"] .badge,
+[data-theme="halloween"] .server-card-copy:hover,
+[data-theme="halloween"] .server-card-copy.is-copied,
+[data-theme="halloween"] a.footer-badge:hover,
+[data-theme="halloween"] a.footer-badge:focus-visible,
+[data-theme="halloween"] .back-to-top:hover {
+  color:#1C1F2B;
+}
+[data-theme="halloween"] .pinned-badge { color:var(--halloween-night); }
+
+/* ---- CTA 横幅:深紫夜幕 + 南瓜灯标题 ---- */
+[data-theme="halloween"] .highlight-banner {
+  background:var(--halloween-banner);
+}
+[data-theme="halloween"] .highlight-banner h2 { color:var(--halloween-pumpkin-glow); }
+[data-theme="halloween"] .highlight-banner p  { color:var(--halloween-fog); }
+
+/* ---- 首页 Hero:夜空色带(硬拼接,无平滑渐变)+ 照片染夜 ---- */
+[data-theme="halloween"] .hero-index {
+  background:linear-gradient(135deg,
+    var(--halloween-night) 0% 34%,
+    var(--halloween-enchanted) 34% 67%,
+    var(--halloween-deep) 67% 100%);
+}
+[data-theme="halloween"] .hero-slide img {
+  filter:sepia(.85) hue-rotate(185deg) saturate(.6) brightness(.5) contrast(1.05);
+}
+/* 文字面板遮罩:夜紫 + 南瓜灯描边 */
+[data-theme="halloween"] .hero-index-content::before {
+  background:
+    repeating-conic-gradient(rgba(255,255,255,.03) 0% 25%, transparent 0% 50%) 0 0 / 4px 4px,
+    rgba(21,15,42,.62);
+  border-color:rgba(255,206,106,.22);
+}
+[data-theme="halloween"] .hero-index-content:hover::before {
+  background:
+    repeating-conic-gradient(rgba(255,255,255,.03) 0% 25%, transparent 0% 50%) 0 0 / 4px 4px,
+    rgba(21,15,42,.70);
+  border-color:rgba(255,206,106,.38);
+}
+@media (max-width:768px) {
+  [data-theme="halloween"] .hero-index-content::before {
+    background:rgba(21,15,42,.68);
+  }
+}
+
+/* ---- 设置齿轮图标反色(与深色模式一致) ---- */
+[data-theme="halloween"] .settings-toggle .settings-icon {
+  --settings-icon-filter: invert(1);
+}
+
+/* ---- 服务器 MOTD 的 MC 色码:沿用深色模式的夜间可读版 ---- */
+[data-theme="halloween"] .server-card-motd .mc-color-0 { color:#aaa; }
+[data-theme="halloween"] .server-card-motd .mc-color-1 { color:#55f; }
+[data-theme="halloween"] .server-card-motd .mc-color-2 { color:#5f5; }
+[data-theme="halloween"] .server-card-motd .mc-color-3 { color:#5ff; }
+[data-theme="halloween"] .server-card-motd .mc-color-4 { color:#f55; }
+[data-theme="halloween"] .server-card-motd .mc-color-8 { color:#888; }
+[data-theme="halloween"] .server-card-motd .mc-color-9 { color:#77f; }
+[data-theme="halloween"] .server-card-motd .mc-color-f { color:#fff; }
+
+/* ---- 选中高亮:南瓜底夜空字 ---- */
+[data-theme="halloween"] ::selection {
+  color:var(--halloween-night);
+}
+
+/* ---- 保险:主题不在万圣夜时覆盖层一律不显示 ---- */
+[data-theme="light"] .halloween-overlay,
+[data-theme="dark"] .halloween-overlay { display:none; }
+
+/* ============================================================
+   第 3 层|装饰层 —— 覆盖层及其子元素全部 absolute/fixed,
+   pointer-events:none,不占布局流、不产生滚动条(overflow 裁切)
+   ============================================================ */
+.halloween-overlay {
+  position:fixed;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+  z-index:890; /* 低于 .site-header/.settings-panel(1000)、
+                  .mobile-nav(1002)、.back-to-top(900)、加载器(99999) */
+}
+.halloween-overlay i,
+.halloween-overlay div {
+  display:block;
+  position:absolute;
+  pointer-events:none;
+}
+
+/* ---- 像素月亮(56×56,4px 网格) ---- */
+.hw-moon {
+  top:104px;
+  right:72px;
+  width:56px;
+  height:56px;
+}
+.hw-moon .hw-art {
+  left:16px; top:0;
+  width:4px; height:4px;
+  background:#F2F2DC;
+  box-shadow:
+    4px 0px 0 0 #F2F2DC,
+    8px 0px 0 0 #F2F2DC,
+    12px 0px 0 0 #F2F2DC,
+    16px 0px 0 0 #F2F2DC,
+    20px 0px 0 0 #F2F2DC,
+    -8px 4px 0 0 #F2F2DC,
+    -4px 4px 0 0 #F2F2DC,
+    0px 4px 0 0 #F2F2DC,
+    4px 4px 0 0 #F2F2DC,
+    8px 4px 0 0 #F2F2DC,
+    12px 4px 0 0 #F2F2DC,
+    16px 4px 0 0 #F2F2DC,
+    20px 4px 0 0 #F2F2DC,
+    24px 4px 0 0 #F2F2DC,
+    28px 4px 0 0 #F2F2DC,
+    -12px 8px 0 0 #F2F2DC,
+    -8px 8px 0 0 #F2F2DC,
+    -4px 8px 0 0 #F2F2DC,
+    0px 8px 0 0 #D6D6B8,
+    4px 8px 0 0 #F2F2DC,
+    8px 8px 0 0 #F2F2DC,
+    12px 8px 0 0 #F2F2DC,
+    16px 8px 0 0 #F2F2DC,
+    20px 8px 0 0 #F2F2DC,
+    24px 8px 0 0 #F2F2DC,
+    28px 8px 0 0 #F2F2DC,
+    32px 8px 0 0 #F2F2DC,
+    -12px 12px 0 0 #F2F2DC,
+    -8px 12px 0 0 #F2F2DC,
+    -4px 12px 0 0 #D6D6B8,
+    0px 12px 0 0 #D6D6B8,
+    4px 12px 0 0 #D6D6B8,
+    8px 12px 0 0 #F2F2DC,
+    12px 12px 0 0 #F2F2DC,
+    16px 12px 0 0 #F2F2DC,
+    20px 12px 0 0 #F2F2DC,
+    24px 12px 0 0 #F2F2DC,
+    28px 12px 0 0 #F2F2DC,
+    32px 12px 0 0 #F2F2DC,
+    -16px 16px 0 0 #F2F2DC,
+    -12px 16px 0 0 #F2F2DC,
+    -8px 16px 0 0 #D6D6B8,
+    -4px 16px 0 0 #D6D6B8,
+    0px 16px 0 0 #D6D6B8,
+    4px 16px 0 0 #D6D6B8,
+    8px 16px 0 0 #D6D6B8,
+    12px 16px 0 0 #F2F2DC,
+    16px 16px 0 0 #F2F2DC,
+    20px 16px 0 0 #F2F2DC,
+    24px 16px 0 0 #F2F2DC,
+    28px 16px 0 0 #F2F2DC,
+    32px 16px 0 0 #F2F2DC,
+    36px 16px 0 0 #F2F2DC,
+    -16px 20px 0 0 #F2F2DC,
+    -12px 20px 0 0 #F2F2DC,
+    -8px 20px 0 0 #F2F2DC,
+    -4px 20px 0 0 #D6D6B8,
+    0px 20px 0 0 #D6D6B8,
+    4px 20px 0 0 #D6D6B8,
+    8px 20px 0 0 #F2F2DC,
+    12px 20px 0 0 #F2F2DC,
+    16px 20px 0 0 #F2F2DC,
+    20px 20px 0 0 #F2F2DC,
+    24px 20px 0 0 #F2F2DC,
+    28px 20px 0 0 #F2F2DC,
+    32px 20px 0 0 #F2F2DC,
+    36px 20px 0 0 #F2F2DC,
+    -16px 24px 0 0 #F2F2DC,
+    -12px 24px 0 0 #F2F2DC,
+    -8px 24px 0 0 #F2F2DC,
+    -4px 24px 0 0 #F2F2DC,
+    0px 24px 0 0 #D6D6B8,
+    4px 24px 0 0 #F2F2DC,
+    8px 24px 0 0 #F2F2DC,
+    12px 24px 0 0 #F2F2DC,
+    16px 24px 0 0 #D6D6B8,
+    20px 24px 0 0 #D6D6B8,
+    24px 24px 0 0 #D6D6B8,
+    28px 24px 0 0 #F2F2DC,
+    32px 24px 0 0 #F2F2DC,
+    36px 24px 0 0 #F2F2DC,
+    -16px 28px 0 0 #F2F2DC,
+    -12px 28px 0 0 #F2F2DC,
+    -8px 28px 0 0 #F2F2DC,
+    -4px 28px 0 0 #F2F2DC,
+    0px 28px 0 0 #F2F2DC,
+    4px 28px 0 0 #F2F2DC,
+    8px 28px 0 0 #F2F2DC,
+    12px 28px 0 0 #D6D6B8,
+    16px 28px 0 0 #D6D6B8,
+    20px 28px 0 0 #D6D6B8,
+    24px 28px 0 0 #D6D6B8,
+    28px 28px 0 0 #D6D6B8,
+    32px 28px 0 0 #F2F2DC,
+    36px 28px 0 0 #F2F2DC,
+    -16px 32px 0 0 #F2F2DC,
+    -12px 32px 0 0 #F2F2DC,
+    -8px 32px 0 0 #F2F2DC,
+    -4px 32px 0 0 #F2F2DC,
+    0px 32px 0 0 #F2F2DC,
+    4px 32px 0 0 #F2F2DC,
+    8px 32px 0 0 #F2F2DC,
+    12px 32px 0 0 #D6D6B8,
+    16px 32px 0 0 #D6D6B8,
+    20px 32px 0 0 #D6D6B8,
+    24px 32px 0 0 #D6D6B8,
+    28px 32px 0 0 #D6D6B8,
+    32px 32px 0 0 #F2F2DC,
+    36px 32px 0 0 #F2F2DC,
+    -16px 36px 0 0 #F2F2DC,
+    -12px 36px 0 0 #F2F2DC,
+    -8px 36px 0 0 #F2F2DC,
+    -4px 36px 0 0 #F2F2DC,
+    0px 36px 0 0 #D6D6B8,
+    4px 36px 0 0 #D6D6B8,
+    8px 36px 0 0 #F2F2DC,
+    12px 36px 0 0 #D6D6B8,
+    16px 36px 0 0 #D6D6B8,
+    20px 36px 0 0 #D6D6B8,
+    24px 36px 0 0 #D6D6B8,
+    28px 36px 0 0 #D6D6B8,
+    32px 36px 0 0 #F2F2DC,
+    36px 36px 0 0 #F2F2DC,
+    -12px 40px 0 0 #F2F2DC,
+    -8px 40px 0 0 #F2F2DC,
+    -4px 40px 0 0 #D6D6B8,
+    0px 40px 0 0 #D6D6B8,
+    4px 40px 0 0 #D6D6B8,
+    8px 40px 0 0 #D6D6B8,
+    12px 40px 0 0 #F2F2DC,
+    16px 40px 0 0 #D6D6B8,
+    20px 40px 0 0 #D6D6B8,
+    24px 40px 0 0 #D6D6B8,
+    28px 40px 0 0 #F2F2DC,
+    32px 40px 0 0 #F2F2DC,
+    -12px 44px 0 0 #F2F2DC,
+    -8px 44px 0 0 #F2F2DC,
+    -4px 44px 0 0 #F2F2DC,
+    0px 44px 0 0 #D6D6B8,
+    4px 44px 0 0 #D6D6B8,
+    8px 44px 0 0 #F2F2DC,
+    12px 44px 0 0 #F2F2DC,
+    16px 44px 0 0 #F2F2DC,
+    20px 44px 0 0 #F2F2DC,
+    24px 44px 0 0 #F2F2DC,
+    28px 44px 0 0 #F2F2DC,
+    32px 44px 0 0 #F2F2DC,
+    -8px 48px 0 0 #F2F2DC,
+    -4px 48px 0 0 #F2F2DC,
+    0px 48px 0 0 #F2F2DC,
+    4px 48px 0 0 #F2F2DC,
+    8px 48px 0 0 #F2F2DC,
+    12px 48px 0 0 #F2F2DC,
+    16px 48px 0 0 #F2F2DC,
+    20px 48px 0 0 #F2F2DC,
+    24px 48px 0 0 #F2F2DC,
+    28px 48px 0 0 #F2F2DC,
+    0px 52px 0 0 #F2F2DC,
+    4px 52px 0 0 #F2F2DC,
+    8px 52px 0 0 #F2F2DC,
+    12px 52px 0 0 #F2F2DC,
+    16px 52px 0 0 #F2F2DC,
+    20px 52px 0 0 #F2F2DC;
+}
+
+/* ---- 星点(两层交替明灭) ---- */
+.hw-stars-a {
+  left:140px; top:120px;
+  width:4px; height:4px;
+  background:#F2F2DC;
+  box-shadow:
+    180px -30px 0 0 #F2F2DC,
+    380px 30px 0 0 #F2F2DC,
+    560px -50px 0 0 #F2F2DC,
+    760px 10px 0 0 #F2F2DC,
+    960px -40px 0 0 #F2F2DC,
+    80px 140px 0 0 #F2F2DC,
+    290px 180px 0 0 #F2F2DC,
+    500px 120px 0 0 #F2F2DC,
+    840px 170px 0 0 #F2F2DC,
+    1100px 100px 0 0 #F2F2DC,
+    -60px 300px 0 0 #F2F2DC,
+    1190px 260px 0 0 #F2F2DC,
+    420px 310px 0 0 #F2F2DC,
+    720px 330px 0 0 #F2F2DC;
+}
+.hw-stars-b {
+  left:240px; top:180px;
+  width:4px; height:4px;
+  background:#F2F2DC;
+  box-shadow:
+    240px -70px 0 0 #F2F2DC,
+    520px 20px 0 0 #F2F2DC,
+    780px -90px 0 0 #F2F2DC,
+    1060px -20px 0 0 #F2F2DC,
+    -60px 160px 0 0 #F2F2DC,
+    460px 200px 0 0 #F2F2DC,
+    910px 150px 0 0 #F2F2DC,
+    140px 290px 0 0 #F2F2DC,
+    700px 230px 0 0 #F2F2DC;
+}
+
+/* ---- 蝙蝠(40×20,4px 网格,红眼) ---- */
+.hw-bat {
+  width:4px; height:4px;
+  background:#2E2456;
+  box-shadow:
+    4px 0px 0 0 #2E2456,
+    32px 0px 0 0 #2E2456,
+    36px 0px 0 0 #2E2456,
+    0px 4px 0 0 #2E2456,
+    4px 4px 0 0 #2E2456,
+    8px 4px 0 0 #2E2456,
+    12px 4px 0 0 #2E2456,
+    24px 4px 0 0 #2E2456,
+    28px 4px 0 0 #2E2456,
+    32px 4px 0 0 #2E2456,
+    36px 4px 0 0 #2E2456,
+    8px 8px 0 0 #2E2456,
+    12px 8px 0 0 #2E2456,
+    16px 8px 0 0 #C44545,
+    20px 8px 0 0 #C44545,
+    24px 8px 0 0 #2E2456,
+    28px 8px 0 0 #2E2456,
+    12px 12px 0 0 #2E2456,
+    16px 12px 0 0 #2E2456,
+    20px 12px 0 0 #2E2456,
+    24px 12px 0 0 #2E2456,
+    16px 16px 0 0 #2E2456,
+    20px 16px 0 0 #2E2456;
+}
+.hw-bat-1 { top:216px; left:12%; }
+.hw-bat-2 { top:320px; left:56%; }
+
+/* ---- 蜘蛛网(右下角,内联 SVG crispEdges) ---- */
+.hw-web {
+  right:0; bottom:0;
+  width:112px; height:112px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 112 112' shape-rendering='crispEdges'%3E%3Cg stroke='%23EDEDE4' stroke-opacity='.3' stroke-width='2' fill='none'%3E%3Cpath d='M112 112V36M112 112H36M112 112L56 56'/%3E%3Cpath d='M112 88A24 24 0 0 0 88 112'/%3E%3Cpath d='M112 64A48 48 0 0 0 64 112'/%3E%3Cpath d='M112 40A72 72 0 0 0 40 112'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-size:112px 112px;
+  image-rendering:pixelated;
+}
+
+/* ---- 雾气(底部硬停带状色块,两层反向循环) ---- */
+.hw-fog {
+  bottom:0;
+  left:-256px;
+  width:calc(100% + 512px);
+  height:72px;
+  background-repeat:no-repeat;
+}
+.hw-fog-back {
+  background-image:
+    repeating-linear-gradient(90deg, rgba(174,170,208,.11) 0 4px, transparent 4px 12px),
+    repeating-linear-gradient(90deg, rgba(174,170,208,.07) 0 4px, transparent 4px 20px),
+    repeating-linear-gradient(90deg, rgba(174,170,208,.05) 0 4px, transparent 4px 28px);
+  background-size:100% 28px, 100% 20px, 100% 12px;
+  background-position:0 100%, 0 calc(100% - 28px), 0 calc(100% - 48px);
+}
+.hw-fog-front {
+  background-image:
+    repeating-linear-gradient(90deg, rgba(174,170,208,.09) 0 4px, transparent 4px 16px),
+    repeating-linear-gradient(90deg, rgba(174,170,208,.06) 0 4px, transparent 4px 24px);
+  background-size:100% 20px, 100% 12px;
+  background-position:0 100%, 0 calc(100% - 20px);
+}
+
+/* ---- 南瓜灯(40×40,4px 网格 + 硬扩散光晕) ---- */
+.hw-pumpkin {
+  left:24px; bottom:20px;
+  width:40px; height:40px;
+  box-shadow:
+    0 0 0 8px rgba(255,206,106,.10),
+    0 0 0 16px rgba(255,206,106,.05);
+}
+.hw-pumpkin .hw-art {
+  left:12px; top:0;
+  width:4px; height:4px;
+  background:#5E8C3A;
+  box-shadow:
+    4px 0px 0 0 #5E8C3A,
+    0px 4px 0 0 #5E8C3A,
+    4px 4px 0 0 #5E8C3A,
+    -8px 8px 0 0 #E88F1F,
+    -4px 8px 0 0 #E88F1F,
+    0px 8px 0 0 #E88F1F,
+    4px 8px 0 0 #E88F1F,
+    8px 8px 0 0 #E88F1F,
+    12px 8px 0 0 #E88F1F,
+    16px 8px 0 0 #E88F1F,
+    20px 8px 0 0 #E88F1F,
+    -12px 12px 0 0 #E88F1F,
+    -8px 12px 0 0 #E88F1F,
+    -4px 12px 0 0 #E88F1F,
+    0px 12px 0 0 #E88F1F,
+    4px 12px 0 0 #E88F1F,
+    8px 12px 0 0 #E88F1F,
+    12px 12px 0 0 #E88F1F,
+    16px 12px 0 0 #E88F1F,
+    20px 12px 0 0 #E88F1F,
+    24px 12px 0 0 #E88F1F,
+    -12px 16px 0 0 #E88F1F,
+    -8px 16px 0 0 #FFCE6A,
+    -4px 16px 0 0 #FFCE6A,
+    0px 16px 0 0 #E88F1F,
+    4px 16px 0 0 #E88F1F,
+    8px 16px 0 0 #E88F1F,
+    12px 16px 0 0 #E88F1F,
+    16px 16px 0 0 #FFCE6A,
+    20px 16px 0 0 #FFCE6A,
+    24px 16px 0 0 #E88F1F,
+    -12px 20px 0 0 #E88F1F,
+    -8px 20px 0 0 #E88F1F,
+    -4px 20px 0 0 #E88F1F,
+    0px 20px 0 0 #E88F1F,
+    4px 20px 0 0 #FFCE6A,
+    8px 20px 0 0 #FFCE6A,
+    12px 20px 0 0 #E88F1F,
+    16px 20px 0 0 #E88F1F,
+    20px 20px 0 0 #E88F1F,
+    24px 20px 0 0 #E88F1F,
+    -12px 24px 0 0 #E88F1F,
+    -8px 24px 0 0 #FFCE6A,
+    -4px 24px 0 0 #FFCE6A,
+    0px 24px 0 0 #FFCE6A,
+    4px 24px 0 0 #FFCE6A,
+    8px 24px 0 0 #FFCE6A,
+    12px 24px 0 0 #FFCE6A,
+    16px 24px 0 0 #FFCE6A,
+    20px 24px 0 0 #FFCE6A,
+    24px 24px 0 0 #E88F1F,
+    -12px 28px 0 0 #E88F1F,
+    -8px 28px 0 0 #E88F1F,
+    -4px 28px 0 0 #FFCE6A,
+    0px 28px 0 0 #E88F1F,
+    4px 28px 0 0 #E88F1F,
+    8px 28px 0 0 #E88F1F,
+    12px 28px 0 0 #E88F1F,
+    16px 28px 0 0 #FFCE6A,
+    20px 28px 0 0 #E88F1F,
+    24px 28px 0 0 #E88F1F,
+    -12px 32px 0 0 #C1700B,
+    -8px 32px 0 0 #E88F1F,
+    -4px 32px 0 0 #E88F1F,
+    0px 32px 0 0 #E88F1F,
+    4px 32px 0 0 #E88F1F,
+    8px 32px 0 0 #E88F1F,
+    12px 32px 0 0 #E88F1F,
+    16px 32px 0 0 #E88F1F,
+    20px 32px 0 0 #E88F1F,
+    24px 32px 0 0 #C1700B,
+    -8px 36px 0 0 #C1700B,
+    -4px 36px 0 0 #C1700B,
+    0px 36px 0 0 #C1700B,
+    4px 36px 0 0 #C1700B,
+    8px 36px 0 0 #C1700B,
+    12px 36px 0 0 #C1700B,
+    16px 36px 0 0 #C1700B,
+    20px 36px 0 0 #C1700B;
+}
+
+/* ============================================================
+   第 4 层|动效 —— 只动 transform / opacity / filter,
+   全部 steps() 阶跃,双端关键帧相同保证静止时即为完整画面
+   ============================================================ */
+.hw-stars-a { animation:hw-twinkle 4.4s infinite; }
+.hw-stars-b { animation:hw-twinkle 5.6s -2.8s infinite; }
+@keyframes hw-twinkle {
+  0%, 49.9%   { opacity:1; }
+  50%, 100%   { opacity:.55; }
+}
+
+.hw-bat-1 { animation:hw-drift-a 9s steps(12) infinite alternate; }
+.hw-bat-2 { animation:hw-drift-b 11s steps(12) -4s infinite alternate; }
+@keyframes hw-drift-a {
+  from { transform:translate(0,0); }
+  to   { transform:translate(-48px,32px); }
+}
+@keyframes hw-drift-b {
+  from { transform:translate(0,0); }
+  to   { transform:translate(64px,-24px); }
+}
+
+.hw-fog-back  { animation:hw-fog 64s steps(8) infinite; }
+.hw-fog-front { animation:hw-fog 44s steps(8) infinite reverse; }
+@keyframes hw-fog {
+  from { transform:translateX(0); }
+  to   { transform:translateX(-512px); } /* 512 = 条纹周期 64px × 8,首尾无缝 */
+}
+
+.hw-pumpkin { animation:hw-glow 3.2s infinite; }
+@keyframes hw-glow {
+  0%, 54.9%  { filter:brightness(1); }
+  55%, 100%  { filter:brightness(1.3); }
+}
+
+/* ---- 环境小屏:收起大部分装饰,只留月亮(缩小)/一组星/雾 ----
+   (选择器带 .halloween-overlay 前缀,压过基础规则 .halloween-overlay div) */
+@media (max-width:768px) {
+  .halloween-overlay .hw-bat,
+  .halloween-overlay .hw-web,
+  .halloween-overlay .hw-pumpkin,
+  .halloween-overlay .hw-stars-b { display:none; }
+  .halloween-overlay .hw-moon {
+    right:24px;
+    top:96px;
+    transform:scale(.75);
+    transform-origin:top right;
+  }
+}
+
+/* ---- 减少动态:关全部位移与明灭(base.css 已全局熔断,此处显式兜底) ---- */
+@media (prefers-reduced-motion: reduce) {
+  .halloween-overlay * { animation:none !important; }
+}
+
+/* ---- 打印:装饰不上纸 ---- */
+@media print {
+  .halloween-overlay { display:none; }
+}
