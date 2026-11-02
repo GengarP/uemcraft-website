@@ -71,6 +71,49 @@
     return isUnder(ch.match || [ch.path]);
   }
 
+  /* ---- 登录态（异步补丁） ---- */
+  function esc(text) {
+    var d = document.createElement('div');
+    d.textContent = text == null ? '' : String(text);
+    return d.innerHTML;
+  }
+
+  function attr(text) {
+    return esc(text).replace(/"/g, '&quot;');
+  }
+
+  /* 登录链接带上当前页路径，授权完成后跳回原处 */
+  function loginHref() {
+    return '/api/auth.php?action=login&return=' + encodeURIComponent(location.pathname + location.search);
+  }
+
+  /* header 是同步 document.write 注入、来不及等接口，先渲染「登录」按钮，
+     me 成功后再补丁为头像+昵称徽章；未登录保持原样 */
+  function hydrateAuth() {
+    fetch('/api/auth.php?action=me', { credentials: 'same-origin' }).then(function (res) {
+      if (!res.ok) return null;
+      return res.json();
+    }).then(function (json) {
+      if (!json || !json.success || !json.data) return;
+      var data = json.data;
+      var el = document.getElementById('headerAuth');
+      if (el) {
+        var chip = '';
+        if (data.avatar) chip += '<img src="' + attr(data.avatar) + '" alt="">';
+        chip += '<span class="header-auth-name">' + esc(data.nickname || '我的档案') + '</span>';
+        el.innerHTML = chip;
+        el.className = 'btn btn-outline header-auth-chip';
+        el.setAttribute('href', '/account/');
+        el.setAttribute('title', '我的档案');
+      }
+      var mobile = document.getElementById('mobileAuth');
+      if (mobile) {
+        mobile.textContent = '我的档案';
+        mobile.setAttribute('href', '/account/');
+      }
+    }).catch(function () {});
+  }
+
   /* ---- 渲染导航栏 ---- */
   function renderNav() {
     // 注：docs 页的 .docs-detail（导航栏内容左右贴边）由 docs/index.php 直接写在
@@ -139,6 +182,9 @@
       }
     }
 
+    // 登录 / 我的档案入口（登录后由 hydrateAuth 更新文案与链接）
+    mobileLinks += '<a id="mobileAuth" href="' + loginHref().replace(/&/g, '&amp;') + '">登录</a>';
+
     // 纹理选项
     var textures = ['bricks','cobblestone','dirt','end_stone','stone','stone_bricks'];
     var textureLabels = {bricks:'砖块',cobblestone:'圆石',dirt:'泥土',end_stone:'末地石',stone:'石头',stone_bricks:'石砖'};
@@ -158,6 +204,7 @@
     html += '</a>';
     html += '<nav class="header-nav" aria-label="主导航">' + navLinks + '</nav>';
     html += '<div class="header-actions">';
+    html += '<a href="' + loginHref().replace(/&/g, '&amp;') + '" class="btn btn-primary" id="headerAuth">登录</a>';
     html += '<div class="settings-wrapper">';
     html += '<button class="settings-toggle" aria-label="设置" title="设置">';
     html += '<img src="/assets/svg/setting.svg" alt="" width="20" height="20" class="settings-icon">';
@@ -179,6 +226,7 @@
     html += '<nav class="mobile-nav" aria-label="移动端导航">' + mobileLinks + '</nav>';
 
     document.write(html);
+    hydrateAuth();
   }
 
   renderNav();

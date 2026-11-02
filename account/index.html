@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="description" content="UEMCraft 我的档案——管理你的公开主页与个人资料。">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#213d87">
+  <title>我的档案 — UEMCraft</title>
+  <link rel="icon" href="../favicon.ico" type="images/x-icon">
+  <script>
+    (function(){
+      var t = localStorage.getItem('uemcraft-theme');
+      if(!t) t = window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+      document.documentElement.style.colorScheme = t;
+      var tex = localStorage.getItem('uemcraft-texture');
+      if(tex && tex !== 'none'){
+        document.documentElement.setAttribute('data-texture', tex);
+        var s = document.createElement('style');
+        s.id = 'texture-style';
+        s.textContent = 'body::after{background-image:url(/assets/img/background_textures/'+tex+'.png);}';
+        document.head.appendChild(s);
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="/css/tokens.css?v=0fc0cec">
+  <link rel="stylesheet" href="/css/base.css?v=0fc0cec">
+  <link rel="stylesheet" href="/css/layout.css?v=0fc0cec">
+  <link rel="stylesheet" href="/css/components.css?v=0fc0cec">
+  <link rel="stylesheet" href="/css/pages.css?v=0fc0cec">
+</head>
+<body>
+<script src="/js/components-header.js?v=0fc0cec"></script>
+
+<a href="#main" class="skip-link">跳转到主内容</a>
+
+<main id="main">
+<section class="page-hero">
+  <div class="container">
+    <h1>我的档案</h1>
+    <p class="hero-sub">管理你的公开主页与个人资料</p>
+    <nav class="breadcrumb" aria-label="面包屑">
+      <a href="/index.html">首页</a> <span>/</span> <span>我的档案</span>
+    </nav>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="container">
+    <div id="accountStatus" class="wall-loading">正在加载…</div>
+
+    <!-- 未登录：登录 / 注册引导 -->
+    <div id="loginPrompt" class="account-prompt" style="display:none;">
+      <h2>使用皮肤站账号登录</h2>
+      <p>本站账号与 YIT &amp; UEM 联合皮肤站互通：使用皮肤站账号授权登录即可自动创建本站档案，无需单独注册。</p>
+      <div class="account-prompt-actions">
+        <a class="btn btn-primary" href="/api/auth.php?action=login&amp;return=/account/">使用皮肤站账号登录</a>
+        <a class="btn btn-outline" href="https://skin.uemcraft.cn/auth/register" target="_blank" rel="noopener">注册皮肤站账号</a>
+      </div>
+      <p id="loginError" class="wall-form-message" role="status" aria-live="polite"></p>
+    </div>
+
+    <!-- 已登录：账号信息 + 档案表单 -->
+    <div id="accountCard" style="display:none;">
+      <div class="account-id-card">
+        <img id="accountAvatar" class="account-avatar" src="" alt="">
+        <div class="account-id-meta">
+          <h2 id="accountNickname"></h2>
+          <p class="account-id-note">昵称、头像与邮箱由皮肤站同步，如需修改请前往皮肤站。</p>
+          <p class="account-id-line">邮箱：<span id="accountEmail"></span></p>
+          <p class="account-id-line">加入时间：<span id="accountCreated"></span></p>
+        </div>
+      </div>
+
+      <form id="profileForm" class="wall-form account-form" novalidate>
+        <div class="form-group">
+          <label for="bio">个人简介</label>
+          <textarea id="bio" class="form-textarea" rows="3" maxlength="200" placeholder="介绍一下自己…"></textarea>
+          <div class="wall-char-count"><span id="bioCount">0</span> / 200</div>
+        </div>
+
+        <div class="form-group">
+          <label for="contact">联系方式</label>
+          <input type="text" id="contact" class="form-input" maxlength="100" placeholder="QQ / 邮箱等">
+          <label class="form-checkline"><input type="checkbox" id="showContact"> 在公开主页显示联系方式</label>
+        </div>
+
+        <div class="form-group">
+          <label>社交链接</label>
+          <div id="socialList" class="account-social-list"></div>
+          <button type="button" class="btn btn-ghost" id="addSocialBtn">添加链接</button>
+          <div class="form-hint">最多 6 条，每条包含名称与以 http:// 或 https:// 开头的链接</div>
+        </div>
+
+        <div class="form-group">
+          <label>展示角色</label>
+          <div id="playerList" class="account-player-list"></div>
+          <div class="form-hint">来自你的皮肤站角色，公开主页将以该角色的形象展示</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-checkline"><input type="checkbox" id="isPublic"> 公开我的主页（其他人可通过链接访问你的档案）</label>
+        </div>
+
+        <div class="wall-form-actions">
+          <button type="submit" class="btn btn-primary" id="saveBtn">保存修改</button>
+          <a id="publicLink" class="btn btn-outline" href="/profile/">查看公开主页</a>
+          <button type="button" class="btn btn-ghost" id="logoutBtn">退出登录</button>
+          <span id="formMessage" class="wall-form-message" role="status" aria-live="polite"></span>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+</main>
+
+<script src="/js/components-footer.js?v=0fc0cec"></script>
+<script defer src="/js/utils.js?v=0fc0cec"></script>
+<script defer src="/js/cjk-spacing.js?v=0fc0cec"></script>
+<script defer src="/js/nav.js?v=0fc0cec"></script>
+<script defer src="/js/page-transition.js?v=0fc0cec"></script>
+<script defer src="/js/theme.js?v=0fc0cec"></script>
+<script defer src="/js/account.js?v=0fc0cec"></script>
+</body>
+</html>

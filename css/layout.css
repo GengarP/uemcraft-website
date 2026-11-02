@@ -195,6 +195,22 @@
 }
 .header-actions .btn { height:42px; }
 
+/* Header 登录态：匿名默认「登录」按钮；登录后由 components-header.js
+   异步补丁为头像+昵称徽章（链到 /account/） */
+.header-auth-chip { gap:var(--space-sm); padding:.35rem .85rem; }
+.header-auth-chip img {
+  width:28px; height:28px;
+  image-rendering:pixelated;
+  border:1px solid var(--c-border);
+  background:var(--c-bg);
+}
+.header-auth-name {
+  max-width:8em;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
 /* Settings toggle */
 .settings-wrapper { position:relative; }
 

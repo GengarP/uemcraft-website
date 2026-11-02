@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="description" content="UEMCraft 用户主页——查看社群成员的公开档案。">
+  <meta name="theme-color" content="#213d87">
+  <title>用户主页 — UEMCraft</title>
+  <link rel="icon" href="../favicon.ico" type="images/x-icon">
+  <script>
+    (function(){
+      var t = localStorage.getItem('uemcraft-theme');
+      if(!t) t = window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+      document.documentElement.style.colorScheme = t;
+      var tex = localStorage.getItem('uemcraft-texture');
+      if(tex && tex !== 'none'){
+        document.documentElement.setAttribute('data-texture', tex);
+        var s = document.createElement('style');
+        s.id = 'texture-style';
+        s.textContent = 'body::after{background-image:url(/assets/img/background_textures/'+tex+'.png);}';
+        document.head.appendChild(s);
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="/css/tokens.css?v=0fc0cec">
+  <link rel="stylesheet" href="/css/base.css?v=0fc0cec">
+  <link rel="stylesheet" href="/css/layout.css?v=0fc0cec">
+  <link rel="stylesheet" href="/css/components.css?v=0fc0cec">
+  <link rel="stylesheet" href="/css/pages.css?v=0fc0cec">
+</head>
+<body>
+<script src="/js/components-header.js?v=0fc0cec"></script>
+
+<a href="#main" class="skip-link">跳转到主内容</a>
+
+<main id="main">
+<section class="page-hero">
+  <div class="container">
+    <h1>用户主页</h1>
+    <p class="hero-sub">社群成员的公开档案</p>
+    <nav class="breadcrumb" aria-label="面包屑">
+      <a href="/index.html">首页</a> <span>/</span> <span>用户主页</span>
+    </nav>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="container">
+    <div id="profileStatus" class="wall-loading">正在加载…</div>
+
+    <div id="profileEmpty" class="wall-empty" style="display:none;">该用户不存在或未公开档案</div>
+
+    <div id="profileCardWrap" style="display:none;">
+      <div class="profile-card">
+        <img id="profileAvatar" class="profile-avatar" src="" alt="">
+        <div class="profile-head">
+          <h2 id="profileNickname"></h2>
+          <p class="profile-player-line" id="profilePlayerLine"></p>
+          <p class="profile-joined">加入时间：<span id="profileJoined"></span></p>
+          <div class="profile-actions">
+            <a id="editProfileBtn" class="btn btn-outline" href="/account/" style="display:none;">编辑档案</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-section" id="bioSection">
+        <h3 class="profile-section-title">个人简介</h3>
+        <p class="profile-bio" id="profileBio"></p>
+      </div>
+
+      <div class="profile-section" id="linksSection">
+        <h3 class="profile-section-title">社交链接</h3>
+        <ul class="profile-links" id="profileLinks"></ul>
+      </div>
+
+      <div class="profile-section" id="contactSection">
+        <h3 class="profile-section-title">联系方式</h3>
+        <p class="profile-contact" id="profileContact"></p>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<script src="/js/components-footer.js?v=0fc0cec"></script>
+<script defer src="/js/utils.js?v=0fc0cec"></script>
+<script defer src="/js/cjk-spacing.js?v=0fc0cec"></script>
+<script defer src="/js/nav.js?v=0fc0cec"></script>
+<script defer src="/js/page-transition.js?v=0fc0cec"></script>
+<script defer src="/js/theme.js?v=0fc0cec"></script>
+<script defer src="/js/profile.js?v=0fc0cec"></script>
+</body>
+</html>

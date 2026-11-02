@@ -1856,3 +1856,219 @@
     font-size: .85rem;
   }
 }
+
+/* ========== Account page（我的档案） ========== */
+.account-prompt {
+  max-width: 700px;
+  margin-inline: auto;
+  background: var(--c-surface);
+  border: 2px solid var(--c-border);
+  border-radius: var(--radius);
+  padding: var(--space-2xl);
+  box-shadow: var(--shadow-hard-sm);
+  text-align: center;
+}
+.account-prompt h2 { margin-bottom: var(--space-md); }
+.account-prompt > p { color: var(--c-text-muted); margin-bottom: var(--space-lg); }
+.account-prompt .wall-form-message { display: block; margin-top: var(--space-md); }
+.account-prompt-actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+.account-id-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  max-width: 700px;
+  margin: 0 auto var(--space-lg);
+  background: var(--c-surface);
+  border: 2px solid var(--c-border);
+  border-left: 3px solid var(--c-primary);
+  border-radius: var(--radius);
+  padding: var(--space-lg) var(--space-xl);
+}
+.account-avatar {
+  width: 80px;
+  height: 80px;
+  image-rendering: pixelated;
+  border: 1px solid var(--c-border);
+  background: var(--c-bg);
+  flex-shrink: 0;
+}
+.account-id-meta h2 { margin-bottom: 2px; }
+.account-id-note {
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+  margin-bottom: 2px;
+}
+.account-id-line {
+  font-size: var(--fs-sm);
+  color: var(--c-text-muted);
+}
+.account-form {
+  max-width: 700px;
+  margin-inline: auto;
+}
+.form-checkline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+.form-checkline input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--c-primary);
+  flex-shrink: 0;
+}
+.form-hint {
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+  margin-top: 4px;
+}
+.account-social-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+.account-social-row {
+  display: grid;
+  grid-template-columns: minmax(110px, 1fr) minmax(180px, 2fr) auto;
+  gap: var(--space-sm);
+}
+.account-player-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.account-player-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border: 2px solid var(--c-border);
+  border-radius: var(--radius);
+  background: var(--c-surface-2);
+  cursor: pointer;
+  font-size: var(--fs-sm);
+  transition: border-color var(--duration);
+}
+.account-player-option:hover { border-color: var(--c-primary); }
+.account-player-option:has(input:checked) {
+  border-color: var(--c-primary);
+  background: var(--c-surface);
+}
+.account-player-option input[type="radio"] {
+  accent-color: var(--c-primary);
+  flex-shrink: 0;
+}
+.account-player-option img {
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+  border: 1px solid var(--c-border);
+  background: var(--c-bg);
+}
+.account-player-name { font-weight: 600; }
+.account-player-uuid {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+}
+
+/* ========== Profile page（用户主页） ========== */
+.profile-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.5rem;
+  align-items: center;
+  max-width: 800px;
+  margin-inline: auto;
+  background: var(--c-surface);
+  border: 2px solid var(--c-border);
+  border-left: 3px solid var(--c-primary);
+  border-radius: var(--radius);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-hard-sm);
+}
+.profile-avatar {
+  width: 96px;
+  height: 96px;
+  image-rendering: pixelated;
+  border: 1px solid var(--c-border);
+  background: var(--c-bg);
+}
+.profile-head h2 { margin-bottom: 2px; }
+.profile-player-line {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-primary);
+}
+.profile-joined {
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+  margin-top: 4px;
+}
+.profile-actions { margin-top: var(--space-sm); }
+.profile-section {
+  max-width: 800px;
+  margin: var(--space-xl) auto 0;
+}
+.profile-section-title {
+  font-size: var(--fs-h3);
+  margin: 0 0 var(--space-md);
+  padding-left: .85rem;
+  border-left: 3px solid var(--c-primary);
+}
+.profile-bio {
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+.profile-bio.is-empty { color: var(--c-text-muted); }
+.profile-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.profile-links li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.profile-links li::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background: var(--c-primary);
+  flex-shrink: 0;
+}
+.profile-links a {
+  font-weight: 600;
+  word-break: break-all;
+}
+.profile-contact {
+  line-height: 1.8;
+  word-break: break-all;
+}
+
+@media (max-width: 640px) {
+  .account-social-row { grid-template-columns: 1fr; }
+  .account-id-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  .account-player-uuid { display: none; }
+  .profile-card {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+  .profile-section-title { text-align: left; }
+}

@@ -92,6 +92,161 @@ function requireAdmin($envName = 'ADMIN_TOKEN') {
     }
 }
 
+// ---- 用户会话（皮肤站 OAuth 登录） ----
+
+/** 会话 cookie 名。HttpOnly，cookie 里存原始 token，库里只存哈希 */
+define('AUTH_COOKIE_NAME', 'uemcraft_sid');
+
+/** 会话有效期（秒），默认 30 天，可由 OAUTH_SESSION_TTL 覆盖；活动时滑动续期 */
+function authSessionTtl() {
+    $ttl = intval(getenv('OAUTH_SESSION_TTL') ?: 0);
+    return $ttl > 0 ? $ttl : 2592000;
+}
+
+/**
+ * 会话 token 哈希：cookie 存原值、库存 sha256，
+ * 库泄露也无法直接冒用会话。
+ */
+function hashToken($token) {
+    return hash('sha256', $token);
+}
+
+function cookieSecure() {
+    // HTTPS 判定需兼容反向代理的 X-Forwarded-Proto；本地 php -S 走 HTTP 时为 false
+    return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+}
+
+/**
+ * 写会话 cookie。SameSite=Lax 挡住跨站 POST 携带 cookie，
+ * 配合档案接口强制 JSON Content-Type 防 CSRF。
+ */
+function setSessionCookie($token, $expiresAt) {
+    setcookie(AUTH_COOKIE_NAME, $token, [
+        'expires'  => $expiresAt,
+        'path'     => '/',
+        'secure'   => cookieSecure(),
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+}
+
+function clearSessionCookie() {
+    setcookie(AUTH_COOKIE_NAME, '', [
+        'expires'  => time() - 3600,
+        'path'     => '/',
+        'secure'   => cookieSecure(),
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+}
+
+/**
+ * 创建会话行并返回原始 token（仅此处返回原值给调用方写 cookie）。
+ */
+function createUserSession($db, $userId) {
+    $token = bin2hex(random_bytes(32));
+    $now = now();
+    $stmt = $db->prepare("INSERT INTO user_sessions (user_id, token_hash, created_at, expires_at, last_seen_at) VALUES (?, ?, ?, ?, ?)");
+    $stmt->execute([(int) $userId, hashToken($token), $now, $now + authSessionTtl(), $now]);
+    return $token;
+}
+
+/** 销毁当前 cookie 对应的会话行并清 cookie */
+function destroyUserSession($db) {
+    $raw = $_COOKIE[AUTH_COOKIE_NAME] ?? '';
+    if ($raw !== '') {
+        $stmt = $db->prepare("DELETE FROM user_sessions WHERE token_hash = ?");
+        $stmt->execute([hashToken($raw)]);
+    }
+    clearSessionCookie();
+}
+
+/**
+ * 取当前登录用户行（含会话校验）；未登录 / 过期返回 null。
+ * 滑动续期：距上次活跃超 1 小时才写库，避免每个请求都写一次。
+ */
+function currentUser($db) {
+    $raw = $_COOKIE[AUTH_COOKIE_NAME] ?? '';
+    if ($raw === '' || !preg_match('/^[0-9a-f]{64}$/', $raw)) {
+        return null;
+    }
+    $now = now();
+    $stmt = $db->prepare("SELECT s.id AS session_id, s.expires_at, s.last_seen_at, u.*
+                          FROM user_sessions s
+                          JOIN users u ON u.id = s.user_id
+                          WHERE s.token_hash = ?");
+    $stmt->execute([hashToken($raw)]);
+    $row = $stmt->fetch();
+    if (!$row) {
+        clearSessionCookie();
+        return null;
+    }
+    if ((int) $row['expires_at'] <= $now) {
+        // 过期会话即刻清理，不再视为登录
+        $del = $db->prepare("DELETE FROM user_sessions WHERE id = ?");
+        $del->execute([(int) $row['session_id']]);
+        clearSessionCookie();
+        return null;
+    }
+    if ($now - (int) $row['last_seen_at'] > 3600) {
+        $upd = $db->prepare("UPDATE user_sessions SET last_seen_at = ?, expires_at = ? WHERE id = ?");
+        $upd->execute([$now, $now + authSessionTtl(), (int) $row['session_id']]);
+    }
+    // 会话列不随用户行返回
+    unset($row['session_id'], $row['expires_at'], $row['last_seen_at']);
+    return $row;
+}
+
+/**
+ * 未登录直接 401。与管理端 requireAdmin() 的 403 体系互不干扰
+ * （前端 admin-auth.js 只对 403 做跳登录处理）。
+ */
+function requireUser($db) {
+    $user = currentUser($db);
+    if (!$user) {
+        json_response(['success' => false, 'error' => '请先登录'], 401);
+    }
+    return $user;
+}
+
+/**
+ * 对外输出的用户视图（含私有字段，仅 me / profile 等本人接口使用）。
+ * 公开接口的字段白名单在 user.php 里另行收紧。
+ */
+function userView($user) {
+    $players = json_decode($user['players_json'] ?: '[]', true);
+    $social = json_decode($user['social_links'] ?: '[]', true);
+    return [
+        'id'            => (int) $user['id'],
+        'nickname'      => (string) $user['nickname'],
+        'avatar'        => userDisplayAvatar($user),
+        'avatar_url'    => (string) $user['avatar_url'],
+        'email'         => (string) $user['email'],
+        'players'       => is_array($players) ? $players : [],
+        'player_uuid'   => (string) $user['player_uuid'],
+        'player_name'   => (string) $user['player_name'],
+        'bio'           => (string) $user['bio'],
+        'contact'       => (string) $user['contact'],
+        'social_links'  => is_array($social) ? $social : [],
+        'is_public'     => (int) $user['is_public'],
+        'show_contact'  => (int) $user['show_contact'],
+        'created_at'    => (int) $user['created_at'],
+        'last_login_at' => (int) $user['last_login_at'],
+    ];
+}
+
+/**
+ * 展示头像：优先展示角色的皮肤头像（与跑酷玩家页同源同格式），
+ * 未选角色时回退皮肤站账号头像。
+ */
+function userDisplayAvatar($user) {
+    if (!empty($user['player_name'])) {
+        return 'https://skin.uemcraft.cn/avatar/player/' . rawurlencode($user['player_name']) . '?size=128&png=true';
+    }
+    return (string) ($user['avatar_url'] ?? '');
+}
+
 // ---- 数据库连接 ----
 
 /**
@@ -156,7 +311,99 @@ function getWallDb() {
 
 // ---- site.db 建表 ----
 
+/**
+ * 用户账号相关表（users / user_sessions / oauth_states）。
+ * 建表与迁移共用这一份 DDL——两处调用都幂等（IF NOT EXISTS），
+ * 保证新库与既有库拿到的结构一致。
+ */
+function createUserTables($db, $driver) {
+    if ($driver === 'mysql') {
+        $db->exec("CREATE TABLE IF NOT EXISTS users (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            sub VARCHAR(255) NOT NULL,
+            nickname VARCHAR(100) NOT NULL DEFAULT '',
+            avatar_url VARCHAR(500) NOT NULL DEFAULT '',
+            email VARCHAR(255) NOT NULL DEFAULT '',
+            players_json TEXT NOT NULL,
+            player_uuid CHAR(36) NOT NULL DEFAULT '',
+            player_name VARCHAR(100) NOT NULL DEFAULT '',
+            bio VARCHAR(500) NOT NULL DEFAULT '',
+            contact VARCHAR(200) NOT NULL DEFAULT '',
+            social_links TEXT NOT NULL,
+            is_public TINYINT NOT NULL DEFAULT 1,
+            show_contact TINYINT NOT NULL DEFAULT 0,
+            created_at INT NOT NULL,
+            updated_at INT NOT NULL,
+            last_login_at INT NOT NULL DEFAULT 0,
+            PRIMARY KEY (id),
+            UNIQUE KEY idx_users_sub (sub)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        $db->exec("CREATE TABLE IF NOT EXISTS user_sessions (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            user_id INT UNSIGNED NOT NULL,
+            token_hash CHAR(64) NOT NULL,
+            created_at INT NOT NULL,
+            expires_at INT NOT NULL,
+            last_seen_at INT NOT NULL,
+            PRIMARY KEY (id),
+            UNIQUE KEY idx_user_sessions_token (token_hash),
+            KEY idx_user_sessions_user (user_id),
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        $db->exec("CREATE TABLE IF NOT EXISTS oauth_states (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            state CHAR(64) NOT NULL,
+            code_verifier VARCHAR(128) NOT NULL,
+            return_to VARCHAR(500) NOT NULL DEFAULT '',
+            created_at INT NOT NULL,
+            expires_at INT NOT NULL,
+            PRIMARY KEY (id),
+            UNIQUE KEY idx_oauth_states_state (state)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        return;
+    }
+
+    $db->exec("CREATE TABLE IF NOT EXISTS users (
+        id             INTEGER PRIMARY KEY AUTOINCREMENT,
+        sub            TEXT NOT NULL UNIQUE,
+        nickname       TEXT NOT NULL DEFAULT '',
+        avatar_url     TEXT NOT NULL DEFAULT '',
+        email          TEXT NOT NULL DEFAULT '',
+        players_json   TEXT NOT NULL DEFAULT '[]',
+        player_uuid    TEXT NOT NULL DEFAULT '',
+        player_name    TEXT NOT NULL DEFAULT '',
+        bio            TEXT NOT NULL DEFAULT '',
+        contact        TEXT NOT NULL DEFAULT '',
+        social_links   TEXT NOT NULL DEFAULT '[]',
+        is_public      INTEGER NOT NULL DEFAULT 1,
+        show_contact   INTEGER NOT NULL DEFAULT 0,
+        created_at     INTEGER NOT NULL,
+        updated_at     INTEGER NOT NULL,
+        last_login_at  INTEGER NOT NULL DEFAULT 0
+    )");
+    $db->exec("CREATE TABLE IF NOT EXISTS user_sessions (
+        id            INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id       INTEGER NOT NULL,
+        token_hash    TEXT NOT NULL UNIQUE,
+        created_at    INTEGER NOT NULL,
+        expires_at    INTEGER NOT NULL,
+        last_seen_at  INTEGER NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )");
+    $db->exec("CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions(user_id)");
+    $db->exec("CREATE TABLE IF NOT EXISTS oauth_states (
+        id             INTEGER PRIMARY KEY AUTOINCREMENT,
+        state          TEXT NOT NULL UNIQUE,
+        code_verifier  TEXT NOT NULL,
+        return_to      TEXT NOT NULL DEFAULT '',
+        created_at     INTEGER NOT NULL,
+        expires_at     INTEGER NOT NULL
+    )");
+}
+
 function createSiteTables($db, $driver) {
+    createUserTables($db, $driver);
+
     if ($driver === 'mysql') {
         $db->exec("CREATE TABLE IF NOT EXISTS news (
             id INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -445,6 +692,9 @@ function createSiteTables($db, $driver) {
 }
 
 function migrateSiteTables($db, $driver) {
+    // 迁移：新增用户账号相关表（users / user_sessions / oauth_states）
+    createUserTables($db, $driver);
+
     // 迁移：新增 works 表
     if ($driver === 'mysql') {
         $db->exec("CREATE TABLE IF NOT EXISTS works (
