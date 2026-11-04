@@ -17,3 +17,9 @@ assets/img/gallery/
 
 homepage/example.xaml
 #   PCL2示例主页
+
+.zcode/
+#   本地工作区配置（ZCode）
+
+PARKOUR_LEADERBOARD_PLAN.md
+#   历史规划文档（已实现，不再跟踪）
