@@ -16,13 +16,13 @@ require_once __DIR__ . '/common.php';
 
 // ---- 皮肤站 OIDC 配置 ----
 // 客户端凭证必须先在皮肤站管理端登记 OAuth 应用，再配到环境变量；
-// 回调地址需登记为 OAUTH_REDIRECT_URI 的值（默认 https://uemcraft.cn/api/auth.php?action=callback）。
+// 回调地址需登记为 OAUTH_REDIRECT_URI 的值（默认 https://www.uemcraft.cn/api/auth.php?action=callback）。
 define('OAUTH_CLIENT_ID', getenv('OAUTH_CLIENT_ID') ?: '');
 define('OAUTH_CLIENT_SECRET', getenv('OAUTH_CLIENT_SECRET') ?: '');
 define('OAUTH_AUTHORIZE_URL', getenv('OAUTH_AUTHORIZE_URL') ?: 'https://skin.uemcraft.cn/oidc/auth');
 define('OAUTH_TOKEN_URL', getenv('OAUTH_TOKEN_URL') ?: 'https://skin.uemcraft.cn/oidc/token');
 define('OAUTH_USERINFO_URL', getenv('OAUTH_USERINFO_URL') ?: 'https://skin.uemcraft.cn/oidc/userinfo');
-define('OAUTH_REDIRECT_URI', getenv('OAUTH_REDIRECT_URI') ?: 'https://uemcraft.cn/api/auth.php?action=callback');
+define('OAUTH_REDIRECT_URI', getenv('OAUTH_REDIRECT_URI') ?: 'https://www.uemcraft.cn/api/auth.php?action=callback');
 // Yggdrasil.PlayerProfiles.Read 用于获取角色列表（selectedProfile / availableProfiles）；
 // 皮肤站未授予该 scope 时优雅降级：不返回角色，档案其余功能不受影响
 define('OAUTH_SCOPE', getenv('OAUTH_SCOPE') ?: 'openid profile email Yggdrasil.PlayerProfiles.Read');

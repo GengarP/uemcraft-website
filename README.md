@@ -52,7 +52,7 @@ npx serve .
 |------|------|------|
 | `OAUTH_CLIENT_ID` | 是 | 皮肤站 OAuth 应用 ID（在皮肤站管理端登记） |
 | `OAUTH_CLIENT_SECRET` | 是 | 皮肤站 OAuth 应用密钥 |
-| `OAUTH_REDIRECT_URI` | 否 | 回调地址，默认 `https://uemcraft.cn/api/auth.php?action=callback`（须与皮肤站登记一致） |
+| `OAUTH_REDIRECT_URI` | 否 | 回调地址，默认 `https://www.uemcraft.cn/api/auth.php?action=callback`（须与皮肤站登记一致） |
 | `OAUTH_SESSION_TTL` | 否 | 登录会话有效期（秒），默认 30 天滑动续期 |
 | `SITE_DB_DRIVER` | 否 | `sqlite`（默认）或 `mysql` |
 | `SITE_DB_HOST/PORT/NAME/USER/PASS` | 否 | MySQL 连接参数（driver=mysql 时必填） |
