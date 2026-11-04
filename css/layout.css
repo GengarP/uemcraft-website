@@ -51,6 +51,7 @@
 .header-logo {
   display:flex;
   align-items:center;
+  grid-column:1;
   justify-self:start;
   flex-shrink:0;
   text-decoration:none;
@@ -62,7 +63,7 @@
 }
 
 /* Navigation */
-.header-nav { display:flex; align-items:center; justify-self:center; gap:.25rem; }
+.header-nav { display:flex; align-items:center; grid-column:2; justify-self:center; gap:.25rem; }
 .header-nav a,
 .header-nav button.nav-drop-trigger {
   display:inline-flex;
@@ -191,6 +192,7 @@
 .header-actions {
   display:flex;
   align-items:center;
+  grid-column:3;
   justify-self:end;
   gap:var(--space-sm);
   flex-shrink:0;
