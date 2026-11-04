@@ -239,14 +239,13 @@
 .settings-toggle:hover { border-color:var(--c-primary); background:var(--c-surface); }
 .settings-toggle .settings-icon {
   width:23px; height:23px;
-  filter:var(--settings-icon-filter, none);
-  transition:filter var(--duration),transform .4s ease;
+  image-rendering:pixelated;
+  /* 图标本体是白色像素图：亮色主题反相为深色，深色主题保持白色 */
+  filter:invert(1);
+  transition:filter var(--duration);
 }
 [data-theme="dark"] .settings-toggle .settings-icon {
-  --settings-icon-filter: invert(1);
-}
-.settings-toggle:hover .settings-icon {
-  transform:rotate(45deg);
+  filter:none;
 }
 
 /* Settings panel (dropdown) */

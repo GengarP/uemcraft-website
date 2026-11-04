@@ -108,9 +108,9 @@
         var html = '';
         json.data.forEach(function (r) {
           // 排行榜统一进入跑酷玩家详情页；个人主页入口放在详情页的「访问主页」按钮
-          var topClass = r.rank <= 3 ? ' class="is-top' + r.rank + '"' : '';
-          html += '<tr' + topClass + '>';
-          html += '<td class="rank-cell">' + r.rank + '</td>';
+          var medal = r.rank === 1 ? 'gold_medal' : (r.rank === 2 ? 'silver_medal' : (r.rank === 3 ? 'bronze_medal' : ''));
+          html += '<tr>';
+          html += '<td class="rank-cell">' + (medal ? '<img class="parkour-medal" src="/assets/svg/' + medal + '.svg" alt="">' : '') + r.rank + '</td>';
           html += '<td><a class="parkour-player-link" href="player.html?uuid=' + encodeURIComponent(r.player_uuid) + '">';
           html += '<img class="parkour-avatar" src="' + escapeHtml(r.avatar_url) + '" alt="">';
           html += '<span>' + escapeHtml(r.player_name) + '</span>';

@@ -104,8 +104,8 @@
     html += '<span class="admin-topbar-title" id="adminTopbarTitle"></span>';
     html += '<div class="admin-topbar-right">';
     html += '<div class="theme-options admin-topbar-theme">';
-    html += '<button class="theme-option" data-theme="light" title="亮色模式" aria-label="亮色模式"><span class="iconfont-theme icon-sun" aria-hidden="true"></span></button>';
-    html += '<button class="theme-option" data-theme="dark" title="深色模式" aria-label="深色模式"><span class="iconfont-theme icon-moon" aria-hidden="true"></span></button>';
+    html += '<button class="theme-option" data-theme="light" title="亮色模式" aria-label="亮色模式"><img src="/assets/svg/sun.svg" alt="" width="18" height="18"></button>';
+    html += '<button class="theme-option" data-theme="dark" title="深色模式" aria-label="深色模式"><img src="/assets/svg/moon.svg" alt="" width="18" height="18"></button>';
     html += '</div>';
     html += '</div></header>';
 

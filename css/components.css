@@ -2282,16 +2282,16 @@ a.contact-card:hover .cc-title {
   background:var(--c-primary);
   box-shadow:0 0 0 2px var(--c-primary);
 }
-.theme-option.is-active .iconfont-theme { color:#fff; }
-.theme-option .iconfont-theme {
-  font-size:18px;
-  color:var(--c-text);
-  transition:color .25s;
+.theme-option img {
+  width:18px;
+  height:18px;
+  image-rendering:pixelated;
+  /* 白色像素图标：亮色主题反相为深色 */
+  filter:invert(1);
+  transition:filter .25s;
 }
-.theme-option .icon-sun  { color:var(--c-gold); }
-.theme-option .icon-moon { color:var(--c-primary); }
-.theme-option.is-active .icon-sun,
-.theme-option.is-active .icon-moon { color:#fff; }
+[data-theme="dark"] .theme-option img { filter:none; }
+.theme-option.is-active img { filter:none; }
 
 /* Texture grid */
 .texture-grid {

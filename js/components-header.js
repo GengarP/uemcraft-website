@@ -211,8 +211,8 @@
     html += '<div class="settings-panel" aria-hidden="true">';
     html += '<div class="settings-group"><span class="settings-label">外观</span>';
     html += '<div class="theme-options">';
-    html += '<button class="theme-option" data-theme="light" title="亮色模式"><span class="iconfont-theme icon-sun" aria-hidden="true"></span></button>';
-    html += '<button class="theme-option" data-theme="dark" title="深色模式"><span class="iconfont-theme icon-moon" aria-hidden="true"></span></button>';
+    html += '<button class="theme-option" data-theme="light" title="亮色模式"><img src="/assets/svg/sun.svg" alt="" width="18" height="18"></button>';
+    html += '<button class="theme-option" data-theme="dark" title="深色模式"><img src="/assets/svg/moon.svg" alt="" width="18" height="18"></button>';
     html += '</div></div>';
     html += '<div class="settings-group"><span class="settings-label">背景纹理</span>';
     html += '<div class="texture-grid">' + textureBtns + '</div>';

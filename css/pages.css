@@ -2201,15 +2201,15 @@
 .parkour-ranking tbody tr:hover {
   background: color-mix(in srgb, var(--c-primary) 6%, transparent);
 }
-.parkour-ranking tr.is-top1 .rank-cell,
-.parkour-ranking tr.is-top2 .rank-cell,
-.parkour-ranking tr.is-top3 .rank-cell {
-  color: #fff;
-  text-align: center;
+.parkour-ranking .rank-cell { white-space: nowrap; }
+.parkour-medal {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-right: 4px;
+  vertical-align: -4px;
+  image-rendering: pixelated;
 }
-.parkour-ranking tr.is-top1 .rank-cell { background: #C9A227; }
-.parkour-ranking tr.is-top2 .rank-cell { background: #8C9BA8; }
-.parkour-ranking tr.is-top3 .rank-cell { background: #A97142; }
 
 /* 玩家详情：选手档案式 */
 .parkour-block { margin-top: var(--space-xl); }
