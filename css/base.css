@@ -149,24 +149,10 @@ html {
 .section-sm {
   padding-block:var(--space-2xl);
 }
-/* 末段区块不带底部内距：与页脚之间不留间距，直接由页脚的上边框分隔。
-   原来 .section 的 80px 底部内距会和 .site-footer 的 80px 上外边距叠加，
-   在页脚前堆出 160px 空白（gallery 用 .section-sm 是 128px，docs/404 是 80px），
-   同一站内还是三种值。 */
-main > .section:last-child,
-main > .section-sm:last-child {
-  padding-bottom:0;
-}
-/* 正文与页脚之间的固定 80px。上一条已把末段区块自带的底部内距归零，
-   所以这段间距完全由 main 提供，各页一致（此前是 160/128/80 三种）。
-   两类页面除外：
-   - docs 阅读页（.docs-detail）：整屏两栏布局，不参与这套节奏；
-   - admin 登录页（.admin-login-body）：min-height:100vh 的居中面板，
-     因全局 box-sizing 为 border-box，加底部内距会把面板向上推偏 40px，
-     而它的页脚本来就在首屏之外，加了也看不见。 */
-body:not(.docs-detail):not(.admin-login-body) #main {
-  padding-bottom:var(--space-3xl);
-}
+/* 末段区块保留自身底部内距：区块背景完整包裹内容，
+   与页脚的间距由这段内距提供，不再用 body 背景填充间隙，
+   避免页脚前出现一条与区块/页脚都不一致的色带。
+   （此前做法是末段底部内距归零 + #main 补 80px，露出的是 body 背景色） */
 .section-alt {
   background:var(--c-bg-section-alt);
 }

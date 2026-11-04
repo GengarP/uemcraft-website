@@ -98,16 +98,15 @@
         document.getElementById('playerAvatar').alt = p.player_name;
         document.getElementById('playerName').textContent = p.player_name;
 
-        // 该玩家在本站有公开主页时，提供「个人主页」入口
-        var oldLink = document.getElementById('playerProfileLink');
-        if (oldLink) oldLink.parentNode.removeChild(oldLink);
-        if (p.user_id) {
-          var profileLink = document.createElement('a');
-          profileLink.id = 'playerProfileLink';
-          profileLink.className = 'btn btn-outline btn-sm parkour-profile-link';
-          profileLink.href = '/profile/?id=' + encodeURIComponent(p.user_id);
-          profileLink.textContent = '个人主页';
-          document.getElementById('playerName').insertAdjacentElement('afterend', profileLink);
+        // 该玩家在本站有公开主页时，显示「访问主页」按钮
+        var profileLink = document.getElementById('playerProfileLink');
+        if (profileLink) {
+          if (p.user_id) {
+            profileLink.href = '/profile/?id=' + encodeURIComponent(p.user_id);
+            profileLink.style.display = '';
+          } else {
+            profileLink.style.display = 'none';
+          }
         }
         var summary = document.getElementById('playerSummary');
         var stats = [

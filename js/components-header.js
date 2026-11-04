@@ -98,13 +98,12 @@
       var data = json.data;
       var el = document.getElementById('headerAuth');
       if (el) {
-        var chip = '';
-        if (data.avatar) chip += '<img src="' + attr(data.avatar) + '" alt="">';
-        chip += '<span class="header-auth-name">' + esc(data.nickname || '我的档案') + '</span>';
-        el.innerHTML = chip;
-        el.className = 'btn btn-outline header-auth-chip';
+        // 仅显示皮肤站头像（透明 PNG），不渲染用户名
+        el.className = 'header-auth-avatar';
+        el.innerHTML = data.avatar ? '<img src="' + attr(data.avatar) + '" alt="">' : '';
         el.setAttribute('href', '/account/');
         el.setAttribute('title', '我的档案');
+        el.setAttribute('aria-label', '我的档案');
       }
       var mobile = document.getElementById('mobileAuth');
       if (mobile) {

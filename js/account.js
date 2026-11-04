@@ -74,7 +74,7 @@
       wrap.innerHTML = '<div class="form-hint">皮肤站账号暂无角色，或未授予角色读取权限</div>';
       return;
     }
-    var html = '<label class="account-player-option">';
+    var html = '<label class="account-player-option pixel-check">';
     html += '<input type="radio" name="displayPlayer" value=""' + (state.currentUuid ? '' : ' checked') + '>';
     html += '<span class="account-player-name">不展示角色</span></label>';
     for (var i = 0; i < state.players.length; i++) {
@@ -83,7 +83,7 @@
       var uuid = p.id || '';
       var avatar = 'https://skin.uemcraft.cn/avatar/player/' + encodeURIComponent(name) + '?size=64&png=true';
       var checked = state.currentUuid && uuid === state.currentUuid ? ' checked' : '';
-      html += '<label class="account-player-option">';
+      html += '<label class="account-player-option pixel-check">';
       html += '<input type="radio" name="displayPlayer" value="' + escapeAttr(uuid) + '"' + checked + '>';
       html += '<img src="' + escapeAttr(avatar) + '" alt="">';
       html += '<span class="account-player-name">' + escapeHtml(name) + '</span>';
@@ -112,6 +112,13 @@
       avatar.style.display = 'none';
     }
     document.getElementById('accountNickname').textContent = user.nickname || '未命名用户';
+    // 角色徽章（普通用户 / 管理员 / 超级管理员）
+    var roleEl = document.getElementById('accountRole');
+    if (roleEl) {
+      var role = user.role || 'user';
+      roleEl.className = 'account-role is-' + role;
+      roleEl.textContent = role === 'super_admin' ? '超级管理员' : (role === 'admin' ? '管理员' : '普通用户');
+    }
     document.getElementById('accountEmail').textContent = user.email || '（未提供）';
     document.getElementById('accountCreated').textContent = formatTs(user.created_at);
 

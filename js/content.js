@@ -412,11 +412,18 @@ function initContent() {
       .catch(function () {});
   }
 
-  // 首页近期活动预览（异步，从 API，交替图文布局）
+  // 首页近期活动预览：同时展示已结束的活动；
+  // 有置顶（精选）时置顶在前，否则完全按日期先后排序（最新在前），最多展示 6 条
   var eventsGrid = document.getElementById('eventsGrid');
   if (eventsGrid) {
-    fetchEvents('upcoming').then(function (items) {
-      items.forEach(function (item, idx) { eventsGrid.appendChild(renderEventListItem(item, idx)); });
+    Promise.all([fetchEvents('upcoming'), fetchEvents('past')]).then(function (results) {
+      var items = (results[0] || []).concat(results[1] || []);
+      var hasFeatured = items.some(function (item) { return item.is_featured; });
+      items.sort(function (a, b) {
+        if (hasFeatured && a.is_featured !== b.is_featured) return b.is_featured - a.is_featured;
+        return (b.date_start || '').localeCompare(a.date_start || '');
+      });
+      items.slice(0, 6).forEach(function (item, idx) { eventsGrid.appendChild(renderEventListItem(item, idx)); });
     }).catch(function () {});
   }
 
@@ -424,8 +431,14 @@ function initContent() {
   var eventUpcoming = document.getElementById('eventUpcoming');
   if (eventUpcoming) {
     fetchEvents('upcoming').then(function (items) {
+      if (!items.length) {
+        eventUpcoming.innerHTML = '<div class="wall-empty">最近没有可展示的活动...</div>';
+        return;
+      }
       items.forEach(function (item) { eventUpcoming.appendChild(renderEventCard(item)); });
-    }).catch(function () {});
+    }).catch(function () {
+      eventUpcoming.innerHTML = '<div class="wall-empty">最近没有可展示的活动...</div>';
+    });
   }
   var eventPast = document.getElementById('eventPast');
   if (eventPast) {
