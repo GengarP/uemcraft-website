@@ -86,8 +86,8 @@
       html += '<label class="account-player-option pixel-check">';
       html += '<input type="radio" name="displayPlayer" value="' + escapeAttr(uuid) + '"' + checked + '>';
       html += '<img src="' + escapeAttr(avatar) + '" alt="">';
-      html += '<span class="account-player-name">' + escapeHtml(name) + '</span>';
-      html += '<span class="account-player-uuid">' + escapeHtml(uuid) + '</span>';
+      html += '<span class="account-player-name" title="' + escapeAttr(name) + '">' + escapeHtml(name) + '</span>';
+      html += '<span class="account-player-uuid" title="' + escapeAttr(uuid) + '">' + escapeHtml(uuid) + '</span>';
       html += '</label>';
     }
     wrap.innerHTML = html;
@@ -111,7 +111,9 @@
     } else {
       avatar.style.display = 'none';
     }
-    document.getElementById('accountNickname').textContent = user.nickname || '未命名用户';
+    var nickEl = document.getElementById('accountNickname');
+    nickEl.textContent = user.nickname || '未命名用户';
+    nickEl.title = user.nickname || '';
     // 角色徽章（普通用户 / 管理员 / 超级管理员）
     var roleEl = document.getElementById('accountRole');
     if (roleEl) {

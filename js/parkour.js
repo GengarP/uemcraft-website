@@ -50,9 +50,9 @@
     var info = document.getElementById('mapInfo');
     if (info && map) {
       document.getElementById('mapInfoName').textContent = map.display_name;
-      var stats = '记录 <strong>' + (map.record_count || 0) + '</strong> · 玩家 <strong>' + (map.player_count || 0) + '</strong>';
-      if (map.best_time_ms) stats += ' · 最佳 <strong>' + formatMs(map.best_time_ms) + '</strong>';
-      if (map.close_at) stats += ' · 已封榜';
+      var stats = '记录 <strong>' + (map.record_count || 0) + '</strong> - 玩家 <strong>' + (map.player_count || 0) + '</strong>';
+      if (map.best_time_ms) stats += ' - 最佳 <strong>' + formatMs(map.best_time_ms) + '</strong>';
+      if (map.close_at) stats += ' - 已封榜';
       document.getElementById('mapInfoStats').innerHTML = stats;
       info.style.display = '';
     }

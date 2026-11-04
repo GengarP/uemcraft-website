@@ -1913,7 +1913,13 @@
   margin: 0 auto var(--space-sm);
   image-rendering: pixelated;
 }
-.account-sidebar-identity h2 { margin-bottom: var(--space-xs); }
+.account-sidebar-identity h2 {
+  margin-bottom: var(--space-xs);
+  font-size: var(--fs-lg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .account-role {
   display: inline-block;
   font-size: var(--fs-xs);
@@ -2025,12 +2031,21 @@
   height: 32px;
   image-rendering: pixelated;
 }
-.account-player-name { font-weight: 600; }
+.account-player-name {
+  font-weight: 600;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .account-player-uuid {
   margin-left: auto;
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   color: var(--c-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ========== Profile page（用户主页 · 名片式） ========== */
@@ -2058,11 +2073,22 @@
   height: 96px;
   image-rendering: pixelated;
 }
-.profile-hero-main h2 { margin-bottom: 2px; }
+.profile-hero-main h2 {
+  margin-bottom: 2px;
+  font-size: var(--fs-h3);
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .profile-player-line {
   font-size: var(--fs-sm);
   font-weight: 600;
   color: var(--c-primary);
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .profile-joined {
   font-size: var(--fs-xs);

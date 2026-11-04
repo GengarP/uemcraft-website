@@ -37,9 +37,12 @@
     } else {
       avatar.style.display = 'none';
     }
-    document.getElementById('profileNickname').textContent = user.nickname || '未命名用户';
+    var nickEl = document.getElementById('profileNickname');
+    nickEl.textContent = user.nickname || '未命名用户';
+    nickEl.title = user.nickname || '';
 
     var playerLine = document.getElementById('profilePlayerLine');
+    playerLine.title = user.player_name ? '展示角色：' + user.player_name : '';
     if (user.player_name) {
       playerLine.textContent = '展示角色：' + user.player_name;
     } else {

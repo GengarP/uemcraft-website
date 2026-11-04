@@ -77,10 +77,11 @@
 
       html += '<div class="admin-user-row" data-id="' + u.id + '" data-role="' + u.role + '">';
       html += '<div class="admin-user-main">';
-      html += '<div class="admin-user-name">' + escapeHtml(u.nickname || ('用户 ' + u.id)) + roleBadge(u.role) + '</div>';
+      var nameText = u.nickname || ('用户 ' + u.id);
+      html += '<div class="admin-user-name"><span class="admin-user-name-text" title="' + escapeHtml(nameText).replace(/"/g, '&quot;') + '">' + escapeHtml(nameText) + '</span>' + roleBadge(u.role) + '</div>';
       html += '<div class="admin-user-meta">' + escapeHtml(u.email || '未提供邮箱')
-        + (u.player_name ? ' · 角色 ' + escapeHtml(u.player_name) : '')
-        + ' · 最近登录 ' + formatTs(u.last_login_at) + '</div>';
+        + (u.player_name ? ' - 角色 ' + escapeHtml(u.player_name) : '')
+        + ' - 最近登录 ' + formatTs(u.last_login_at) + '</div>';
       html += '<div class="admin-user-chips">' + permsChips(u) + '</div>';
       html += '</div>';
 
