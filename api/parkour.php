@@ -23,6 +23,40 @@ function parkourUuidValid($uuid) {
     return preg_match('/^[0-9a-fA-F]{32}$/', $clean) === 1;
 }
 
+/** UUID 归一化：小写、去横线。跑酷记录与皮肤站返回的格式可能不同，比对前统一 */
+function parkourNormUuid($uuid) {
+    return strtolower(str_replace('-', '', (string) $uuid));
+}
+
+/**
+ * 已注册且公开主页的用户：归一化角色 UUID → 站点用户 id。
+ * 匹配 users.player_uuid（展示角色）与 players_json（账号全部角色），
+ * 只收 is_public=1 的用户——未公开主页的用户保持跳转跑酷玩家页，避免点进 404。
+ */
+function parkourUserMap($db) {
+    $map = [];
+    $stmt = $db->query("SELECT id, player_uuid, players_json FROM users WHERE is_public = 1");
+    foreach ($stmt->fetchAll() as $u) {
+        $uuids = [];
+        if (!empty($u['player_uuid'])) {
+            $uuids[] = $u['player_uuid'];
+        }
+        $players = json_decode($u['players_json'] ?: '[]', true);
+        foreach ((array) $players as $p) {
+            if (is_array($p) && !empty($p['id'])) {
+                $uuids[] = $p['id'];
+            }
+        }
+        foreach (array_unique($uuids) as $uuid) {
+            $key = parkourNormUuid($uuid);
+            if ($key !== '' && !isset($map[$key])) {
+                $map[$key] = (int) $u['id'];
+            }
+        }
+    }
+    return $map;
+}
+
 function parkourFormatCloseDate($ts) {
     if ($ts === null) {
         return null;
@@ -187,6 +221,9 @@ try {
         $offset = ($page - 1) * $limit;
         $pageRows = array_slice($rows, $offset, $limit);
 
+        // 站点注册用户映射（公开主页）：用于前端把玩家名链到 /profile/
+        $userMap = parkourUserMap($db);
+
         $data = [];
         $rank = $offset + 1;
         foreach ($pageRows as $r) {
@@ -201,6 +238,8 @@ try {
             ];
             // 内部跳转需要 UUID，但不展示给前端表格；这里放在 data 末尾供链接使用
             $data[count($data) - 1]['player_uuid'] = $r['player_uuid'];
+            $userMapKey = parkourNormUuid($r['player_uuid']);
+            $data[count($data) - 1]['user_id'] = isset($userMap[$userMapKey]) ? $userMap[$userMapKey] : null;
         }
 
         json_response([
@@ -226,6 +265,11 @@ try {
         }
 
         $profile = parkourResolvePlayer($db, $uuid);
+
+        // 该玩家是否对应本站公开主页的注册用户
+        $userMap = parkourUserMap($db);
+        $userMapKey = parkourNormUuid($uuid);
+        $siteUserId = isset($userMap[$userMapKey]) ? $userMap[$userMapKey] : null;
 
         $mapsStmt = $db->query("SELECT * FROM parkour_maps WHERE status = 'published' ORDER BY created_at DESC, id DESC");
         $allMaps = $mapsStmt->fetchAll();
@@ -355,6 +399,7 @@ try {
             'player' => [
                 'player_name' => $profile['name'],
                 'avatar_url' => $profile['avatar'],
+                'user_id' => $siteUserId,
             ],
             'summary' => [
                 'maps_played' => count($mapStats),
@@ -371,7 +416,7 @@ try {
 
     // ---- 管理：上传 db 并解析 course ----
     if ($action === 'upload_db') {
-        requireAdmin();
+        requireAdminNode($db, 'parkour');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }
@@ -410,7 +455,7 @@ try {
 
     // ---- 管理：导入指定 course ----
     if ($action === 'import_course') {
-        requireAdmin();
+        requireAdminNode($db, 'parkour');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }
@@ -513,7 +558,7 @@ try {
 
     // ---- 管理：地图列表 ----
     if ($action === 'admin_maps') {
-        requireAdmin();
+        requireAdminNode($db, 'parkour');
         $stmt = $db->query("SELECT * FROM parkour_maps ORDER BY created_at DESC, id DESC");
         $maps = $stmt->fetchAll();
         $data = [];
@@ -542,7 +587,7 @@ try {
 
     // ---- 管理：更新地图 ----
     if ($action === 'admin_update') {
-        requireAdmin();
+        requireAdminNode($db, 'parkour');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }
@@ -589,7 +634,7 @@ try {
 
     // ---- 管理：删除地图 ----
     if ($action === 'delete') {
-        requireAdmin();
+        requireAdminNode($db, 'parkour');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }

@@ -7,7 +7,7 @@
  *   GET  ?action=detail&slug=xxx                           （仅 status=published）
  *   GET  ?action=categories                                （返回所有分类列表）
  *
- * 管理接口（需 X-Admin-Token 请求头，环境变量 ADMIN_TOKEN）：
+ * 管理接口（需管理员会话，权限节点：docs）：
  *   GET  ?action=admin_list&page=1&limit=20&status=all|published|draft
  *   GET  ?action=admin_detail&id=xxx
  *   POST ?action=create    （JSON {category, title, slug, content, sort_order?, status?}）
@@ -68,7 +68,7 @@ try {
 
     // ---- 管理：文档详情（含正文，用于编辑） ----
     if ($action === 'admin_detail') {
-        requireAdmin();
+        requireAdminNode($db, 'docs');
 
         $id = intval($_GET['id'] ?? 0);
         if ($id <= 0) {
@@ -91,7 +91,7 @@ try {
 
     // ---- 管理：文档列表（全部状态） ----
     if ($action === 'admin_list') {
-        requireAdmin();
+        requireAdminNode($db, 'docs');
 
         $page   = max(1, intval($_GET['page'] ?? 1));
         $limit  = min(100, max(1, intval($_GET['limit'] ?? 50)));
@@ -137,7 +137,7 @@ try {
 
     // ---- 管理：创建文档 ----
     if ($action === 'create') {
-        requireAdmin();
+        requireAdminNode($db, 'docs');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }
@@ -190,7 +190,7 @@ try {
 
     // ---- 管理：更新文档 ----
     if ($action === 'update') {
-        requireAdmin();
+        requireAdminNode($db, 'docs');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }
@@ -248,7 +248,7 @@ try {
 
     // ---- 管理：删除文档 ----
     if ($action === 'delete') {
-        requireAdmin();
+        requireAdminNode($db, 'docs');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }

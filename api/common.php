@@ -9,7 +9,7 @@
 // ---- CORS 头 ----
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, X-Admin-Token');
+header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
@@ -74,22 +74,89 @@ function mask_address($addr) {
     return $parts[0] . '.***.' . end($parts);
 }
 
-// ---- 管理员鉴权 ----
+// ---- 管理员权限（OAuth 用户角色 + 模块级权限节点） ----
 
 /**
- * 校验管理员令牌。
- * 优先读取 $envName 指定的环境变量；若未设置，回退到 ADMIN_TOKEN。
- * 未配置任何 token 时返回 403（管理功能禁用）。
+ * 后台权限节点（单一数据源）。
+ * 超级管理员拥有全部节点；管理员按 users.perms_json 分配；普通用户无后台权限。
  */
-function requireAdmin($envName = 'ADMIN_TOKEN') {
-    $token = getenv($envName) ?: getenv('ADMIN_TOKEN');
-    if (!$token) {
-        json_response(['success' => false, 'error' => '管理员功能未启用：请设置 ADMIN_TOKEN 环境变量'], 403);
+const ADMIN_PERMISSION_NODES = [
+    'news'      => '新闻管理',
+    'events'    => '活动管理',
+    'works'     => '作品管理',
+    'docs'      => '文档管理',
+    'donations' => '捐赠管理',
+    'servers'   => '服务器管理',
+    'pcl'       => 'PCL 主页',
+    'images'    => '图片管理',
+    'parkour'   => '跑酷排行',
+    'wall'      => '留言墙管理',
+];
+
+/**
+ * 解析用户实际拥有的节点：超管 → 全部节点；管理员 → 已分配且合法的节点；其他 → 空。
+ */
+function userPermissions($user) {
+    if (!$user) {
+        return [];
     }
-    $provided = $_SERVER['HTTP_X_ADMIN_TOKEN'] ?? '';
-    if ($provided === '' || !hash_equals($token, $provided)) {
-        json_response(['success' => false, 'error' => '管理员令牌无效'], 403);
+    if (($user['role'] ?? 'user') === 'super_admin') {
+        return array_keys(ADMIN_PERMISSION_NODES);
     }
+    $perms = json_decode($user['perms_json'] ?? '[]', true);
+    if (!is_array($perms)) {
+        return [];
+    }
+    return array_values(array_intersect($perms, array_keys(ADMIN_PERMISSION_NODES)));
+}
+
+/**
+ * 首登引导：全站还没有超管时，把该用户提升为超级管理员。
+ * 覆盖全新库与"已有历史用户但尚无超管"的存量库——部署后第一个登录的人完成初始化。
+ */
+function ensureSuperAdmin($db, $user, $now) {
+    $check = $db->prepare("SELECT COUNT(*) FROM users WHERE role = 'super_admin'");
+    $check->execute();
+    if ((int) $check->fetchColumn() === 0) {
+        $up = $db->prepare("UPDATE users SET role = 'super_admin', updated_at = ? WHERE id = ?");
+        $up->execute([$now, (int) $user['id']]);
+        $user['role'] = 'super_admin';
+    }
+    return $user;
+}
+
+/**
+ * 要求登录且拥有指定模块节点的操作权。
+ * 未登录返回 401（前端跳登录页）；非管理员或缺少节点返回 403（前端提示无权限）。
+ */
+function requireAdminNode($db, $node) {
+    $user = currentUser($db);
+    if (!$user) {
+        json_response(['success' => false, 'error' => '请先登录'], 401);
+    }
+    $role = $user['role'] ?? 'user';
+    if ($role === 'super_admin') {
+        return $user;
+    }
+    if ($role !== 'admin') {
+        json_response(['success' => false, 'error' => '需要管理员权限'], 403);
+    }
+    if (!in_array($node, userPermissions($user), true)) {
+        json_response(['success' => false, 'error' => '没有该模块的操作权限'], 403);
+    }
+    return $user;
+}
+
+/** 要求超级管理员（用户与权限管理专用） */
+function requireSuperAdmin($db) {
+    $user = currentUser($db);
+    if (!$user) {
+        json_response(['success' => false, 'error' => '请先登录'], 401);
+    }
+    if (($user['role'] ?? 'user') !== 'super_admin') {
+        json_response(['success' => false, 'error' => '需要超级管理员权限'], 403);
+    }
+    return $user;
 }
 
 // ---- 用户会话（皮肤站 OAuth 登录） ----
@@ -199,8 +266,8 @@ function currentUser($db) {
 }
 
 /**
- * 未登录直接 401。与管理端 requireAdmin() 的 403 体系互不干扰
- * （前端 admin-auth.js 只对 403 做跳登录处理）。
+ * 未登录直接 401。管理端 requireAdminNode()/requireSuperAdmin() 也沿用
+ * 「未登录 401、无权限 403」的约定，前端据此区分跳登录页与提示无权限。
  */
 function requireUser($db) {
     $user = currentUser($db);
@@ -231,6 +298,9 @@ function userView($user) {
         'social_links'  => is_array($social) ? $social : [],
         'is_public'     => (int) $user['is_public'],
         'show_contact'  => (int) $user['show_contact'],
+        // 角色与权限只在本人接口返回；公开主页接口不暴露
+        'role'          => (string) ($user['role'] ?? 'user'),
+        'perms'         => userPermissions($user),
         'created_at'    => (int) $user['created_at'],
         'last_login_at' => (int) $user['last_login_at'],
     ];
@@ -332,6 +402,8 @@ function createUserTables($db, $driver) {
             social_links TEXT NOT NULL,
             is_public TINYINT NOT NULL DEFAULT 1,
             show_contact TINYINT NOT NULL DEFAULT 0,
+            role VARCHAR(16) NOT NULL DEFAULT 'user',
+            perms_json VARCHAR(500) NOT NULL DEFAULT '[]',
             created_at INT NOT NULL,
             updated_at INT NOT NULL,
             last_login_at INT NOT NULL DEFAULT 0,
@@ -377,6 +449,8 @@ function createUserTables($db, $driver) {
         social_links   TEXT NOT NULL DEFAULT '[]',
         is_public      INTEGER NOT NULL DEFAULT 1,
         show_contact   INTEGER NOT NULL DEFAULT 0,
+        role           TEXT NOT NULL DEFAULT 'user',
+        perms_json     TEXT NOT NULL DEFAULT '[]',
         created_at     INTEGER NOT NULL,
         updated_at     INTEGER NOT NULL,
         last_login_at  INTEGER NOT NULL DEFAULT 0
@@ -694,6 +768,26 @@ function createSiteTables($db, $driver) {
 function migrateSiteTables($db, $driver) {
     // 迁移：新增用户账号相关表（users / user_sessions / oauth_states）
     createUserTables($db, $driver);
+
+    // 迁移：users 表新增 role / perms_json 列（后台角色与权限节点）
+    try {
+        $test = $db->query("SELECT role FROM users LIMIT 0");
+    } catch (PDOException $e) {
+        if ($driver === 'mysql') {
+            $db->exec("ALTER TABLE users ADD COLUMN role VARCHAR(16) NOT NULL DEFAULT 'user'");
+        } else {
+            $db->exec("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'");
+        }
+    }
+    try {
+        $test = $db->query("SELECT perms_json FROM users LIMIT 0");
+    } catch (PDOException $e) {
+        if ($driver === 'mysql') {
+            $db->exec("ALTER TABLE users ADD COLUMN perms_json VARCHAR(500) NOT NULL DEFAULT '[]'");
+        } else {
+            $db->exec("ALTER TABLE users ADD COLUMN perms_json TEXT NOT NULL DEFAULT '[]'");
+        }
+    }
 
     // 迁移：新增 works 表
     if ($driver === 'mysql') {

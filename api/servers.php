@@ -6,7 +6,7 @@
  *   GET  ?action=list                    （全部，按 sort_order）
  *   GET  ?action=featured                （置顶服务器）
  *
- * 管理接口（需 X-Admin-Token 请求头）：
+ * 管理接口（需管理员会话，权限节点：servers）：
  *   GET  ?action=admin_list&page=1&limit=20
  *   GET  ?action=admin_detail&id=xxx
  *   POST ?action=create
@@ -73,7 +73,7 @@ try {
 
     // ---- 管理：服务器详情（编辑用） ----
     if ($action === 'admin_detail') {
-        requireAdmin();
+        requireAdminNode($db, 'servers');
 
         $id = intval($_GET['id'] ?? 0);
         if ($id <= 0) {
@@ -102,7 +102,7 @@ try {
 
     // ---- 管理：服务器列表 ----
     if ($action === 'admin_list') {
-        requireAdmin();
+        requireAdminNode($db, 'servers');
 
         $page  = max(1, intval($_GET['page'] ?? 1));
         $limit = min(100, max(1, intval($_GET['limit'] ?? 20)));
@@ -133,7 +133,7 @@ try {
 
     // ---- 管理：创建服务器 ----
     if ($action === 'create') {
-        requireAdmin();
+        requireAdminNode($db, 'servers');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }
@@ -181,7 +181,7 @@ try {
 
     // ---- 管理：更新服务器 ----
     if ($action === 'update') {
-        requireAdmin();
+        requireAdminNode($db, 'servers');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }
@@ -236,7 +236,7 @@ try {
 
     // ---- 管理：删除服务器 ----
     if ($action === 'delete') {
-        requireAdmin();
+        requireAdminNode($db, 'servers');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }

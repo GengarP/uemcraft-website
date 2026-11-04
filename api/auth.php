@@ -34,8 +34,13 @@ define('OAUTH_STATE_TTL', 600);
  * 返回 ['status' => int, 'body' => string]；与 parkour.php 同为 curl + stream 双通道，
  * 但 OAuth 涉及凭证交换，必须保持 SSL 证书校验开启。
  * status 仅供日志定位（stream 通道取不到状态码时为 0），成败一律以响应体字段判定。
+ *
+ * $follow：是否跟随重定向。Janus 的 userinfo 是一条 303 链：
+ *   /oidc/userinfo → Janus 控制器 → 303 → {siteUrl}/yggc/userinfo（真正的资源服务器）。
+ * 令牌走 audience 校验，oidc-provider 自带的 userinfo 路由会拒绝带 aud 的 JWT，
+ * 所以必须跟随这层重定向才能拿到 claims。
  */
-function oauthHttp($url, $postFields = null, $bearer = '') {
+function oauthHttp($url, $postFields = null, $bearer = '', $follow = false) {
     $headers = ['Accept: application/json'];
     if ($postFields !== null) {
         $headers[] = 'Content-Type: application/x-www-form-urlencoded';
@@ -52,6 +57,16 @@ function oauthHttp($url, $postFields = null, $bearer = '') {
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+        if ($follow) {
+            // 只允许跳转到 HTTPS，最多 3 跳；Authorization 头随重定向保留（同源跳转）
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_MAXREDIRS, 3);
+            if (defined('CURLOPT_REDIR_PROTOCOLS_STR')) {
+                curl_setopt($ch, CURLOPT_REDIR_PROTOCOLS_STR, 'https');
+            } else {
+                curl_setopt($ch, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTPS);
+            }
+        }
         if ($postFields !== null) {
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
@@ -73,6 +88,8 @@ function oauthHttp($url, $postFields = null, $bearer = '') {
         'timeout'       => 8,
         // 非 2xx 也取回 body，便于把皮肤站的错误信息记进日志
         'ignore_errors' => true,
+        'follow_location' => $follow ? 1 : 0,
+        'max_redirects'   => 3,
     ]];
     if ($postFields !== null) {
         $opts['http']['content'] = $postFields;
@@ -150,16 +167,20 @@ function authUpsertUser($db, $profile) {
         $upd->execute([$nickname, $avatarUrl, $email, $newPlayersJson,
                        $playerUuid, $playerName, $now, $now, (int) $existing['id']]);
         $stmt->execute([$profile['sub']]);
-        return $stmt->fetch();
+        $user = $stmt->fetch();
+    } else {
+        $ins = $db->prepare("INSERT INTO users (sub, nickname, avatar_url, email, players_json, player_uuid, player_name,
+                             bio, contact, social_links, is_public, show_contact, created_at, updated_at, last_login_at)
+                             VALUES (?, ?, ?, ?, ?, ?, ?, '', '', '[]', 1, 0, ?, ?, ?)");
+        $ins->execute([$profile['sub'], $profile['nickname'], $profile['avatar'], $profile['email'],
+                       $playersJson, $playerUuid, $playerName, $now, $now, $now]);
+        $stmt->execute([$profile['sub']]);
+        $user = $stmt->fetch();
     }
 
-    $ins = $db->prepare("INSERT INTO users (sub, nickname, avatar_url, email, players_json, player_uuid, player_name,
-                         bio, contact, social_links, is_public, show_contact, created_at, updated_at, last_login_at)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, '', '', '[]', 1, 0, ?, ?, ?)");
-    $ins->execute([$profile['sub'], $profile['nickname'], $profile['avatar'], $profile['email'],
-                   $playersJson, $playerUuid, $playerName, $now, $now, $now]);
-    $stmt->execute([$profile['sub']]);
-    return $stmt->fetch();
+    // 首登引导：全站还没有超管时，本次登录者成为超级管理员。
+    // 覆盖全新库与"已有历史用户但尚无超管"的存量库——部署后第一个登录的人完成初始化。
+    return ensureSuperAdmin($db, $user, $now);
 }
 
 $action = $_GET['action'] ?? '';
@@ -242,8 +263,8 @@ try {
             oauthFail('exchange');
         }
 
-        // 取用户身份
-        $resp = oauthHttp(OAUTH_USERINFO_URL, null, (string) $token['access_token']);
+        // 取用户身份（跟随 Janus 的 303 链：/oidc/userinfo → /yggc/userinfo）
+        $resp = oauthHttp(OAUTH_USERINFO_URL, null, (string) $token['access_token'], true);
         $info = json_decode($resp['body'], true);
         if (!is_array($info) || empty($info['sub'])) {
             error_log('[auth.php] 获取用户信息失败 HTTP ' . $resp['status'] . ': ' . substr($resp['body'], 0, 500));

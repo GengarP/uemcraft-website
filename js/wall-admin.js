@@ -1,6 +1,6 @@
 /* ============================================================
    wall-admin.js — 留言墙管理页
-   依赖 api/wall.php 的管理接口（X-Admin-Token 鉴权）
+   依赖 api/wall.php 的管理接口（皮肤站 OAuth 会话鉴权，wall 权限节点）
    使用 admin-auth.js 统一认证
    ============================================================ */
 
@@ -69,7 +69,7 @@
   }
 
   /* ---- 认证 ---- */
-  Auth.requireAuth(API_URL + '?action=admin_list&page=1&limit=1&status=all')
+  Auth.requireAuth('wall')
     .then(function() {
       currentPage = 1;
       loadMessages(1);

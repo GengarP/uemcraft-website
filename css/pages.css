@@ -1711,6 +1711,11 @@
 .parkour-player-link:hover {
   color: var(--c-primary);
 }
+/* 跑酷玩家页：跳转站点个人主页的入口按钮 */
+.parkour-profile-link {
+  display: inline-block;
+  margin-top: 6px;
+}
 .parkour-avatar {
   width: 34px;
   height: 34px;

@@ -6,7 +6,7 @@
  *   GET  ?action=list&page=1&limit=20      （仅返回 status=approved 的留言）
  *   POST ?action=post                      （JSON {name, content}）
  *
- * 管理接口（需环境变量 ADMIN_TOKEN，请求头 X-Admin-Token）：
+ * 管理接口（需管理员会话，权限节点：wall）：
  *   GET  ?action=admin_list&page=1&limit=20&status=all|approved|hidden
  *   POST ?action=audit                     （JSON {id, status: approved|hidden}）
  *   POST ?action=recheck                   （JSON {id}，重新跑一次 AI 审核）
@@ -257,7 +257,7 @@ try {
 
     // ---- 管理：列表（含屏蔽项，可按状态筛选） ----
     if ($action === 'admin_list') {
-        requireAdmin('WALL_ADMIN_TOKEN');
+        requireAdminNode(getSiteDb(), 'wall');
         $page = max(1, intval($_GET['page'] ?? 1));
         $limit = min(50, max(1, intval($_GET['limit'] ?? 20)));
         $offset = ($page - 1) * $limit;
@@ -300,7 +300,7 @@ try {
 
     // ---- 管理：重新调用 AI 审核（给早于该功能上线、没有理由的历史留言补上） ----
     if ($action === 'recheck') {
-        requireAdmin('WALL_ADMIN_TOKEN');
+        requireAdminNode(getSiteDb(), 'wall');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }
@@ -338,7 +338,7 @@ try {
 
     // ---- 管理：审核（通过/屏蔽） ----
     if ($action === 'audit') {
-        requireAdmin('WALL_ADMIN_TOKEN');
+        requireAdminNode(getSiteDb(), 'wall');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }
@@ -359,7 +359,7 @@ try {
 
     // ---- 管理：编辑 ----
     if ($action === 'edit') {
-        requireAdmin('WALL_ADMIN_TOKEN');
+        requireAdminNode(getSiteDb(), 'wall');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }
@@ -390,7 +390,7 @@ try {
 
     // ---- 管理：删除 ----
     if ($action === 'delete') {
-        requireAdmin('WALL_ADMIN_TOKEN');
+        requireAdminNode(getSiteDb(), 'wall');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }

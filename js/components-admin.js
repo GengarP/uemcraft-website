@@ -13,18 +13,21 @@
 
   /* ---- 导航项定义（单一数据源） ---- */
   // match: 与 admin/ 下 *.html 的文件名（不含扩展名）匹配
+  // node: 对应的权限节点（与 api/common.php 的 ADMIN_PERMISSION_NODES 一致）；null = 只要求管理员身份
+  // superOnly: 仅超级管理员可见
   var ADMIN_NAV = [
-    { label: '仪表盘',     path: 'index.html',   match: ['index', ''],              icon: '盘' },
-    { label: '新闻管理',   path: 'news.html',    match: ['news', 'news-edit'],      icon: '新' },
-    { label: '活动管理',   path: 'events.html',  match: ['events', 'events-edit'],  icon: '活' },
-    { label: '作品管理',   path: 'gallery.html', match: ['gallery', 'gallery-edit'], icon: '作' },
-    { label: '文档管理',   path: 'docs.html',    match: ['docs', 'docs-edit'],      icon: '文' },
-    { label: '服务器管理', path: 'servers.html', match: ['servers', 'servers-edit'], icon: '服' },
-    { label: 'PCL 主页',   path: 'pcl-cards.html', match: ['pcl-cards', 'pcl-cards-edit'], icon: 'P' },
-    { label: '图片管理',   path: 'images.html',  match: ['images'],                 icon: '图' },
-    { label: '捐赠管理',   path: 'donations.html', match: ['donations', 'donations-edit'], icon: '捐' },
-    { label: '跑酷排行',   path: 'parkour.html',  match: ['parkour'],               icon: '跑' },
-    { label: '留言墙管理', path: 'wall.html',    match: ['wall'],                   icon: '墙' }
+    { label: '仪表盘',     path: 'index.html',   match: ['index', ''],              icon: '盘', node: null },
+    { label: '新闻管理',   path: 'news.html',    match: ['news', 'news-edit'],      icon: '新', node: 'news' },
+    { label: '活动管理',   path: 'events.html',  match: ['events', 'events-edit'],  icon: '活', node: 'events' },
+    { label: '作品管理',   path: 'gallery.html', match: ['gallery', 'gallery-edit'], icon: '作', node: 'works' },
+    { label: '文档管理',   path: 'docs.html',    match: ['docs', 'docs-edit'],      icon: '文', node: 'docs' },
+    { label: '服务器管理', path: 'servers.html', match: ['servers', 'servers-edit'], icon: '服', node: 'servers' },
+    { label: 'PCL 主页',   path: 'pcl-cards.html', match: ['pcl-cards', 'pcl-cards-edit'], icon: 'P', node: 'pcl' },
+    { label: '图片管理',   path: 'images.html',  match: ['images'],                 icon: '图', node: 'images' },
+    { label: '捐赠管理',   path: 'donations.html', match: ['donations', 'donations-edit'], icon: '捐', node: 'donations' },
+    { label: '跑酷排行',   path: 'parkour.html',  match: ['parkour'],               icon: '跑', node: 'parkour' },
+    { label: '留言墙管理', path: 'wall.html',    match: ['wall'],                   icon: '墙', node: 'wall' },
+    { label: '用户与权限', path: 'users.html',   match: ['users'],                  icon: '权', node: null, superOnly: true }
   ];
 
   /* ---- 当前页文件名（不含扩展名），如 /admin/news-edit.html → news-edit ---- */
@@ -42,6 +45,24 @@
     return false;
   }
 
+  /* ---- 按会话权限隐藏无权限的导航项（“隐藏并拦截”：接口层另有 401/403 兜底） ---- */
+  function hydrateNav() {
+    var Auth = window.UEMAdminAuth;
+    if (!Auth) return;
+    Auth.session().then(function (user) {
+      var links = document.querySelectorAll('.admin-sidenav-link');
+      for (var i = 0; i < links.length; i++) {
+        var link = links[i];
+        var node = link.getAttribute('data-node');
+        var superOnly = link.getAttribute('data-super-only') === '1';
+        var allowed = Auth.isAdminRole(user)
+          && (!superOnly || user.role === 'super_admin')
+          && Auth.can(user, node);
+        if (!allowed) link.style.display = 'none';
+      }
+    });
+  }
+
   /* ---- 渲染 ---- */
   function render() {
     var key = currentKey();
@@ -52,6 +73,8 @@
       var item = ADMIN_NAV[i];
       var active = isActive(item);
       navLinks += '<a href="' + item.path + '" class="admin-sidenav-link' + (active ? ' is-active' : '') + '"'
+        + (item.node ? ' data-node="' + item.node + '"' : '')
+        + (item.superOnly ? ' data-super-only="1"' : '')
         + (active ? ' aria-current="page"' : '') + '>';
       navLinks += '<span class="admin-sidenav-icon" aria-hidden="true">' + item.icon + '</span>';
       navLinks += '<span class="admin-sidenav-label">' + item.label + '</span>';
@@ -101,6 +124,8 @@
       var title = document.getElementById('adminTopbarTitle');
       if (title && window.__adminPageLabel) title.textContent = window.__adminPageLabel;
 
+      hydrateNav();
+
       /* 退出登录：按钮由本组件注入，故绑定也放在这里，
          各页模块（admin-list.js / admin-edit.js / admin-dashboard.js）不再重复实现。 */
       var logout = document.getElementById('logoutBtn');
@@ -109,7 +134,6 @@
           var Auth = window.UEMAdminAuth;
           if (Auth) { Auth.logout(); return; }
           // 兜底：admin-auth.js 未加载时也要能退出，不能变成死按钮
-          try { localStorage.removeItem('uemcraft-admin-token'); } catch (e) { /* 隐私模式下可能不可用 */ }
           location.href = 'login.html';
         });
       }

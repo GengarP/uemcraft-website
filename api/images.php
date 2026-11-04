@@ -2,7 +2,7 @@
 /**
  * images.php — UEMCraft 图片管理 API
  * ------------------------------------
- * 管理接口（需 X-Admin-Token 请求头）：
+ * 管理接口（需管理员会话，权限节点：images）：
  *   GET  ?action=list&folder=news|gallery|docs           （列出指定目录下所有图片）
  *   POST ?action=upload&folder=news|gallery|docs          （上传图片，自动重命名为 yy-mm-dd-title 格式）
  *   POST ?action=delete                                   （删除图片，需通过引用检查）
@@ -109,7 +109,7 @@ function checkImageReferences($db, $imageUrl) {
 try {
     // ---- 列出图片 ----
     if ($action === 'list') {
-        requireAdmin();
+        requireAdminNode(getSiteDb(), 'images');
 
         $folder = $_GET['folder'] ?? 'news';
         $IMG_DIR = resolveFolder($folder);
@@ -145,7 +145,7 @@ try {
 
     // ---- 上传图片 ----
     if ($action === 'upload') {
-        requireAdmin();
+        requireAdminNode(getSiteDb(), 'images');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }
@@ -235,7 +235,7 @@ try {
 
     // ---- 删除图片 ----
     if ($action === 'delete') {
-        requireAdmin();
+        requireAdminNode(getSiteDb(), 'images');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }
@@ -291,7 +291,7 @@ try {
 
     // ---- 重命名图片 ----
     if ($action === 'rename') {
-        requireAdmin();
+        requireAdminNode(getSiteDb(), 'images');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }

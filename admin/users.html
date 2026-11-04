@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#213d87">
+  <title>用户与权限 — UEMCraft</title>
+  <link rel="icon" href="../favicon.ico" type="images/x-icon">
+  <script>
+    (function(){
+      var t = localStorage.getItem('uemcraft-theme');
+      if(!t) t = window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+      document.documentElement.style.colorScheme = t;
+      var tex = localStorage.getItem('uemcraft-texture');
+      if(tex && tex !== 'none'){
+        document.documentElement.setAttribute('data-texture', tex);
+        var s = document.createElement('style');
+        s.id = 'texture-style';
+        s.textContent = 'body::after{background-image:url(/assets/img/background_textures/'+tex+'.png);}';
+        document.head.appendChild(s);
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="/css/tokens.css?v=aa62165">
+  <link rel="stylesheet" href="/css/base.css?v=aa62165">
+  <link rel="stylesheet" href="/css/layout.css?v=aa62165">
+  <link rel="stylesheet" href="/css/components.css?v=aa62165">
+  <link rel="stylesheet" href="/css/pages.css?v=aa62165">
+  <link rel="stylesheet" href="css/admin.css?v=aa62165">
+</head>
+<body>
+<script src="/js/components-admin.js?v=aa62165"></script>
+
+<a href="#main" class="skip-link">跳转到主内容</a>
+
+<main id="main">
+
+<div class="admin-page-header">
+  <h1>用户与权限</h1>
+  <p class="hero-sub">设置管理员，并分配各模块的操作权限</p>
+  <nav class="breadcrumb" aria-label="面包屑">
+    <a href="/index.html">首页</a> <span>/</span> <a href="index.html">管理后台</a> <span>/</span> <span>用户与权限</span>
+  </nav>
+</div>
+
+<section class="section">
+  <div class="container">
+    <p class="admin-users-hint">超级管理员默认拥有全部权限；管理员只能操作被勾选的模块。可以将超级管理员身份转交给其他用户（转交后你自己将变回普通用户）。</p>
+
+    <span id="usersMessage" class="wall-form-message" role="status" aria-live="polite"></span>
+
+    <div id="usersStatus" class="wall-loading">正在加载…</div>
+
+    <div id="usersList" class="admin-user-list"></div>
+  </div>
+</section>
+
+</main>
+
+<script src="/js/components-footer.js?v=aa62165"></script>
+<script defer src="/js/utils.js?v=aa62165"></script>
+<script defer src="/js/cjk-spacing.js?v=aa62165"></script>
+<script defer src="/js/nav.js?v=aa62165"></script>
+<script defer src="/js/page-transition.js?v=aa62165"></script>
+<script defer src="/js/theme.js?v=aa62165"></script>
+<script defer src="/js/admin-auth.js?v=aa62165"></script>
+<script defer src="/js/admin-users.js?v=aa62165"></script>
+</body>
+</html>

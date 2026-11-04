@@ -5,7 +5,7 @@
  * 公开接口：
  *   GET  ?action=list                             （按月分组的捐赠名单，仅昵称，不含金额）
  *
- * 管理接口（需 X-Admin-Token 请求头，环境变量 ADMIN_TOKEN）：
+ * 管理接口（需管理员会话，权限节点：donations）：
  *   GET  ?action=admin_list&page=1&limit=20&month=YYYY-MM
  *   GET  ?action=admin_detail&id=xxx
  *   POST ?action=create
@@ -72,7 +72,7 @@ try {
 
     // ---- 管理：捐赠记录详情（用于编辑） ----
     if ($action === 'admin_detail') {
-        requireAdmin();
+        requireAdminNode($db, 'donations');
 
         $id = intval($_GET['id'] ?? 0);
         if ($id <= 0) {
@@ -97,7 +97,7 @@ try {
 
     // ---- 管理：捐赠记录列表（含金额，支持月份过滤） ----
     if ($action === 'admin_list') {
-        requireAdmin();
+        requireAdminNode($db, 'donations');
 
         $page  = max(1, intval($_GET['page'] ?? 1));
         $limit = min(100, max(1, intval($_GET['limit'] ?? 20)));
@@ -143,7 +143,7 @@ try {
 
     // ---- 管理：创建捐赠记录 ----
     if ($action === 'create') {
-        requireAdmin();
+        requireAdminNode($db, 'donations');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }
@@ -180,7 +180,7 @@ try {
 
     // ---- 管理：更新捐赠记录 ----
     if ($action === 'update') {
-        requireAdmin();
+        requireAdminNode($db, 'donations');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }
@@ -224,7 +224,7 @@ try {
 
     // ---- 管理：删除捐赠记录 ----
     if ($action === 'delete') {
-        requireAdmin();
+        requireAdminNode($db, 'donations');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }

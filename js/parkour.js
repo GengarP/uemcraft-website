@@ -83,9 +83,13 @@
 
         var html = '';
         json.data.forEach(function (r) {
+          // 注册且公开主页的玩家 → 站点个人主页；否则保持跑酷玩家详情页
+          var href = r.user_id
+            ? '/profile/?id=' + encodeURIComponent(r.user_id)
+            : 'player.html?uuid=' + encodeURIComponent(r.player_uuid);
           html += '<tr>';
           html += '<td class="rank-cell">' + r.rank + '</td>';
-          html += '<td><a class="parkour-player-link" href="player.html?uuid=' + encodeURIComponent(r.player_uuid) + '">';
+          html += '<td><a class="parkour-player-link" href="' + href + '">';
           html += '<img class="parkour-avatar" src="' + escapeHtml(r.avatar_url) + '" alt="">';
           html += '<span>' + escapeHtml(r.player_name) + '</span>';
           html += '</a></td>';

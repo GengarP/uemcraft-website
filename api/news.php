@@ -6,7 +6,7 @@
  *   GET  ?action=list&page=1&limit=10                （仅 status=published）
  *   GET  ?action=detail&slug=xxx                      （仅 status=published）
  *
- * 管理接口（需 X-Admin-Token 请求头，环境变量 ADMIN_TOKEN）：
+ * 管理接口（需管理员会话，权限节点：news）：
  *   GET  ?action=admin_list&page=1&limit=20&status=all|published|draft
  *   POST ?action=create    （JSON {title, slug, excerpt, content, cover?, cover_caption?, author?, tags?, date, status?}）
  *   POST ?action=update    （JSON {id, ...任意字段}）
@@ -84,7 +84,7 @@ try {
 
     // ---- 管理：新闻详情（含正文，用于编辑） ----
     if ($action === 'admin_detail') {
-        requireAdmin();
+        requireAdminNode($db, 'news');
 
         $id = intval($_GET['id'] ?? 0);
         if ($id <= 0) {
@@ -109,7 +109,7 @@ try {
 
     // ---- 管理：新闻列表（全部状态） ----
     if ($action === 'admin_list') {
-        requireAdmin();
+        requireAdminNode($db, 'news');
 
         $page   = max(1, intval($_GET['page'] ?? 1));
         $limit  = min(100, max(1, intval($_GET['limit'] ?? 20)));
@@ -157,7 +157,7 @@ try {
 
     // ---- 管理：创建新闻 ----
     if ($action === 'create') {
-        requireAdmin();
+        requireAdminNode($db, 'news');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }
@@ -225,7 +225,7 @@ try {
 
     // ---- 管理：更新新闻 ----
     if ($action === 'update') {
-        requireAdmin();
+        requireAdminNode($db, 'news');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }
@@ -298,7 +298,7 @@ try {
 
     // ---- 管理：删除新闻 ----
     if ($action === 'delete') {
-        requireAdmin();
+        requireAdminNode($db, 'news');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请使用 POST 请求'], 405);
         }

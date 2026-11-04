@@ -1085,9 +1085,9 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     if (!Auth) { location.href = 'login.html'; return; }
-    Auth.requireAuth().then(function () {
+    Auth.requireAuth('pcl').then(function () {
       if (document.getElementById('cardsList')) initListPage();
       else if (document.getElementById('cardForm')) initEditPage();
-    }).catch(function () { location.href = 'login.html'; });
+    }).catch(function () {});
   });
 })();

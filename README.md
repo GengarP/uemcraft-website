@@ -50,20 +50,19 @@ npx serve .
 
 | 变量 | 必填 | 说明 |
 |------|------|------|
-| `ADMIN_TOKEN` | 是 | 管理后台登录令牌（请使用强随机字符串） |
+| `OAUTH_CLIENT_ID` | 是 | 皮肤站 OAuth 应用 ID（在皮肤站管理端登记） |
+| `OAUTH_CLIENT_SECRET` | 是 | 皮肤站 OAuth 应用密钥 |
+| `OAUTH_REDIRECT_URI` | 否 | 回调地址，默认 `https://uemcraft.cn/api/auth.php?action=callback`（须与皮肤站登记一致） |
+| `OAUTH_SESSION_TTL` | 否 | 登录会话有效期（秒），默认 30 天滑动续期 |
 | `SITE_DB_DRIVER` | 否 | `sqlite`（默认）或 `mysql` |
 | `SITE_DB_HOST/PORT/NAME/USER/PASS` | 否 | MySQL 连接参数（driver=mysql 时必填） |
 | `WALL_DB_DRIVER` | 否 | `sqlite`（默认）或 `mysql` |
 | `WALL_DB_HOST/PORT/NAME/USER/PASS` | 否 | 留言墙 MySQL 连接参数 |
-| `WALL_ADMIN_TOKEN` | 否 | 留言墙专用令牌（兼容，优先读 `ADMIN_TOKEN`） |
 | `MODERATION_API_KEY` | 否 | 硅基流动 API Key，启用留言 AI 审核 |
 | `MODERATION_MODEL` | 否 | 审核模型，默认 `Qwen/Qwen3.5-4B` |
 
-生成随机令牌：
-
-```bash
-openssl rand -hex 32
-```
+> 管理后台不再使用 `ADMIN_TOKEN` 静态令牌，改为皮肤站账号 OAuth 登录：
+> 第一个登录的用户自动成为超级管理员，之后可在「用户与权限」中设置管理员并分配模块权限。
 
 ### 2. 上传文件
 
@@ -157,7 +156,8 @@ location /news/ {
 4. **环境变量**：网站设置 → PHP 管理 → 配置文件 → 在 `php.ini` 末尾添加：
 
 ```ini
-env[ADMIN_TOKEN] = 你的令牌
+env[OAUTH_CLIENT_ID] = 你的应用ID
+env[OAUTH_CLIENT_SECRET] = 你的应用密钥
 ```
 
 或使用宝塔的「PHP 配置」→「环境变量」功能。
@@ -178,7 +178,7 @@ sudo certbot --apache -d uemcraft.cn
 
 ### 5. 登录管理后台
 
-访问 `/admin/login.html`，输入 `ADMIN_TOKEN` 对应的令牌即可开始管理内容。
+访问 `/admin/login.html`，使用皮肤站账号登录即可开始管理内容。第一次登录的账号自动成为超级管理员，后续账号为普通用户，由超级管理员在「用户与权限」页面提升为管理员并分配各模块权限。
 
 首次访问 API 端点时，SQLite 数据库（`api/site.db`、`api/wall.db`）会自动创建并建表，无需手动初始化。
 
@@ -220,7 +220,7 @@ nginx -t && systemctl reload nginx
 # 申请 HTTPS
 certbot --nginx -d uemcraft.cn --non-interactive --agree-tos -m admin@uemcraft.cn
 
-echo "部署完成！设置环境变量 ADMIN_TOKEN 后访问 /admin/login.html"
+echo "部署完成！配置 OAUTH_CLIENT_ID / OAUTH_CLIENT_SECRET 后访问 /admin/login.html"
 ```
 
 ## 数据迁移

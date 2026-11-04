@@ -4,16 +4,8 @@
   var API = '../api/parkour.php';
   var uploadToken = '';
 
-  function getToken() {
-    return window.UEMAdminAuth ? window.UEMAdminAuth.getToken() : localStorage.getItem('uemcraft-admin-token');
-  }
-
   function authFetch(url, options) {
-    options = options || {};
-    options.headers = Object.assign({}, options.headers || {}, {
-      'X-Admin-Token': getToken()
-    });
-    return fetch(url, options).then(function (res) { return res.json(); });
+    return window.UEMAdminAuth.api(url, options);
   }
 
   function escapeHtml(text) {
@@ -71,7 +63,7 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     if (window.UEMAdminAuth) {
-      window.UEMAdminAuth.requireAuth(API + '?action=admin_maps').then(function () {
+      window.UEMAdminAuth.requireAuth('parkour').then(function () {
         loadMaps();
       }).catch(function () {});
     }
@@ -90,7 +82,7 @@
 
         fetch(API + '?action=upload_db', {
           method: 'POST',
-          headers: { 'X-Admin-Token': getToken() },
+          credentials: 'same-origin',
           body: fd
         }).then(function (res) { return res.json(); }).then(function (json) {
           if (!json.success) throw new Error(json.error || '上传失败');

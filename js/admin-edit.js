@@ -10,7 +10,16 @@
   var Auth = window.UEMAdminAuth;
   if (!Auth) return;
 
-  Auth.requireAuth().then(function () {
+  // 当前页面所属的权限节点（与 api/common.php 的 ADMIN_PERMISSION_NODES 对应）
+  var pageNode = document.getElementById('newsForm') ? 'news'
+    : document.getElementById('eventForm') ? 'events'
+    : document.getElementById('workForm') ? 'works'
+    : document.getElementById('docsForm') ? 'docs'
+    : document.getElementById('serverForm') ? 'servers'
+    : document.getElementById('donationForm') ? 'donations'
+    : null;
+
+  Auth.requireAuth(pageNode).then(function () {
     // DOM 检测，兼容 URL 重写
     if (document.getElementById('newsForm')) {
       initNewsEdit();

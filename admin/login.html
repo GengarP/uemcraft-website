@@ -23,12 +23,12 @@
       }
     })();
   </script>
-  <link rel="stylesheet" href="/css/tokens.css?v=0fc0cec">
-  <link rel="stylesheet" href="/css/base.css?v=0fc0cec">
-  <link rel="stylesheet" href="/css/layout.css?v=0fc0cec">
-  <link rel="stylesheet" href="/css/components.css?v=0fc0cec">
-  <link rel="stylesheet" href="/css/pages.css?v=0fc0cec">
-  <link rel="stylesheet" href="css/admin.css?v=0fc0cec">
+  <link rel="stylesheet" href="/css/tokens.css?v=aa62165">
+  <link rel="stylesheet" href="/css/base.css?v=aa62165">
+  <link rel="stylesheet" href="/css/layout.css?v=aa62165">
+  <link rel="stylesheet" href="/css/components.css?v=aa62165">
+  <link rel="stylesheet" href="/css/pages.css?v=aa62165">
+  <link rel="stylesheet" href="css/admin.css?v=aa62165">
 </head>
 <body class="admin-login-body">
 
@@ -46,11 +46,12 @@
     </div>
   </div>
 
-  <form id="loginForm" class="admin-login-form" novalidate>
-    <label class="admin-login-label" for="tokenInput">管理员令牌</label>
-    <input type="password" id="tokenInput" class="form-input" placeholder="输入 ADMIN_TOKEN" autocomplete="off" required>
-    <button type="submit" class="btn btn-primary" id="loginBtn">进入管理</button>
-  </form>
+  <div id="loginPrompt" class="admin-login-form">
+    <p class="admin-login-desc">使用皮肤站账号登录。首次登录的账号将自动成为超级管理员，其余账号为普通用户。</p>
+    <a class="btn btn-primary" href="/api/auth.php?action=login&amp;return=/admin/">使用皮肤站账号登录</a>
+    <button type="button" class="btn btn-ghost" id="logoutBtn" style="display:none;">退出当前账号</button>
+    <p class="admin-login-hint">还没有账号？<a href="https://skin.uemcraft.cn/auth/register" target="_blank" rel="noopener">注册皮肤站账号</a></p>
+  </div>
 
   <span id="loginMessage" class="wall-form-message" role="status" aria-live="polite"></span>
 
@@ -66,13 +67,13 @@
 </main>
 
 
-<script src="/js/components-footer.js?v=0fc0cec"></script>
-<script defer src="/js/utils.js?v=0fc0cec"></script>
-<script defer src="/js/cjk-spacing.js?v=0fc0cec"></script>
-<script defer src="/js/nav.js?v=0fc0cec"></script>
-<script defer src="/js/page-transition.js?v=0fc0cec"></script>
-<script defer src="/js/theme.js?v=0fc0cec"></script>
-<script defer src="/js/admin-auth.js?v=0fc0cec"></script>
-<script defer src="/js/admin-login.js?v=0fc0cec"></script>
+<script src="/js/components-footer.js?v=aa62165"></script>
+<script defer src="/js/utils.js?v=aa62165"></script>
+<script defer src="/js/cjk-spacing.js?v=aa62165"></script>
+<script defer src="/js/nav.js?v=aa62165"></script>
+<script defer src="/js/page-transition.js?v=aa62165"></script>
+<script defer src="/js/theme.js?v=aa62165"></script>
+<script defer src="/js/admin-auth.js?v=aa62165"></script>
+<script defer src="/js/admin-login.js?v=aa62165"></script>
 </body>
 </html>

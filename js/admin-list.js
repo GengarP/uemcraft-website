@@ -13,8 +13,18 @@
   if (document.getElementById('loginForm')) return;
   if (document.querySelector('.admin-dashboard-list') && !document.getElementById('newsList')) return;
 
-  // 需要认证
-  Auth.requireAuth().then(function () {
+  // 当前页面所属的权限节点（与 api/common.php 的 ADMIN_PERMISSION_NODES 对应）
+  var pageNode = document.getElementById('newsList') ? 'news'
+    : document.getElementById('eventsList') ? 'events'
+    : document.getElementById('worksList') ? 'works'
+    : document.getElementById('donationsList') ? 'donations'
+    : document.getElementById('docsList') ? 'docs'
+    : document.getElementById('serversList') ? 'servers'
+    : document.getElementById('imagesGrid') ? 'images'
+    : null;
+
+  // 需要认证（登录 + 管理员角色 + 模块节点）
+  Auth.requireAuth(pageNode).then(function () {
     if (document.getElementById('newsList')) initNewsList();
     else if (document.getElementById('eventsList')) initEventsList();
     else if (document.getElementById('worksList')) initWorksList();
@@ -746,7 +756,7 @@
 
         fetch('../api/images.php?action=upload&folder=' + currentFolder, {
           method: 'POST',
-          headers: { 'X-Admin-Token': Auth.getToken() },
+          credentials: 'same-origin',
           body: formData
         }).then(function (res) { return res.json(); })
         .then(function () { done++; uploadNext(); })

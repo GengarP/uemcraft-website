@@ -2,7 +2,7 @@
 /**
  * pcl.php — UEMCraft PCL2 主页卡片设计器 API
  * --------------------------------------------
- * 全部为管理接口（需 X-Admin-Token 请求头）：
+ * 全部为管理接口（需管理员会话，权限节点：pcl）：
  *   GET  ?action=card_list                 卡片列表
  *   GET  ?action=card_detail&id=xxx        卡片详情
  *   POST ?action=card_create               新建卡片
@@ -191,7 +191,7 @@ try {
 
     // ---- 卡片列表 ----
     if ($action === 'card_list') {
-        requireAdmin();
+        requireAdminNode($db, 'pcl');
         $rows = $db->query("SELECT * FROM pcl_cards ORDER BY sort_order ASC, id ASC")->fetchAll();
         foreach ($rows as &$row) {
             $row = normalizeCardRow($row);
@@ -202,7 +202,7 @@ try {
 
     // ---- 卡片详情 ----
     if ($action === 'card_detail') {
-        requireAdmin();
+        requireAdminNode($db, 'pcl');
         $id = requireId($_GET);
         $stmt = $db->prepare("SELECT * FROM pcl_cards WHERE id = ?");
         $stmt->execute([$id]);
@@ -215,7 +215,7 @@ try {
 
     // ---- 新建卡片 ----
     if ($action === 'card_create') {
-        requireAdmin();
+        requireAdminNode($db, 'pcl');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请用 POST 提交'], 405);
         }
@@ -248,7 +248,7 @@ try {
 
     // ---- 更新卡片 ----
     if ($action === 'card_update') {
-        requireAdmin();
+        requireAdminNode($db, 'pcl');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请用 POST 提交'], 405);
         }
@@ -288,7 +288,7 @@ try {
 
     // ---- 删除卡片 ----
     if ($action === 'card_delete') {
-        requireAdmin();
+        requireAdminNode($db, 'pcl');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请用 POST 提交'], 405);
         }
@@ -300,7 +300,7 @@ try {
 
     // ---- 变量列表 ----
     if ($action === 'var_list') {
-        requireAdmin();
+        requireAdminNode($db, 'pcl');
         $rows = $db->query("SELECT * FROM pcl_vars ORDER BY sort_order ASC, id ASC")->fetchAll();
         foreach ($rows as &$row) {
             $row['id'] = (int)$row['id'];
@@ -314,7 +314,7 @@ try {
 
     // ---- 新建变量 ----
     if ($action === 'var_create') {
-        requireAdmin();
+        requireAdminNode($db, 'pcl');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请用 POST 提交'], 405);
         }
@@ -336,7 +336,7 @@ try {
 
     // ---- 更新变量 ----
     if ($action === 'var_update') {
-        requireAdmin();
+        requireAdminNode($db, 'pcl');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请用 POST 提交'], 405);
         }
@@ -358,7 +358,7 @@ try {
 
     // ---- 删除变量 ----
     if ($action === 'var_delete') {
-        requireAdmin();
+        requireAdminNode($db, 'pcl');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             json_response(['success' => false, 'error' => '请用 POST 提交'], 405);
         }
